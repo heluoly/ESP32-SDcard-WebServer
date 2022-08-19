@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+  <title>文件上传</title>
+</head>
+
+<body>
+	<center>
+	<h1 class="h1 font-w300 mt-15" align="center">文   件  上  传</h1>
+	<img id="logo" src="logo.jpg" width="200" height="200"/>
+    <p>点击按钮选择需要上传的文件</p>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="data">
+        <input class="button" type="submit" value="上传">
+    </form>
+	<p>请等待提示上传成功后再关闭网页</p>
+	</br >
+	</br >
+	<p>点击按钮查看文件</p>
+	<p><form action="/filelist"><input type="submit" value="查看文件"></form></p>
+	</center>
+</body>
+
+</html>

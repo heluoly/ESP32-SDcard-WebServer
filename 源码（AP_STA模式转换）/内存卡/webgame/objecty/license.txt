@@ -1,0 +1,31 @@
+/**
+ * Objecty
+ * Copyright (c) 2007 by Charles Wiltgen
+ * 
+ * Objecty is licensed under the Creative Commons Attribution-No Derivative
+ * Works 2.5 license.  You are free to use and share (copy, distribute,
+ * display, and perform) Objecty per the terms below.
+ * 
+ * Summary: http://creativecommons.org/licenses/by-nd/2.5/
+ * License: http://creativecommons.org/licenses/by-nd/2.5/legalcode
+ * 
+ * Objecty uses portions of the Yahoo! UI library
+ * Copyright (c) 2006, Yahoo! Inc.  All rights reserved.
+ * Code licensed under the BSD License:
+ * http://developer.yahoo.net/yui/license.txt
+ * 
+ * Objecty uses portion of the yui-ext library
+ * Copyright (c) 2006, Jack Slocum.  All rights reserved.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
