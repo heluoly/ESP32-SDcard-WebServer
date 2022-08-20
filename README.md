@@ -5,7 +5,13 @@
 
 项目实现文件上传下载、网页flash游戏、播放视频、模式转换（AP STA AP+STA互相转换）、剪切板功能
 
-演示视频：https://www.bilibili.com/video/BV1SG411x7tz
+演示视频：
+
+1、  https://www.bilibili.com/video/BV1RS4y1k7Xs
+
+2、  https://www.bilibili.com/video/BV1r34117746
+
+3、  https://www.bilibili.com/video/BV1SG411x7tz
 
 
 SD卡代码参考 https://youtu.be/QAbn-7Ai6UU
