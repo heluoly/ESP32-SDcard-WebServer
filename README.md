@@ -22,4 +22,4 @@ flash播放器使用objecty https://wiltgen.net/objecty/
 
 视频播放器使用videoJS
 
-网页配网代码参考 https://github.com/yuan910715/Esp8266_NTP_Clock_Weather中的网页配网部分
+网页配网代码参考 https://github.com/yuan910715/Esp8266_NTP_Clock_Weather 中的网页配网部分
