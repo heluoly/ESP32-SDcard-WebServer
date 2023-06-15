@@ -14,6 +14,8 @@
 3、  https://www.bilibili.com/video/BV1SG411x7tz
 
 
+ESP32 Arduino 库版本: 2.0.4
+
 SD卡代码参考 https://youtu.be/QAbn-7Ai6UU
 
 文件上传、网页响应代码参考 http://www.taichi-maker.com/homepage/esp8266-nodemcu-iot/iot-c/spiffs/spiffs-web-server/file-upload-server/
