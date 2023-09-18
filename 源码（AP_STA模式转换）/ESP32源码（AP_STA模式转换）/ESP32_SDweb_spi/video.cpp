@@ -58,7 +58,7 @@ String listVideoDir(fs::FS &fs, const char * dirname, const char * page,const St
           namepath=String(file.path()) + "/0.txt";      //视频标题路径
           picpath=String(file.path()) + "/0.jpg";       //视频预览图路径
           videoName = readFile(SD,(char*)namepath.c_str());     //读取视频标题
-          message += "<img src=\"" + picpath + "\" alt=\"" + videoName + "\" width=\"200\" height=\"200\"/>";   //配置预览图大小
+          message += "<img src=\"" + picpath + "\" alt=\"" + videoName + "\" width=auto height=\"200px\"/>";   //配置预览图大小
           message += "<form action=\"/openvideo\">  ";
           message += videoName;
           message += "<input type=\"hidden\" name=\"videoPath\" value=\"http://" + IPAD + String(file.path()) + "\">";
