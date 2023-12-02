@@ -41,7 +41,16 @@ String password = "123456789";     //wifi密码（注意WiFi密码位数不要�
 void setup() {
   Serial.begin(115200);          // 启动串口通讯
   Serial.println("");
-  
+  /*
+  //ESP32-S3 SD卡引脚定义
+  int clk = 36;
+  int cmd = 35;
+  int d0  = 37;
+  int d1  = 38;
+  int d2  = 33;
+  int d3  = 39;
+  SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
+  */
   if(!SD_MMC.begin("/sdcard", ONE_BIT_MODE))  //SD卡初始化
   {
     Serial.println("Card Mount Failed");
