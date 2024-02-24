@@ -15,6 +15,8 @@
 
 4、  https://www.bilibili.com/video/BV1SG411x7tz
 
+PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
+
 
 # 功能
 
