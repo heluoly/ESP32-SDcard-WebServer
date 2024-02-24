@@ -5,6 +5,10 @@
 
 项目实现文件上传下载、网页flash游戏、播放视频、模式转换（AP STA AP+STA互相转换）、剪切板功能
 
+![image](/image/image1.jpg)
+
+![image](/image/image2.jpg)
+
 # 演示视频：
 
 1、  https://www.bilibili.com/video/BV1pu4m1A7bo/
