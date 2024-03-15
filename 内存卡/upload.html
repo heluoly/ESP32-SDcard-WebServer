@@ -33,7 +33,7 @@ function listFilesButton() {
   document.getElementById("details").innerHTML = xmlhttp.responseText;
 }
 function deleteButton(filepath) {
-	var urltocall = "/deleteUploadFile?deletePath=" + filepath;	
+	var urltocall = "/deleteUploadFile?deletePath=" + filepath;
 	if (confirm("确认删除")) {
 		xmlhttp=new XMLHttpRequest();  
 		xmlhttp.open("GET", urltocall, false);
@@ -47,6 +47,11 @@ function deleteButton(filepath) {
 
 	}
 }
+function downloadButton(filepath,filename) {
+  var urltocall = "/downloadUploadFile?attname=" + filename + "&downloadPath=" + filepath;
+  document.getElementById("status").innerHTML = "";
+  window.open(urltocall , '_blank');
+}
 function showUploadButtonFancy() {
   document.getElementById("detailsheader").innerHTML = "<h3>文件上传<h3>"
   document.getElementById("status").innerHTML = "";
@@ -56,7 +61,7 @@ function showUploadButtonFancy() {
   "<progress id=\"progressBar\" value=\"0\" max=\"100\" style=\"width:300px;\"></progress>" +
   "<h3 id=\"status\"></h3>" +
   "<p id=\"loaded_n_total\"></p>" +
-  "</form><SMALL>(文件名不能有空格)</SMALL>";
+  "</form>";
   document.getElementById("details").innerHTML = uploadform;
 }
 function _(el) {
