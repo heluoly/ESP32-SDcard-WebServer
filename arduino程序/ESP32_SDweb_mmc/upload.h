@@ -4,3 +4,4 @@
 void listUploadFile();
 void handleFileUpload();
 void deleteUploadFile();
+void downloadUploadFile();

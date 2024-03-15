@@ -25,7 +25,7 @@ void handleUserRequet() {
   else if(path.endsWith(".m3u8")) contentType =  "application/x-mpegURL";
   else contentType = "text/plain";
 
-  if (SD_MMC.exists(path)) {                     // 如果访问的文件可以在SPIFFS中找到
+  if (SD_MMC.exists(path)) {                     // 如果访问的文件可以在SD卡中找到
     File file = SD_MMC.open(path, FILE_READ);          // 则尝试打开该文件
     esp32_server.streamFile(file, contentType);// 并且将该文件返回给浏览器
     file.close();                                // 并且关闭文件

@@ -34,9 +34,9 @@ String listUploadDir(fs::FS &fs, const char * dirname, uint8_t levels)
           filename2 = String(file.name());
 
           message += "<tr align='left'><td>" + filename2 + "</td><td>" + formatBytes(file.size());
-          message += "</td><td><a href=\"" + filename + "\" download=\"" + filename2 + "\">下载</a></td>";
+          // message += "</td><td><a href=\"" + filename + "\" download=\"" + filename2 + "\">下载</a></td>";
+          message += "</td><td><button onclick=\"downloadButton(\'" + filename + "\',\'" + filename2 + "\')\">下载</button></td>";
           message += "<td><button onclick=\"deleteButton(\'" + filename + "\')\">删除</button></tr>";
-
       }
       file = root.openNextFile();
   }
@@ -85,17 +85,31 @@ void handleFileUpload(){
 }
 
 void deleteUploadFile(){
-    String deletePath = esp32_server.arg("deletePath");
-    char flag=0;
-    flag=deleteFile(SD_MMC, (char*)deletePath.c_str());
-    if(flag){
-      esp32_server.send(200,"text/html","删除成功");
-    } else {
-      esp32_server.send(200,"text/html","删除失败");
-      // Serial.println("Delete failed");
-    }
+  String deletePath = esp32_server.arg("deletePath");
+  char flag=0;
+  flag=deleteFile(SD_MMC, (char*)deletePath.c_str());
+  if(flag){
+    esp32_server.send(200,"text/html","删除成功");
+  } else {
+    esp32_server.send(200,"text/html","删除失败");
+    // Serial.println("Delete failed");
+  }
 }
 
-
+void downloadUploadFile(){
+  String attname = esp32_server.arg("attname");
+  String downloadPath = esp32_server.arg("downloadPath");
+  String attachment = "";
+  attachment += "attachment; filename=" + attname;
+  if (SD_MMC.exists(downloadPath)) {
+    File file = SD_MMC.open(downloadPath, FILE_READ);
+    esp32_server.sendHeader("Content-Disposition", (char*)attachment.c_str());
+    esp32_server.streamFile(file, "application/octet-stream");
+    file.close();
+}
+  else{
+    esp32_server.send(404, "text/plain", "404 Not Found");
+  }
+}
 
   

@@ -1,5 +1,5 @@
 /*
-ESP32便携SD(TF)卡服务器
+ESP32_SD卡服务器
 作者：B站 狼尾巴的猫
 项目实现文件上传下载、网页flash游戏、播放视频、模式转换（AP STA AP+STA互相转换）、剪切板功能
 SD卡代码参考 https://youtu.be/QAbn-7Ai6UU
