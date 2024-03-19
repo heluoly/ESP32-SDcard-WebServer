@@ -326,13 +326,6 @@ void task_display(void *pvParameters)
       if(oledState&(oledFrame==2)&flag_tim2)
       {
         flag_tim2 = 0;
-        if(flag_timeSet)  //网页配置时间
-        {
-          flag_timeSet = 0;
-          hour = hour2;
-          minute = minute2;
-          second = second2;
-        }
         oledClock_Display();    //显示表盘和指针
       }
       
@@ -351,5 +344,12 @@ void ARDUINO_ISR_ATTR onTimer1()
 void ARDUINO_ISR_ATTR onTimer2()
 {
   flag_tim2 = 1;
+  if(flag_timeSet)  //网页配置时间
+  {
+    flag_timeSet = 0;
+    hour = hour2;
+    minute = minute2;
+    second = second2;
+  }
   clockRun();   //时钟进位
 }
