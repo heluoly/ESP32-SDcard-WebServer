@@ -286,16 +286,20 @@ void task_display(void *pvParameters)
             OLED_ShowString(0,4,(char*)IPAD.c_str(),16);  //显示当前服务器IP
           }
         }
-        
-        //松手检测
-        switchState=digitalRead(switchInput);
-        while(switchState==SWITCH_ON)
-        {
-          switchState=digitalRead(switchInput);
-          vTaskDelay(10/portTICK_PERIOD_MS);
-        }
-        flag_tim1 = 0;
       }
+      else //第二页，时钟
+      {
+        oledClock_Display();    //显示表盘和指针
+      }
+
+      //松手检测
+      switchState=digitalRead(switchInput);
+      while(switchState==SWITCH_ON)
+      {
+        switchState=digitalRead(switchInput);
+        vTaskDelay(10/portTICK_PERIOD_MS);
+      }
+      flag_tim1 = 0;
 
       //开定时器，定时完成息屏
       oledState = 1;          //oled状态变为点亮
@@ -305,34 +309,32 @@ void task_display(void *pvParameters)
       // istack = uxTaskGetStackHighWaterMark(Task_Display);
       // printf("Task_Display istack = %d\n", istack);
     }
-
-    //息屏
-    if(flag_tim1)
+    else
     {
-      OLED_Clear();
-      OLED_Display_Off();
-      flag_tim1 = 0;
-      oledState = 0;
-      timerAlarmDisable(tim1);
-    }
-
-    //第二页，时钟
-    if(flag_tim2)
-    {
-      flag_tim2 = 0;
-      //网页配置时间
-      if(flag_timeSet)
+      //息屏
+      if(flag_tim1)
       {
-        flag_timeSet = 0;
-        hour = hour2;
-        minute = minute2;
-        second = second2;
+        OLED_Clear();
+        OLED_Display_Off();
+        flag_tim1 = 0;
+        oledState = 0;
+        timerAlarmDisable(tim1);
       }
-      //显示时钟
-      if(oledState&(oledFrame==2))
+
+      //第二页，亮屏时刷新时钟
+      if(oledState&(oledFrame==2)&flag_tim2)
       {
+        flag_tim2 = 0;
+        if(flag_timeSet)  //网页配置时间
+        {
+          flag_timeSet = 0;
+          hour = hour2;
+          minute = minute2;
+          second = second2;
+        }
         oledClock_Display();    //显示表盘和指针
       }
+      
     }
 
     vTaskDelay(2/portTICK_PERIOD_MS);
