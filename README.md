@@ -13,11 +13,9 @@
 
 1、  https://www.bilibili.com/video/BV1pu4m1A7bo/
 
-2、  https://www.bilibili.com/video/BV1RS4y1k7Xs
+2、  https://www.bilibili.com/video/BV1r34117746
 
-3、  https://www.bilibili.com/video/BV1r34117746
-
-4、  https://www.bilibili.com/video/BV1SG411x7tz
+3、  https://www.bilibili.com/video/BV1SG411x7tz
 
 PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 
