@@ -233,6 +233,7 @@ void task_display(void *pvParameters)
         {
           mode_switch3 = 0;   //服务器状态变为开启
           mode_switch = 1;
+          mode_wifi = 1;
           xTaskCreatePinnedToCore(task_server, "Task_Server", 15360, NULL, 1, &Task_Server, 1);   //创建新的服务器任务
         }
         else
