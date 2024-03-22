@@ -13,6 +13,7 @@ extern String IPAD;
 extern String ssid;
 extern String password;
 extern char channel;
+extern char ssid_hidden;
 
 String htmlHeader = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes\">";
 
@@ -146,7 +147,7 @@ void server_ap(){
  
   WiFi.softAPConfig(local_IP,gateway,subnet);
 //WiFi.softAP(ssid, passphrase, channel, ssid_hidden, max_connection)
-  WiFi.softAP((char*)ssid.c_str(), (char*)password.c_str(), channel, 0, 4);  //启动AP模式
+  WiFi.softAP((char*)ssid.c_str(), (char*)password.c_str(), channel, ssid_hidden, 4);  //启动AP模式
 //  Serial.println(ssid);
 //  Serial.println(password);
 

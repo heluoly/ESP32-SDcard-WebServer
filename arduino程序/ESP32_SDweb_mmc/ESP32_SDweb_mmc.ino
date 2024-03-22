@@ -50,7 +50,7 @@ String IPAD = "192.168.1.1";    //在AP和STA模式下存储ESP32的IP地址
 String ssid = "ESP32_WebServer";   //wifi名称
 String password = "123456789";     //wifi密码（注意WiFi密码位数不要小于8位）
 char channel = 1;                  //wifi信道
-
+char ssid_hidden = 0;              //WiFi隐身
 
 TaskHandle_t Task_Server;  //第1核心任务
 TaskHandle_t Task_Display;  //第2核心任务
@@ -159,7 +159,8 @@ void task_server(void *pvParameters)
     
     if(mode_switch2)
       server_sta();
-    mode_switch2=1;
+    mode_switch2 = 1;
+    ssid_hidden = 0;
     closeServer();
   }
 }
@@ -274,12 +275,22 @@ void task_display(void *pvParameters)
             OLED_ShowString(0,2,"Mode: AP    ",16);
             OLED_ShowString(0,4,"Channel: ",16);
             OLED_ShowNum(72,4,channel,2,16);
+            if(ssid_hidden)
+            {
+              OLED_ShowString(96,4,"*",16);
+            }
             OLED_ShowString(0,6,(char*)IPAD.c_str(),16);  //显示当前服务器IP
           }
           else if(mode_wifi==2)
           {
             OLED_ShowString(0,2,"Mode: AP+STA",16);
-            OLED_ShowString(0,4,(char*)IPAD.c_str(),16);  //显示当前服务器IP
+            OLED_ShowString(0,4,"Channel: ",16);
+            OLED_ShowNum(72,4,channel,2,16);
+            if(ssid_hidden)
+            {
+              OLED_ShowString(96,4,"*",16);
+            }
+            OLED_ShowString(0,6,(char*)IPAD.c_str(),16);  //显示当前服务器IP
           }
           else
           {
