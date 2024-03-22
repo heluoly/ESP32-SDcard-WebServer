@@ -157,10 +157,11 @@ void task_server(void *pvParameters)
     server_ap_sta();
     closeServer();
     
-    if(mode_switch2)
+    if(mode_switch2){
+      ssid_hidden = 0;
       server_sta();
+    }  
     mode_switch2 = 1;
-    ssid_hidden = 0;
     closeServer();
   }
 }
@@ -170,6 +171,7 @@ void closeServer()
 {
   if(mode_switch3)
   {
+    ssid_hidden = 0;
     WiFi.mode(WIFI_OFF);    //关闭WIFI
     SD_MMC.end();           //关闭SD卡
     setCpuFrequencyMhz(40); //CPU频率变为40MHz
