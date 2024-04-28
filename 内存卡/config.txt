@@ -1,0 +1,6 @@
+ssid=ESP32_WebServer
+password=123456789
+channel=1
+autoconnect=1
+pressid=yourwifi
+prepassword=yourpassword
