@@ -1,3 +1,6 @@
+#ifndef __SERVER_H
+#define __SERVER_H
+
 #include <WiFi.h>
 #include <WebServer.h> 
 #include "FS.h"
@@ -13,7 +16,10 @@
 
 void changemode();
 void backToAP();
-void readFile3(fs::FS &fs, const char * path);
+void WiFiconfigRead();
 void server_ap();
 void server_ap_sta();
 void server_sta();
+void server_presta();
+
+#endif

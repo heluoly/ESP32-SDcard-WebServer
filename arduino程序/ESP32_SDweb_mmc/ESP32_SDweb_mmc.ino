@@ -23,6 +23,8 @@ flash播放器使用objecty
 #include "web.h"
 #include "copy.h"
 #include "wifiConnect.h"
+#include "time.h"
+#include "sntp.h"
 
 #include "Wire.h"
 #include "oled.h"
@@ -51,6 +53,10 @@ String ssid = "ESP32_WebServer";   //wifi名称
 String password = "123456789";     //wifi密码（注意WiFi密码位数不要小于8位）
 char channel = 1;                  //wifi信道
 char ssid_hidden = 0;              //WiFi隐身
+char autoconnect = 0;              //开机自动连接上次成功连接WiFi
+String pressid = "";               //上次成功连接wifi名称
+String prepassword = "";           //上次成功连接wifi密码（注意WiFi密码位数不要小于8位）
+
 
 TaskHandle_t Task_Server;  //第1核心任务
 TaskHandle_t Task_Display;  //第2核心任务
@@ -79,6 +85,10 @@ char second=30;
 char hour2;
 char minute2;
 char second2;
+//网络时间同步服务器地址
+const char* ntpServer1 = "pool.ntp.org";
+const char* ntpServer2 = "ntp.aliyun.com";
+
 //oled显存
 unsigned char oled_RAM[128][8];
 
@@ -89,7 +99,7 @@ void setup() {
 }
 
 void loop(void) {
-  xTaskCreatePinnedToCore(task_server, "Task_Server", 15360, NULL, 1, &Task_Server, 1);     //创建第1核心服务器任务
+  xTaskCreatePinnedToCore(task_server, "Task_Server", 20480, NULL, 1, &Task_Server, 1);     //创建第1核心服务器任务
   xTaskCreatePinnedToCore(task_display, "Task_Display", 4096, NULL, 1, &Task_Display, 0);   //创建第2核心显示任务
   vTaskDelete(NULL);
 }
@@ -147,7 +157,12 @@ void task_server(void *pvParameters)
   // Serial.printf("Used space: %lluMB\n", SD_MMC.usedBytes() / (1024 * 1024));
 
   if(hasSD){
-    readFile3(SD_MMC, "/password.txt");   //读取保存的AP名称和密码
+    WiFiconfigRead();   //读取保存的AP名称和密码
+  }
+  if(autoconnect==1)
+  {
+    server_presta();
+    closeServer();
   }
   while(1)
   {
@@ -236,7 +251,14 @@ void task_display(void *pvParameters)
         {
           mode_switch3 = 0;   //服务器状态变为开启
           mode_switch = 1;
-          mode_wifi = 1;
+          if(autoconnect==1)
+          {
+            mode_wifi = 4;
+          }
+          else
+          {
+            mode_wifi = 1;
+          }
           xTaskCreatePinnedToCore(task_server, "Task_Server", 15360, NULL, 1, &Task_Server, 1);   //创建新的服务器任务
         }
         else
@@ -294,10 +316,15 @@ void task_display(void *pvParameters)
             }
             OLED_ShowString(0,6,(char*)IPAD.c_str(),16);  //显示当前服务器IP
           }
-          else
+          else if(mode_wifi==3)
           {
             OLED_ShowString(0,2,"Mode: STA   ",16);
             OLED_ShowString(0,4,(char*)IPAD.c_str(),16);  //显示当前服务器IP
+          }
+          else
+          {
+            OLED_ShowString(0,2,"Mode: STA   ",16);
+            OLED_ShowString(0,4,"Connecting",16);
           }
         }
       }

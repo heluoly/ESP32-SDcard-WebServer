@@ -120,3 +120,159 @@ char String2Char(char *str)
  
     return (char)res;
 }
+
+//读取配置文件 configRead(SD_MMC,参数名称,文件路径,参数值)
+char configRead(fs::FS &fs ,char *key, char *filename, char *buf)
+{  
+  char flag_line=0;
+  const int maximumLength =1024;
+  char sLine[maximumLength];
+  char temp;
+  char *n;
+  int i=0;
+  int l=1;
+
+  File file = fs.open(filename);
+  if(!file){
+    // Serial.println("Failed to open file for reading");
+    return 0;
+  }
+  while (file.available())
+  {
+    temp = file.read();
+    if(temp=='\r')
+    {
+      flag_line=1;  //读取完一行
+      sLine[i]='\0';
+    }
+    else if(temp=='\n')
+    {
+      l++;  //换行
+      i=0;
+    }
+    else
+    {
+      sLine[i]=temp;
+      if(i<maximumLength)
+      {
+        i++;  //读取下一位
+      }
+      else
+      {
+        return 0;
+      }
+    }
+    //行操作
+    if(flag_line)
+    {
+      flag_line=0;
+      if(strncmp(key, sLine, strlen(key))==0) //如果关键词是目标值
+      {
+        n=strchr(sLine, '=');   //=第一次出现的位置
+        if(n!=NULL)
+        {
+          strcpy(buf, n+1);     //将值复制到buf输出
+          file.close();
+          return 1;
+        }       
+      }
+    }
+  }
+  file.close();
+  return 0;
+}
+
+//修改配置文件 configWrite(SD_MMC,参数名称,修改的参数值,文件路径)
+char configWrite(fs::FS &fs ,char *key, char *val, char *filename)
+{  
+  char flag_line=0;
+  char flag_ok=0;
+  const int maximumLength =1024;
+  char fileAll[maximumLength]={0};
+  char fileLine[maximumLength];
+  char temp;
+  char *n;
+  int i=0,k=0;
+  int l=1;
+
+  File file = fs.open(filename);
+  if(!file){
+    // Serial.println("Failed to open file for reading");
+    return 0;
+  }
+  while (file.available())
+  {
+    if(flag_ok==0)
+    {
+      temp = file.read();
+      if(temp=='\r')
+      {
+        fileLine[i]='\0';
+      }
+      else if(temp=='\n')
+      {
+        flag_line=1;  //读取完一行
+        fileLine[i]='\0';
+        l++;  //换行
+        i=0;
+      }
+      else
+      {
+        fileLine[i]=temp;
+        if(i<maximumLength)
+        {
+          i++;  //读取下一位
+        }
+        else
+        {
+          return 0;
+        }
+      }
+    }
+    else
+    {
+      if(k<maximumLength)
+      {
+        fileAll[k] = file.read();
+        k++;
+      }
+    }
+    //行操作
+    if(flag_line)
+    {
+      flag_line=0;
+
+      if(strncmp(key, fileLine, strlen(key))==0)
+      {
+        n=strchr(fileLine, '=');   //关键字符第一次出现的位置
+        if(n!=NULL)
+        {
+          sprintf(n+1, "%s\r\n\0", val);
+          strcat(fileAll,n-strlen(key));
+          k=strlen(fileAll);
+          flag_ok=1;
+        }       
+      }
+      else
+      {
+        strcat(fileAll,fileLine);
+        strcat(fileAll,"\r\n");
+      }
+    }
+  }
+  file.close();
+  if(flag_ok==1)
+  {
+    fileAll[k]='\0';
+    file = fs.open(filename, FILE_WRITE);
+    file.print(fileAll);
+    file.close();
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+  
+}
+

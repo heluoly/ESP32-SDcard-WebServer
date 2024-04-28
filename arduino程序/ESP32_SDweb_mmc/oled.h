@@ -1,3 +1,6 @@
+#ifndef __OLED_H
+#define __OLED_H
+
 #include "oledfont.h"
 #include "Wire.h"
 #define OLED_CMD  0  //写命令
@@ -24,3 +27,4 @@ void OLED_Line(unsigned char x1, unsigned char y1, unsigned char x2, unsigned ch
 void OLED_Rectangle(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2, unsigned char c);
 void OLED_Circle(unsigned char x0, unsigned char y0, unsigned char r, unsigned char c);
 
+#endif

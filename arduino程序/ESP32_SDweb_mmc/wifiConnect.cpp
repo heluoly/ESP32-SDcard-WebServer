@@ -7,18 +7,27 @@ extern String ssid;
 extern String password;
 extern char channel;
 extern char ssid_hidden;
+extern char autoconnect;
+extern String pressid;
+extern String prepassword;
 
-const String html1 = "<!DOCTYPE html><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\"><title>网页配网</title><script type=\"text/javascript\">function wifi(){var ssid = s.value;var password = p.value;var ip2 = ip.value;var staticIP2 = staticIP.value;var gateway2 = gateway.value;var subnet2 = subnet.value;var dns2 = dns.value;var xmlhttp=new XMLHttpRequest();xmlhttp.open(\"GET\",\"/HandleWifi?ssid=\"+ssid+\"&password=\"+password+\"&ip=\"+ip2+\"&staticIP=\"+staticIP2+\"&gateway=\"+gateway2+\"&subnet=\"+subnet2+\"&dns=\"+dns2,true);xmlhttp.send();document.getElementById(\"loader\").style.display = \"block\";xmlhttp.onload = function(e){document.getElementById(\"loader\").style.display = \"none\";alert(this.responseText);}}</script><script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script><script>function agree(){if(document.getElementById('ip').checked){document.getElementById('ip').value=\"1\";document.getElementById('staticIP').disabled=false;document.getElementById('gateway').disabled=false;document.getElementById('subnet').disabled=false;document.getElementById('dns').disabled=false;}else{document.getElementById('ip').value=\"0\";document.getElementById('staticIP').disabled='disabled';document.getElementById('gateway').disabled='disabled';document.getElementById('subnet').disabled='disabled';document.getElementById('dns').disabled='disabled';}}</script><script>function scan(){var xmlhttp2=new XMLHttpRequest();xmlhttp2.open(\"GET\",\"/HandleScanWifi\",true);xmlhttp2.send();document.getElementById(\"loader\").style.display = \"block\";xmlhttp2.onload = function(e){var element=document.getElementById(\"scan\");document.getElementById(\"loader\").style.display = \"none\";element.innerHTML=this.responseText;}}</script><style>#loader {position: fixed;left: 50%;top: 50%;z-index: 1;width: 120px;height: 120px;margin: -76px 0 0 -76px;border: 16px solid #f3f3f3;border-radius: 50%;border-top: 16px solid #3498db;-webkit-animation: spin 2s linear infinite;animation: spin 2s linear infinite;backdrop-filter: blur(2px);}@-webkit-keyframes spin {0% { -webkit-transform: rotate(0deg); }100% { -webkit-transform: rotate(360deg); }}@keyframes spin {0% { transform: rotate(0deg); }100% { transform: rotate(360deg); }} .container {width: 320px;margin: 0 auto;}</style></head><body><div style=\"display:none;\" id=\"loader\"></div><div class=\"container\"><h2>网页配网</h2><form>WiFi名称：<input id='s' name='s' type=\"text\" placeholder=\"请输入您WiFi的名称\"><br>WiFi密码：<input id='p' name='p' type=\"text\" placeholder=\"请输入您WiFi的密码\"><br><label for=\"ip\">静态IP</label><input name=\"ip\" id=\"ip\" type=\"checkbox\" onclick=\"agree();\"><br>IP地址：<input name=\"staticIP\" id=\"staticIP\" type=\"text\" value=\"192.168.0.80\" disabled=\"\"><br>网关：<input name=\"gateway\" id=\"gateway\" type=\"text\" value=\"192.168.1.1\" disabled=\"\"><br>子网：<input name=\"subnet\" id=\"subnet\" type=\"text\" value=\"255.255.255.0\" disabled=\"\"><br>DNS：<input name=\"dns\" id=\"dns\" type=\"text\" value=\"223.5.5.5\" disabled=\"\"><br><br><input type=\"button\" value=\"扫描\" onclick=\"scan()\"> <input type=\"button\" value=\"连接\" onclick=\"wifi()\"></form><div id=\"scan\"></div><p><a href=\"/\">返回AP模式</a>  <a href=\"/pageConfigAP\">配置热点</a></p></div></body></html>";
+const String html1 = "<!DOCTYPE html><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\"><title>网页配网</title><script type=\"text/javascript\">function wifi(){var ssid = s.value;var password = p.value;var ip2 = ip.value;var staticIP2 = staticIP.value;var gateway2 = gateway.value;var subnet2 = subnet.value;var dns2 = dns.value;var xmlhttp=new XMLHttpRequest();xmlhttp.open(\"GET\",\"/HandleWifi?ssid=\"+ssid+\"&password=\"+password+\"&ip=\"+ip2+\"&staticIP=\"+staticIP2+\"&gateway=\"+gateway2+\"&subnet=\"+subnet2+\"&dns=\"+dns2,true);xmlhttp.send();document.getElementById(\"loader\").style.display = \"block\";xmlhttp.onload = function(e){document.getElementById(\"loader\").style.display = \"none\";alert(this.responseText);}}</script><script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script><script>function agree(){if(document.getElementById('ip').checked){document.getElementById('ip').value=\"1\";document.getElementById('staticIP').disabled=false;document.getElementById('gateway').disabled=false;document.getElementById('subnet').disabled=false;document.getElementById('dns').disabled=false;}else{document.getElementById('ip').value=\"0\";document.getElementById('staticIP').disabled='disabled';document.getElementById('gateway').disabled='disabled';document.getElementById('subnet').disabled='disabled';document.getElementById('dns').disabled='disabled';}}</script><script>function scan(){var xmlhttp2=new XMLHttpRequest();xmlhttp2.open(\"GET\",\"/HandleScanWifi\",true);xmlhttp2.send();document.getElementById(\"loader\").style.display = \"block\";xmlhttp2.onload = function(e){var element=document.getElementById(\"scan\");document.getElementById(\"loader\").style.display = \"none\";element.innerHTML=this.responseText;}}</script><style>#loader {position: fixed;left: 50%;top: 50%;z-index: 1;width: 120px;height: 120px;margin: -76px 0 0 -76px;border: 16px solid #f3f3f3;border-radius: 50%;border-top: 16px solid #3498db;-webkit-animation: spin 2s linear infinite;animation: spin 2s linear infinite;backdrop-filter: blur(2px);}@-webkit-keyframes spin {0% { -webkit-transform: rotate(0deg); }100% { -webkit-transform: rotate(360deg); }}@keyframes spin {0% { transform: rotate(0deg); }100% { transform: rotate(360deg); }} .container {width: 320px;margin: 0 auto;}</style></head><body><div style=\"display:none;\" id=\"loader\"></div><div class=\"container\"><h2>网页配网</h2><form>WiFi名称：<input id='s' name='s' type=\"text\" placeholder=\"请输入您WiFi的名称\"><br>WiFi密码：<input id='p' name='p' type=\"text\" placeholder=\"请输入您WiFi的密码\"><br><label for=\"ip\">静态IP</label><input name=\"ip\" id=\"ip\" type=\"checkbox\" onclick=\"agree();\"><br>IP地址：<input name=\"staticIP\" id=\"staticIP\" type=\"text\" value=\"192.168.0.80\" disabled=\"\"><br>网关：<input name=\"gateway\" id=\"gateway\" type=\"text\" value=\"192.168.1.1\" disabled=\"\"><br>子网：<input name=\"subnet\" id=\"subnet\" type=\"text\" value=\"255.255.255.0\" disabled=\"\"><br>DNS：<input name=\"dns\" id=\"dns\" type=\"text\" value=\"223.5.5.5\" disabled=\"\"><br><br><input type=\"button\" value=\"扫描\" onclick=\"scan()\"> <input type=\"button\" value=\"连接\" onclick=\"wifi()\"></form><div id=\"scan\"></div><p><a href=\"/\">返回AP模式</a>  <a href=\"/pageConfigAP\">配置热点</a> <a href=\"/pageConfigAutoConnect\">配置WiFi</a></p></div></body></html>";
 
 const String htmlAP1 = "<!DOCTYPE html><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" /><title>配置热点</title><style>.container {width: 320px;margin: 0 auto;}</style></head><body></div><div class=\"container\">";
 const String htmlAP2 = "<h2>配置热点</h2><form action=\"/configAP\">热点名称： <input name=\"hotspotName\" type=\"text\" value=\"";
 const String htmlAP3 = "\" required=\"required\" maxlength=\"63\" placeholder=\"请输入热点名称\" /><br />热点密码： <input name=\"hotspotPassword\" type=\"text\" value=\"";
 const String htmlAP4 = "\" onkeyup=\"value=value.replace(/[\u4e00-\u9fa5]/ig,&#39;&#39;)\" required=\"required\" maxlength=\"63\" placeholder=\"密码请不要少于8位\" /><br />WIFI信道： <select name=\"channel\">";
 const String htmlAP5 = "</select><br />WIFI隐身： <input name=\"hidden\" type=\"radio\" value=\"0\"";
-const String htmlAP6 = "<br /><br /><input type=\"submit\" value=\"提交\" /></form><p><a href=\"/\">返回AP模式</a> <a href=\"/wificonnect\">网页配网</a></p></div></body></html>";
+const String htmlAP6 = "<br /><br /><input type=\"submit\" value=\"提交\" /></form><p><a href=\"/\">返回AP模式</a> <a href=\"/wificonnect\">网页配网</a> <a href=\"/pageConfigAutoConnect\">配置WiFi</a></p></div></body></html>";
 
-const String htmlAPfoot = "<p><a href=\"/\">返回AP模式</a> <a href=\"/wificonnect\">网页配网</a> <a href=\"/pageConfigAP\">配置热点</a></p></div></body></html>";
 
+const String htmlAutoConnect1 = "<!DOCTYPE html><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" /><title>配置WiFi自动连接</title><style>.container {width: 320px;margin: 0 auto;}</style></head><body></div><div class=\"container\">";
+const String htmlAutoConnect2 = "<h2>配置WiFi自动连接</h2><form action=\"/configAutoConnect\">WiFi自动连接： <input name=\"autoconnect\" type=\"radio\" value=\"0\"";
+const String htmlAutoConnect3 = "<br />WiFi名称： <input name=\"pressid\" type=\"text\" value=\"";
+const String htmlAutoConnect4 = "\" required=\"required\" maxlength=\"63\" placeholder=\"请输入WiFi名称\" /><br />WiFi密码： <input name=\"prepassword\" type=\"text\" value=\"";
+const String htmlAutoConnect5 = "\" required=\"required\" maxlength=\"63\" placeholder=\"密码请不要少于8位\" /><br /><br /><input type=\"submit\" value=\"提交\" /></form><p><a href=\"/\">返回AP模式</a> <a href=\"/wificonnect\">网页配网</a> <a href=\"/pageConfigAP\">配置热点</a></p></div></body></html>";
+
+const String htmlfoot = "<p><a href=\"/\">返回AP模式</a> <a href=\"/wificonnect\">网页配网</a> <a href=\"/pageConfigAP\">配置热点</a> <a href=\"/pageConfigAutoConnect\">配置WiFi</a></p></div></body></html>";
 
 //定义一个结构体，用于存放4位IP地址
 struct struct_ipaddr
@@ -111,6 +120,9 @@ void HandleWifi()
       server.send(200, "text/html", "连接成功 IP：" + IPAD3);    //发送连接的IP地址
       vTaskDelay(10000/portTICK_PERIOD_MS);
       mode_switch = 0;                             //函数跳出while循环，从而在loop函数中进入下一个模式
+      //写入配置文件当前连接的WiFi
+      configWrite(SD_MMC,"pressid",(char*)wifis.c_str(),"/config.txt");
+      configWrite(SD_MMC,"prepassword",(char*)wifip.c_str(),"/config.txt");
       return;                                      //如果成功连接，则返回到主函数
     }
     else
@@ -188,21 +200,62 @@ void configAP(){
   String str = "";
   
   char flag=0;
-  char test1[3]={'\r','\n','\0'}; //换行符
-  String test2 = test1;
-  String message = ssid2 + test2 + password2 + test2 + channel2 + test2;
-  // Serial.print(message);
-  flag=writeFile(SD_MMC, "/password.txt", (char*)message.c_str());  //将名称和密码写入SD卡
-  if(flag){
+  flag=flag+configWrite(SD_MMC,"ssid",(char*)ssid2.c_str(),"/config.txt");
+  flag=flag+configWrite(SD_MMC,"password",(char*)password2.c_str(),"/config.txt");
+  flag=flag+configWrite(SD_MMC,"channel",(char*)channel2.c_str(),"/config.txt");
+
+  if(flag==3){
     ssid = ssid2;
     password = password2;
     channel = String2Char((char*)channel2.c_str());
     ssid_hidden = String2Char((char*)hidden2.c_str());
-    str += htmlAP1 + "<h2>配置成功</h2>" + htmlAPfoot;
+    str += htmlAP1 + "<h2>配置成功</h2>" + htmlfoot;
     server.send(200, "text/html", str);  
   }
   else{
-    str += htmlAP1 + "<h2>配置失败</h2>" + htmlAP6;
+    str += htmlAP1 + "<h2>配置失败</h2>" + htmlfoot;
+    server.send(500, "text/html", str);
+  }
+}
+
+//发送配置WiFi自动连接网页
+void pageConfigAutoConnect(){
+  String message = htmlAutoConnect1 + htmlAutoConnect2;
+  if(autoconnect){
+    message += ">关闭<input name=\"autoconnect\" type=\"radio\" value=\"1\" checked>开启";
+  }
+  else{
+    message += " checked>关闭<input name=\"autoconnect\" type=\"radio\" value=\"1\">开启";
+  }
+  message += htmlAutoConnect3;
+  message += pressid;
+  message += htmlAutoConnect4;
+  message += prepassword;
+  message += htmlAutoConnect5;
+  server.send(200, "text/html", message);
+}
+
+//保存iFi自动连接配置
+void configAutoConnect(){
+  String autoconnect2 = server.arg("autoconnect");    //获取自动连接开关
+  String pressid2 = server.arg("pressid");            //获取WiFi名称
+  String prepassword2 = server.arg("prepassword");    //获取WiFi密码
+  String str = "";
+  
+  char flag=0;
+  flag=flag+configWrite(SD_MMC,"autoconnect",(char*)autoconnect2.c_str(),"/config.txt");
+  flag=flag+configWrite(SD_MMC,"pressid",(char*)pressid2.c_str(),"/config.txt");
+  flag=flag+configWrite(SD_MMC,"prepassword",(char*)prepassword2.c_str(),"/config.txt");
+
+  if(flag==3){
+    autoconnect = String2Char((char*)autoconnect2.c_str());
+    pressid = pressid2;
+    prepassword = prepassword2;
+    str += htmlAutoConnect1 + "<h2>配置成功</h2>" + htmlfoot;
+    server.send(200, "text/html", str);  
+  }
+  else{
+    str += htmlAutoConnect1 + "<h2>配置失败</h2>" + htmlfoot;
     server.send(500, "text/html", str);
   }
 }
@@ -221,3 +274,4 @@ void wifi_handleNotFound() {
   }
   server.send(404, "text/plain", message);
 }
+

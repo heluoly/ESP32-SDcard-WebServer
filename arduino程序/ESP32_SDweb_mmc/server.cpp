@@ -14,9 +14,13 @@ extern String ssid;
 extern String password;
 extern char channel;
 extern char ssid_hidden;
+extern char autoconnect;
+extern String pressid;
+extern String prepassword;
 
 String htmlHeader = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes\">";
 
+TaskHandle_t Task_Sntp;  //网络时间同步任务
 
 //模式转换
 void changemode(){
@@ -37,100 +41,32 @@ void backToAP(){
 
 
 //读取SD卡中保存的热点名称和密码
-void readFile3(fs::FS &fs, const char * path){
-  char i=0,j=0;
-  char flag_hotspot=1;
-  char flag_OK=0;
-  char hotspotName[64];
-  char hotspotPassword[64];
-  char hotspotChannel[5];
-
-  File file = fs.open(path);
-  if(!file){
-      Serial.println("Failed to open file for reading");
-      return;
+void WiFiconfigRead()
+{
+  char buff[128];
+  if(configRead(SD_MMC,"ssid","/config.txt",buff))
+  {
+    ssid=buff;
   }
-  while(file.available()){
-    if(flag_hotspot == 1)
-    {
-      if(j<63){
-        hotspotName[j] = file.read(); //读取热点名称
-        if(hotspotName[j]=='\r'){
-          i++;
-          hotspotName[j]='\0';
-        }
-        else if(hotspotName[j]=='\n'){  //以回车键作为划分名称和密码的标志
-          hotspotName[j]='\0';
-          flag_hotspot=2;
-          j=0;
-        }
-        else{
-          i++;
-          j++;
-        }
-      }
-      else{
-        break;  //如果超过63个字符，则名称过长，退出循环
-      }
-    }
-    else if(flag_hotspot == 2){
-      if(j<63){
-        hotspotPassword[j] = file.read();  //读取热点密码
-        if(hotspotPassword[j]=='\r'){
-          i++;
-          hotspotPassword[j]='\0';
-        }
-        else if(hotspotPassword[j]=='\n'){  //以回车键作为划分密码和信道的标志
-          hotspotPassword[j]='\0';
-          flag_hotspot=3;
-          j=0;
-          flag_OK=1;    //获取到合适的热点名称
-        }
-        else{
-          i++;
-          j++;
-        }
-      }
-      else{
-        break;  //如果超过63个字符，则密码过长，退出循环
-      }
-    }
-    
-    else{
-      if(j<3){
-        hotspotChannel[j] = file.read();  //读取热点信道
-        if(hotspotChannel[j]=='\r'){
-          break;
-        }
-        else{
-          i++;
-          j++;
-        }
-      }
-      else{
-        break;  //如果超过2个字符，则信道错误，退出循环
-      }
-    }
+  if(configRead(SD_MMC,"password","/config.txt",buff))
+  {
+    password=buff;
   }
-  hotspotChannel[j]='\0';
-  file.close();
-  if(flag_OK){
-    ssid=hotspotName;
-    password=hotspotPassword;
-    channel=String2Char((char*)hotspotChannel);
-    if(channel>13 || channel<1){
-      channel = 1;
-    }
-    // Serial.println("hotspotName:");
-    // Serial.println(hotspotName);
-    // Serial.println("hotspotPassword:");
-    // Serial.println(hotspotPassword);
-//    Serial.println("hotspotChannel:");
-//    Serial.println(channel);
-    
+  if(configRead(SD_MMC,"channel","/config.txt",buff))
+  {
+    channel=String2Char((char*)buff);
   }
-  else{
-    return;
+  if(configRead(SD_MMC,"autoconnect","/config.txt",buff))
+  {
+    autoconnect=String2Char((char*)buff);
+  }
+    if(configRead(SD_MMC,"pressid","/config.txt",buff))
+  {
+    pressid=buff;
+  }
+  if(configRead(SD_MMC,"prepassword","/config.txt",buff))
+  {
+    prepassword=buff;
   }
 }
 
@@ -184,7 +120,7 @@ void server_ap(){
   esp32_server.on("/setTime",setTime);   //设置时间
 
   esp32_server.begin();                           // 启动网站服务
-  Serial.println("HTTP server started");
+  // Serial.println("HTTP server started");
 
   while(mode_switch)    //监听用户请求，直到模式转换
   {
@@ -214,6 +150,8 @@ void server_ap_sta(){
   server.on("/HandleScanWifi", HandleScanWifi);   //扫描附近WIFI并返回
   server.on("/configAP", configAP);         //配置热点
   server.on("/pageConfigAP", pageConfigAP);   //发送配置热点网页
+  server.on("/pageConfigAutoConnect", pageConfigAutoConnect);   //发送配置WiFi自动连接网页
+  server.on("/configAutoConnect", configAutoConnect);   //保存iFi自动连接配置
   server.on("/", backToAP);   //返回AP模式
   server.onNotFound(wifi_handleNotFound);//请求失败回调函数
   server.begin();                           // 启动网站服务
@@ -232,11 +170,11 @@ void server_sta(){
   mode_wifi = 3;
   WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_STA);
-  Serial.println('\n');
-  Serial.print("Connected to ");
-  Serial.println(WiFi.SSID());              // 通过串口监视器输出连接的WiFi名称
-  Serial.print("IP address:\t");
-  Serial.println(WiFi.localIP());           // 通过串口监视器输出ESP32-NodeMCU的IP
+  // Serial.println('\n');
+  // Serial.print("Connected to ");
+  // Serial.println(WiFi.SSID());              // 通过串口监视器输出连接的WiFi名称
+  // Serial.print("IP address:\t");
+  // Serial.println(WiFi.localIP());           // 通过串口监视器输出ESP32-NodeMCU的IP
 
   IPAD = WiFi.localIP().toString();
 
@@ -258,7 +196,9 @@ void server_sta(){
   esp32_server.on("/setTime",setTime);   //设置时间
 
   esp32_server.begin();                           // 启动网站服务
-  Serial.println("HTTP server started");
+  // Serial.println("HTTP server started");
+
+  xTaskCreatePinnedToCore(task_sntp, "Task_Sntp", 2048, NULL, 5, &Task_Sntp, 0);   //创建网络时间同步任务
 
   while(mode_switch)    //监听用户请求，直到模式转换
   {
@@ -270,3 +210,68 @@ void server_sta(){
   esp32_server.close();   //关闭网站服务
   
 }
+
+void server_presta(){
+  char flag_ok=0;
+  mode_wifi = 4;
+  WiFi.mode(WIFI_STA);
+
+  //尝试连接上次成功连接WIFI
+  WiFi.begin((char*)pressid.c_str(), (char*)prepassword.c_str());
+  for (int i = 0; i < 20; i++)        //超时判断
+  {
+    if (WiFi.status() == WL_CONNECTED)    //如果检测到状态为成功连接WIFI
+    {
+      flag_ok=1;
+      break;
+    }
+    else
+    {
+      vTaskDelay(500/portTICK_PERIOD_MS);
+    }
+  }
+
+  if(flag_ok)
+  {
+    mode_wifi = 3;
+    IPAD = WiFi.localIP().toString();
+
+    esp32_server.onNotFound(handleUserRequet);      // 告知系统如何处理用户请求
+    esp32_server.on("/gamelist", HTTP_GET, listGame);   //列出游戏列表
+    esp32_server.on("/opengame", HTTP_GET, openGame);    //打开游戏
+    esp32_server.on("/upload.html",   // 如果客户端通过upload页面
+            HTTP_POST,        // 向服务器发送文件(请求方法POST)
+            respondOK,        // 则回复状态码 200 给客户端
+            handleFileUpload);// 并且运行处理文件上传函数
+    esp32_server.on("/filelist", HTTP_GET, listUploadFile);   //列出文件上传列表
+    esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);   //删除文件
+    esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);   //下载文件
+    esp32_server.on("/videolist", listvideo);    //列出视频列表
+    esp32_server.on("/openvideo",HTTP_GET,openVideo);   //打开视频
+    esp32_server.on("/edittxt",HTTP_GET,editTxt);   //编辑txt文件
+    esp32_server.on("/clipboard",HTTP_GET,clipBoard);   //剪切板
+    esp32_server.on("/wificonnect",changemode);   //模式转换
+    esp32_server.on("/setTime",setTime);   //设置时间
+
+    esp32_server.begin();                           // 启动网站服务
+    // Serial.println("HTTP server started");
+
+    xTaskCreatePinnedToCore(task_sntp, "Task_Sntp", 2048, NULL, 5, &Task_Sntp, 0);   //创建网络时间同步任务
+
+    while(mode_switch)    //监听用户请求，直到模式转换
+    {
+      esp32_server.handleClient();                    // 处理用户请求
+      vTaskDelay(2/portTICK_PERIOD_MS);
+    }
+    
+    mode_switch=1;
+    esp32_server.close();   //关闭网站服务
+
+  }
+ 
+}
+
+
+
+
+

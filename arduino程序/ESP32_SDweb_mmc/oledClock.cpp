@@ -19,6 +19,9 @@ extern unsigned char oled_RAM[128][8];
 //更新时间标志
 extern char flag_timeSet;
 
+extern const char* ntpServer1;
+extern const char* ntpServer2;
+
 //网页获取当前时间
 void setTime() {
 
@@ -36,6 +39,54 @@ void setTime() {
   }
 
   flag_timeSet = 1;
+
+}
+
+//网络时间同步任务
+void task_sntp(void *pvParameters)
+{
+  struct tm timeinfo;   //存放转换后时间
+  char ntp_time_out=0;  //同步时间超时
+  char ntp_completed=0; //同步时间完成
+
+  sntp_setoperatingmode(SNTP_OPMODE_POLL);    // 设置单播模式
+  sntp_setservername(0, (char*)ntpServer1);
+  sntp_setservername(1, (char*)ntpServer2);
+  setenv("TZ", "CST-8", 1);                   //东八区
+  tzset();                                    // 更新本地C库时间
+  sntp_init();                                //开始同步时间
+
+  for(ntp_time_out=0;ntp_time_out<30;ntp_time_out++)
+  {
+    if(sntp_get_sync_status() == SNTP_SYNC_STATUS_COMPLETED)
+    {
+      ntp_completed=1;
+      break;
+    }
+    else
+    {
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+  }
+  sntp_stop();    //结束同步时间
+
+  if(ntp_completed)
+  {
+    time_t now;
+    time(&now);
+    localtime_r(&now, &timeinfo);  // 转换成具体的时间参数
+    hour2=timeinfo.tm_hour;
+    minute2=timeinfo.tm_min;
+    second2=timeinfo.tm_sec;
+
+    if(hour2>11)
+    {
+      hour2=hour2-12;
+    }
+    flag_timeSet=1;   //修改定时器
+
+  }
+  vTaskDelete(NULL);      //删除任务
 
 }
 
