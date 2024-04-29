@@ -12,4 +12,4 @@ flash游戏请存放在/webgame/oldGame内。
 
 在根目录下，copy.txt用于存放剪切板内容，编码格式为utf-8。
 
-在根目录下，password.txt用于保存热点名称和密码和WiFi信道，编码格式为utf-8。
+在根目录下，config.txt用于保存AP模式下热点名称、热点密码、热点WiFi信道以及STA模式下WiFi自动连接信息，配置文件最后必须以回车结尾，文件编码格式为utf-8。
