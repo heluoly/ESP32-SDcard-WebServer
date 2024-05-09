@@ -181,7 +181,7 @@ void server_sta(){
   esp32_server.onNotFound(handleUserRequet);      // 告知系统如何处理用户请求
   esp32_server.on("/gamelist", HTTP_GET, listGame);   //列出游戏列表
   esp32_server.on("/opengame", HTTP_GET, openGame);    //打开游戏
-  esp32_server.on("/upload.html",   // 如果客户端通过upload页面
+  esp32_server.on("/upload",   // 如果客户端通过upload页面
           HTTP_POST,        // 向服务器发送文件(请求方法POST)
           respondOK,        // 则回复状态码 200 给客户端
           handleFileUpload);// 并且运行处理文件上传函数
@@ -239,7 +239,7 @@ void server_presta(){
     esp32_server.onNotFound(handleUserRequet);      // 告知系统如何处理用户请求
     esp32_server.on("/gamelist", HTTP_GET, listGame);   //列出游戏列表
     esp32_server.on("/opengame", HTTP_GET, openGame);    //打开游戏
-    esp32_server.on("/upload.html",   // 如果客户端通过upload页面
+    esp32_server.on("/upload",   // 如果客户端通过upload页面
             HTTP_POST,        // 向服务器发送文件(请求方法POST)
             respondOK,        // 则回复状态码 200 给客户端
             handleFileUpload);// 并且运行处理文件上传函数
