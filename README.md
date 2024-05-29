@@ -95,7 +95,7 @@ Boot键
 服务器上电默认处于AP模式，使用手机或者电脑，找到ESP32_webserver这个WIFI进行连接，密码是123456789，连接成功后，用浏览器访问192.168.1.1即可进入服务器主页。
 
 
-
+# 参考项目
 
 SD卡代码参考 https://youtu.be/QAbn-7Ai6UU
 
@@ -107,6 +107,9 @@ flash播放器使用objecty
 
 视频播放器使用videoJS
 
-网页配网代码参考 https://github.com/yuan910715/Esp8266_NTP_Clock_Weather中的网页配网部分
+网页配网代码参考 https://github.com/yuan910715/Esp8266_NTP_Clock_Weather 中的网页配网部分
+
+
+# 额外说明
 
 如需旧版代码，请到release中下载
