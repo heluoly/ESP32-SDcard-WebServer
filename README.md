@@ -109,6 +109,8 @@ flash播放器使用objecty
 
 网页配网代码参考 https://github.com/yuan910715/Esp8266_NTP_Clock_Weather 中的网页配网部分
 
+OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的 examples/SSD1306ClockDemo
+
 
 # 额外说明
 
