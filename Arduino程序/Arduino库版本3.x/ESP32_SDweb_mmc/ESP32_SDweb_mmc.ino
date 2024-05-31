@@ -97,6 +97,7 @@ unsigned char oled_RAM[128][8];
 void setup() {
   // Serial.begin(115200);          // 启动串口通讯
   // Serial.println("");
+  tim2 = timerBegin(1000000);             //定时器频率用于计算分频
 }
 
 void loop(void) {
@@ -114,6 +115,13 @@ void task_server(void *pvParameters) {
   //  40, 20, 10      <<< For 40MHz XTAL
   //  26, 13          <<< For 26MHz XTAL
   //  24, 12          <<< For 24MHz XTAL
+
+  timerEnd(tim2);
+  tim2 = timerBegin(1000000);             //定时器频率用于计算分频
+  timerAttachInterrupt(tim2, &onTimer2);  //定时器地址指针，中断处理函数
+  timerAlarm(tim2, 1000000, true, 0);     //定时器地址指针，定时时长，数值是否重载，重载数值
+  timerStart(tim2);                       //使能定时器2
+
   /*
   //ESP32-S3 SD卡引脚定义
   int clk = 41;
@@ -184,7 +192,15 @@ void closeServer() {
     WiFi.mode(WIFI_OFF);     //关闭WIFI
     SD_MMC.end();            //关闭SD卡
     setCpuFrequencyMhz(40);  //CPU频率变为40MHz
+
+    timerEnd(tim2);
+    tim2 = timerBegin(1000000);             //定时器频率用于计算分频
+    timerAttachInterrupt(tim2, &onTimer2);  //定时器地址指针，中断处理函数
+    timerAlarm(tim2, 1000000, true, 0);     //定时器地址指针，定时时长，数值是否重载，重载数值
+    timerStart(tim2);                       //使能定时器2
+
     vTaskDelete(NULL);       //删除任务
+
   }
 }
 
@@ -199,14 +215,14 @@ void task_display(void *pvParameters) {
   pinMode(switchInput, INPUT);  //按键初始化
   pinMode(led, OUTPUT);         //led灯初始化
 
-  tim1 = timerBegin(1000000);             //定时器编号，预分频，上下计数
-  timerAttachInterrupt(tim1, &onTimer1);  //定时器地址指针，中断处理函数，终端边沿触发类型
-  timerAlarm(tim1, 10000000, false, 0);   //定时器地址指针，定时时长，数值是否重载
+  tim1 = timerBegin(1000000);             //定时器频率用于计算分频
+  timerAttachInterrupt(tim1, &onTimer1);  //定时器地址指针，中断处理函数
+  timerAlarm(tim1, 10000000, false, 0);   //定时器地址指针，定时时长，数值是否重载，重载数值
 
-  tim2 = timerBegin(1000000);             //定时器编号，预分频，上下计数
-  timerAttachInterrupt(tim2, &onTimer2);  //定时器地址指针，中断处理函数，终端边沿触发类型
-  timerAlarm(tim2, 1000000, true, 0);     //定时器地址指针，定时时长，数值是否重载
-  timerStart(tim2);                       //使能定时器2
+  // tim2 = timerBegin(1000000);             //定时器频率用于计算分频
+  // timerAttachInterrupt(tim2, &onTimer2);  //定时器地址指针，中断处理函数
+  // timerAlarm(tim2, 1000000, true, 0);     //定时器地址指针，定时时长，数值是否重载，重载数值
+  // timerStart(tim2);                       //使能定时器2
 
   oledState = 0;
   // UBaseType_t istack;
