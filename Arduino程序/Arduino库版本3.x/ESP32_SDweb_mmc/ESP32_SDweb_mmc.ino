@@ -97,7 +97,6 @@ unsigned char oled_RAM[128][8];
 void setup() {
   // Serial.begin(115200);          // 启动串口通讯
   // Serial.println("");
-  tim2 = timerBegin(1000000);             //定时器频率用于计算分频
 }
 
 void loop(void) {
