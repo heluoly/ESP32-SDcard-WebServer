@@ -116,12 +116,6 @@ void task_server(void *pvParameters) {
   //  26, 13          <<< For 26MHz XTAL
   //  24, 12          <<< For 24MHz XTAL
 
-  timerEnd(tim2);
-  tim2 = timerBegin(1000000);             //定时器频率用于计算分频
-  timerAttachInterrupt(tim2, &onTimer2);  //定时器地址指针，中断处理函数
-  timerAlarm(tim2, 1000000, true, 0);     //定时器地址指针，定时时长，数值是否重载，重载数值
-  timerStart(tim2);                       //使能定时器2
-
   /*
   //ESP32-S3 SD卡引脚定义
   int clk = 41;
@@ -191,13 +185,7 @@ void closeServer() {
     ssid_hidden = 0;
     WiFi.mode(WIFI_OFF);     //关闭WIFI
     SD_MMC.end();            //关闭SD卡
-    setCpuFrequencyMhz(40);  //CPU频率变为40MHz
-
-    timerEnd(tim2);
-    tim2 = timerBegin(1000000);             //定时器频率用于计算分频
-    timerAttachInterrupt(tim2, &onTimer2);  //定时器地址指针，中断处理函数
-    timerAlarm(tim2, 1000000, true, 0);     //定时器地址指针，定时时长，数值是否重载，重载数值
-    timerStart(tim2);                       //使能定时器2
+    setCpuFrequencyMhz(80);  //CPU频率变为80MHz
 
     vTaskDelete(NULL);       //删除任务
 
@@ -219,10 +207,10 @@ void task_display(void *pvParameters) {
   timerAttachInterrupt(tim1, &onTimer1);  //定时器地址指针，中断处理函数
   timerAlarm(tim1, 10000000, false, 0);   //定时器地址指针，定时时长，数值是否重载，重载数值
 
-  // tim2 = timerBegin(1000000);             //定时器频率用于计算分频
-  // timerAttachInterrupt(tim2, &onTimer2);  //定时器地址指针，中断处理函数
-  // timerAlarm(tim2, 1000000, true, 0);     //定时器地址指针，定时时长，数值是否重载，重载数值
-  // timerStart(tim2);                       //使能定时器2
+  tim2 = timerBegin(1000000);             //定时器频率用于计算分频
+  timerAttachInterrupt(tim2, &onTimer2);  //定时器地址指针，中断处理函数
+  timerAlarm(tim2, 1000000, true, 0);     //定时器地址指针，定时时长，数值是否重载，重载数值
+  timerStart(tim2);                       //使能定时器2
 
   oledState = 0;
   // UBaseType_t istack;
