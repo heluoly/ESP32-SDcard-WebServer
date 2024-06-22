@@ -114,3 +114,6 @@ OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的
 # 额外说明
 
 如需旧版代码，请到release中下载
+
+目前的3.0.1库编译的固件，在STA模式下的传输速度比2.x库编译的固件传输速度快
+
