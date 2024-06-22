@@ -121,7 +121,7 @@ char String2Char(char *str) {
 }
 
 //读取配置文件 configRead(SD_MMC,参数名称,文件路径,参数值)
-char configRead(fs::FS &fs, char *key, char *filename, char *buf) {
+char configRead(fs::FS &fs, const char *key, const char *filename, char *buf) {
   char flag_line = 0;
   const int maximumLength = 1024;
   char sLine[maximumLength];
@@ -170,7 +170,7 @@ char configRead(fs::FS &fs, char *key, char *filename, char *buf) {
 }
 
 //修改配置文件 configWrite(SD_MMC,参数名称,修改的参数值,文件路径)
-char configWrite(fs::FS &fs, char *key, char *val, char *filename) {
+char configWrite(fs::FS &fs, const char *key, const char *val, const char *filename) {
   char flag_line = 0;
   char flag_ok = 0;
   const int maximumLength = 1024;
