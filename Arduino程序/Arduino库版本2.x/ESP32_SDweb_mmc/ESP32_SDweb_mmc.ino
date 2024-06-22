@@ -25,7 +25,7 @@ OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的
 #include "copy.h"
 #include "wifiConnect.h"
 #include "time.h"
-#include "sntp.h"
+#include "esp_sntp.h"
 
 #include "Wire.h"
 #include "oled.h"
