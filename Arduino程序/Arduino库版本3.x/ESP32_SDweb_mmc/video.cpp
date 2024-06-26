@@ -55,13 +55,14 @@ void listvideo() {
     while (file) {
       if (file.isDirectory() && i > page1 && i < page2) {
 
-        namepath = String(file.path()) + "/0.txt";                                                          //视频标题路径
-        picpath = String(file.path()) + "/0.jpg";                                                           //视频预览图路径
-        videoName = readFile(SD_MMC, (char *)namepath.c_str());                                             //读取视频标题
-        message += "<img src=\"" + picpath + "\" alt=\"" + videoName + "\" width=auto height=\"200px\"/>";  //配置预览图大小
+        namepath = String(file.path()) + "/0.txt";               //视频标题路径
+        picpath = String(file.path()) + "/0.jpg";                //视频预览图路径
+        videoName = readFile(SD_MMC, (char *)namepath.c_str());  //读取视频标题
+        message += "<a href=\"/openvideo?videoPath=" + String(file.path());
+        message += "\"><img src=\"" + picpath + "\" alt=\"" + videoName + "\" width=auto height=\"200px\"/></a>";  //配置预览图大小
         message += "<form action=\"/openvideo\">  ";
         message += videoName;
-        message += "<input type=\"hidden\" name=\"videoPath\" value=\"http://" + IPAD + String(file.path()) + "\">";
+        message += "<input type=\"hidden\" name=\"videoPath\" value=\"" + String(file.path()) + "\">";
         message += ": <input type=\"submit\" value=\"播放\">";
         message += "</form><br />";
         namepath = "";
@@ -91,26 +92,7 @@ void listvideo() {
 //打开视频
 void openVideo() {
   String videoPath = esp32_server.arg("videoPath");  //获取视频路径
-  uint8_t len = videoPath.length();
-  uint8_t cout = 0;
-  uint8_t i, j;
-
-  //提取出视频路径
-  for (i = 0; i <= len; i++) {
-    if (videoPath[i] == '/') {
-      cout++;
-      if (cout == 3) {
-        break;
-      }
-    }
-  }
-  char namepath2[len - i + 2];
-  cout = len - i + 1;
-  for (j = 0; j < cout; j++) {
-    namepath2[j] = videoPath[i];
-    i++;
-  }
-  String namepath = namepath2;
+  String namepath = videoPath;
   namepath += "/0.txt";
 
   //得到回车字符串
@@ -122,20 +104,18 @@ void openVideo() {
   enter2 = enter;
 
   //调用videoJS
-  String message = htmlHeader + "<title>Theater</title><link href=\"http://" + IPAD + "/video/bin/video-js.min.css\" rel=\"stylesheet\"><script src=\"http://" + IPAD + "/video/bin/video.min.js\"></script><script src=\"http://" + IPAD + "/video/bin/videojs-contrib-hls.js\"></script></head><body><center><h2>";
-  message += readFile(SD_MMC, (char *)namepath.c_str());
+  String message = htmlHeader + "<title>Theater</title><link href=\"" + "/video/bin/video-js.min.css\" rel=\"stylesheet\"><script src=\"" + "/video/bin/video.min.js\"></script><script src=\"" + "/video/bin/videojs-contrib-hls.js\"></script></head><body><center><h2>";
+  message += readFile(SD_MMC, (char *)namepath.c_str());  //读取视频标题
   message += "</h2><section id=\"videoPlayer\"></section></center><script type=\"text/javascript\"> function createvideo(url) {let str = `";
   message += enter2;
-  message += "<video id=\"video_demo\" autoplay width=\"\" class=\"video-js vjs-default-skin vjs-big-play-centered\" poster=\"\"><source src=\"\" type=\"application/x-mpegURL\" id=\"target\"></video>";
+  message += "<video id=\"video_demo\" autoplay width=\"\" class=\"video-js vjs-default-skin vjs-big-play-centered\" poster=\"\"><source src=\"";
+  message += videoPath;
+  message += "/index.m3u8\" type=\"application/x-mpegURL\" id=\"target\"></video>";
   message += enter2;
   message += "` ";
-
   message += enter2;
-  message += "let wrap = document.getElementById('videoPlayer');wrap.innerHTML = str;let source = document.getElementById('target');source.src = url ? url : '";
-
-  message += videoPath;
-
-  message += "/index.m3u8';var player = videojs('video_demo', { \"poster\": \"\", \"controls\": \"true\" },function() {this.on('play', function() {console.log('正在播放');});this.on('pause', function() {console.log(\"暂停中\")});this.on('ended', function() {console.log('结束');})});player.play()}createvideo()</script></body></html>";
+  message += "let wrap = document.getElementById('videoPlayer');wrap.innerHTML = str;let source = document.getElementById('target');";
+  message += "var player = videojs('video_demo', { \"poster\": \"\", \"controls\": \"true\" });player.play()}createvideo()</script></body></html>";
 
   esp32_server.send(200, "text/html", message);  //发送网页
 }
