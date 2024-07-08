@@ -224,7 +224,7 @@ void task_display(void *pvParameters) {
       while (switchState == SWITCH_ON) {
         switchState = digitalRead(switchInput);
         vTaskDelay(10 / portTICK_PERIOD_MS);
-        if ((oledFrame == 1) & (oledState == 1))  //在第一页，而且是屏幕亮起的状态下长按
+        if ((oledFrame == 1) && (oledState == 1))  //在第一页，而且是屏幕亮起的状态下长按
         {
           pressTime++;
           if (pressTime > 300)  //长按时间大于3秒，跳出循环，并设置长按标志
@@ -308,12 +308,13 @@ void task_display(void *pvParameters) {
         switchState = digitalRead(switchInput);
         vTaskDelay(10 / portTICK_PERIOD_MS);
       }
-      flag_tim1 = 0;
 
-      //开定时器，定时完成息屏
-      oledState = 1;       //oled状态变为点亮
+      //开定时器，定时完成息屏 
+      timerStop(tim1);
       timerRestart(tim1);  //重置定时器1
       timerStart(tim1);    //使能定时器1
+      flag_tim1 = 0;
+      oledState = 1;       //oled状态变为点亮
 
       // istack = uxTaskGetStackHighWaterMark(Task_Display);
       // printf("Task_Display istack = %d\n", istack);
@@ -328,7 +329,7 @@ void task_display(void *pvParameters) {
       }
 
       //第二页，亮屏时刷新时钟
-      if (oledState & (oledFrame == 2) & flag_tim2) {
+      if (oledState && (oledFrame == 2) && flag_tim2) {
         flag_tim2 = 0;
         oledClock_Display();  //显示表盘和指针
       }
