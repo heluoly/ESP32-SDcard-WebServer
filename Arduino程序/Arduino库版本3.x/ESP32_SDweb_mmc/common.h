@@ -4,6 +4,8 @@
 #include "FS.h"
 #include "SD_MMC.h"
 
+#define configMaximumLength 1024   //配置文件缓冲区数值
+
 //String indexOfFilename(String filename);
 String formatBytes(size_t bytes);
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels);

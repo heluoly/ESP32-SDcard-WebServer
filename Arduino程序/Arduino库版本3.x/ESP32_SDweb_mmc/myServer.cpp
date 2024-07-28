@@ -38,7 +38,7 @@ void backToAP() {
 
 //读取SD卡中保存的热点名称和密码
 void WiFiconfigRead() {
-  char buff[128];
+  char buff[configMaximumLength];
   if (configRead(SD_MMC, "ssid", "/config.txt", buff)) {
     ssid = buff;
   }

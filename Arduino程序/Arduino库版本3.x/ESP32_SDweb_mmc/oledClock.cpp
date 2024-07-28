@@ -3,9 +3,9 @@
 extern WebServer esp32_server;
 
 //时钟中心位置
-extern char clockCenterX;
-extern char clockCenterY;
-extern char clockRadius;  //表盘大小
+// extern char clockCenterX;
+// extern char clockCenterY;
+// extern char clockRadius;  //表盘大小
 //时间
 extern char hour;
 extern char minute;

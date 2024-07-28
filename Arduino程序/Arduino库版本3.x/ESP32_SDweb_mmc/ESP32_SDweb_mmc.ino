@@ -58,7 +58,6 @@ char autoconnect = 0;             //开机自动连接上次成功连接WiFi
 String pressid = "";              //上次成功连接wifi名称
 String prepassword = "";          //上次成功连接wifi密码（注意WiFi密码位数不要小于8位）
 
-
 TaskHandle_t Task_Server;   //第1核心任务
 TaskHandle_t Task_Display;  //第2核心任务
 hw_timer_t *tim1 = NULL;    // 定时器1，用于定时息屏
@@ -74,10 +73,6 @@ char flag_tim2 = 0;     //定时器2中断标志
 char flag_timeSet = 0;  //更新时间标志
 char oledState = 0;     //oled状态标志（点亮、熄灭）
 char oledFrame = 1;     //oled显示内容标志（服务器信息、时钟）
-//时钟中心位置
-char clockCenterX = 64;  //时钟X轴
-char clockCenterY = 32;  //时钟Y轴
-char clockRadius = 31;   //表盘大小
 //时间
 char hour = 10;
 char minute = 10;
