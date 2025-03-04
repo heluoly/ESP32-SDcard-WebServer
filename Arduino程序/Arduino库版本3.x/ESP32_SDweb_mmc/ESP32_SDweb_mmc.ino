@@ -197,14 +197,16 @@ void task_display(void *pvParameters) {
   pinMode(switchInput, INPUT);  //按键初始化
   pinMode(led, OUTPUT);         //led灯初始化
 
+  //计算息屏时间
   tim1 = timerBegin(1000000);             //定时器频率用于计算分频
   timerAttachInterrupt(tim1, &onTimer1);  //定时器地址指针，中断处理函数
   timerAlarm(tim1, 10000000, false, 0);   //定时器地址指针，定时时长，数值是否重载，重载数值
-
+  timerStop(tim1);
+  //时钟计数
   tim2 = timerBegin(1000000);             //定时器频率用于计算分频
   timerAttachInterrupt(tim2, &onTimer2);  //定时器地址指针，中断处理函数
   timerAlarm(tim2, 1000000, true, 0);     //定时器地址指针，定时时长，数值是否重载，重载数值
-  timerStart(tim2);                       //使能定时器2
+  // timerStart(tim2);                       //使能定时器2
 
   oledState = 0;
   // UBaseType_t istack;
@@ -304,10 +306,19 @@ void task_display(void *pvParameters) {
         vTaskDelay(10 / portTICK_PERIOD_MS);
       }
 
+      //更新息屏倒计时
+      if(oledState){
+        timerRestart(tim1);  //重置定时器1
+      }
+      else{
+        timerRestart(tim1);  //重置定时器1
+        timerStart(tim1);    //使能定时器1
+      }
+
       //开定时器，定时完成息屏 
-      timerStop(tim1);
-      timerRestart(tim1);  //重置定时器1
-      timerStart(tim1);    //使能定时器1
+      // timerStop(tim1);
+      // timerRestart(tim1);  //重置定时器1
+      // timerStart(tim1);    //使能定时器1
       flag_tim1 = 0;
       oledState = 1;       //oled状态变为点亮
 
