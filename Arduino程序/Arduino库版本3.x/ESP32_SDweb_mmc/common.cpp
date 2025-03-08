@@ -1,34 +1,5 @@
 #include "common.h"
 
-/*
-//从文件路径中获取文件名
-String indexOfFilename(String filename)
-{
-  char filename2[200];
-  uint8_t len = 0;
-  uint8_t cout = 0;
-  uint8_t i,j = 0;
-  len = filename.length();
-  for(i=0;i<len;i++)
-  {
-      if(filename[i]=='/')
-      {
-         cout = i;
-      }   
-  }
-  for(i=cout+1;i<len;i++)
-  {   
-      if(j<195)
-      {
-          filename2[j] = filename[i];
-          j++;
-      }
-  }       
-  j=0;
-  filename = filename2;
-  return filename;
-}
-*/
 //计算文件大小
 String formatBytes(size_t bytes) {
   if (bytes < 1024) {
@@ -206,7 +177,7 @@ char configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
         i = 0;
       } else if (temp == '\0') {
         if (i > 2) {
-          flag_line = 1;  //读取完
+          flag_line = 2;  //读取完
           fileLine[i] = '\0';
         }
       } else {
