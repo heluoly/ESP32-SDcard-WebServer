@@ -140,14 +140,14 @@ char configRead(fs::FS &fs, const char *key, const char *filename, char *buf) {
       sLine[i] = '\0';
       i = 0;
     } else if (temp == '\n') {
-      if (i>2) {
+      if (i > 2) {
         flag_line = 1;  //读取完一行
         sLine[i] = '\0';
       }
       i = 0;
     } else if (temp == '\0') {
-      if (i>2) {
-        flag_line = 1;  //读取完一行
+      if (i > 2) {
+        flag_line = 1;  //读取完
         sLine[i] = '\0';
       }
     } else {
@@ -195,16 +195,20 @@ char configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
     if (flag_ok == 0) {
       temp = file.read();
       if (temp == '\r') {
-        fileLine[i] = '\0';
-      } else if (temp == '\n') {
         flag_line = 1;  //读取完一行
         fileLine[i] = '\0';
         i = 0;
+      } else if (temp == '\n') {
+        if (i > 2) {
+          flag_line = 2;  //读取完一行
+          fileLine[i] = '\0';
+        }
+        i = 0;
       } else if (temp == '\0') {
-        if (i>2) {
-        flag_line = 1;  //读取完一行
-        fileLine[i] = '\0';
-      }
+        if (i > 2) {
+          flag_line = 1;  //读取完
+          fileLine[i] = '\0';
+        }
       } else {
         fileLine[i] = temp;
         if (i < configMaximumLength - 1) {
@@ -214,27 +218,30 @@ char configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
         }
       }
     } else {
-      if (k < configMaximumLength - 1) {
+      if (k < configMaximumLength - 1) {  //找到修改值后保存修改值后面的数据
         fileAll[k] = file.read();
         k++;
       }
     }
     //行操作
     if (flag_line) {
-      flag_line = 0;
-
       if (strncmp(key, fileLine, strlen(key)) == 0) {
         n = strchr(fileLine, '=');  //关键字符第一次出现的位置
         if (n != NULL) {
-          sprintf(n + 1, "%s\r\n\0", val);
+          if (flag_line == 1) {  //判断是那种系统
+            sprintf(n + 1, "%s\r\0", val);
+          } else {
+            sprintf(n + 1, "%s\r\n\0", val);
+          }
           strcat(fileAll, n - strlen(key));
           k = strlen(fileAll);
           flag_ok = 1;
         }
       } else {
-        strcat(fileAll, fileLine);
+        strcat(fileAll, fileLine);  //找到修改值前缓存前面数据
         strcat(fileAll, "\r\n");
       }
+      flag_line = 0;
     }
   }
   file.close();

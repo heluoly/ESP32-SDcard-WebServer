@@ -181,8 +181,7 @@ void closeServer() {
     SD_MMC.end();            //关闭SD卡
     setCpuFrequencyMhz(80);  //CPU频率变为80MHz
 
-    vTaskDelete(NULL);       //删除任务
-
+    vTaskDelete(NULL);  //删除任务
   }
 }
 
@@ -307,20 +306,19 @@ void task_display(void *pvParameters) {
       }
 
       //更新息屏倒计时
-      if(oledState){
+      if (oledState) {
         timerRestart(tim1);  //重置定时器1
-      }
-      else{
+      } else {
         timerRestart(tim1);  //重置定时器1
         timerStart(tim1);    //使能定时器1
       }
 
-      //开定时器，定时完成息屏 
+      //开定时器，定时完成息屏
       // timerStop(tim1);
       // timerRestart(tim1);  //重置定时器1
       // timerStart(tim1);    //使能定时器1
       flag_tim1 = 0;
-      oledState = 1;       //oled状态变为点亮
+      oledState = 1;  //oled状态变为点亮
 
       // istack = uxTaskGetStackHighWaterMark(Task_Display);
       // printf("Task_Display istack = %d\n", istack);
