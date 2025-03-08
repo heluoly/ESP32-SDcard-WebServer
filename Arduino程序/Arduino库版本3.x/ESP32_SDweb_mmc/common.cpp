@@ -127,7 +127,6 @@ char configRead(fs::FS &fs, const char *key, const char *filename, char *buf) {
   char temp;
   char *n;
   int i = 0;
-  int l = 1;
 
   File file = fs.open(filename);
   if (!file) {
@@ -139,9 +138,18 @@ char configRead(fs::FS &fs, const char *key, const char *filename, char *buf) {
     if (temp == '\r') {
       flag_line = 1;  //读取完一行
       sLine[i] = '\0';
-    } else if (temp == '\n') {
-      l++;  //换行
       i = 0;
+    } else if (temp == '\n') {
+      if (i>2) {
+        flag_line = 1;  //读取完一行
+        sLine[i] = '\0';
+      }
+      i = 0;
+    } else if (temp == '\0') {
+      if (i>2) {
+        flag_line = 1;  //读取完一行
+        sLine[i] = '\0';
+      }
     } else {
       sLine[i] = temp;
       if (i < configMaximumLength - 1) {
@@ -177,7 +185,6 @@ char configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
   char temp;
   char *n;
   int i = 0, k = 0;
-  int l = 1;
 
   File file = fs.open(filename);
   if (!file) {
@@ -192,8 +199,12 @@ char configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
       } else if (temp == '\n') {
         flag_line = 1;  //读取完一行
         fileLine[i] = '\0';
-        l++;  //换行
         i = 0;
+      } else if (temp == '\0') {
+        if (i>2) {
+        flag_line = 1;  //读取完一行
+        fileLine[i] = '\0';
+      }
       } else {
         fileLine[i] = temp;
         if (i < configMaximumLength - 1) {
