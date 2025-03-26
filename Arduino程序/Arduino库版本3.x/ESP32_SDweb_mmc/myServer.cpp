@@ -101,12 +101,12 @@ void server_ap() {
   esp32_server.on("/filelist", HTTP_GET, listUploadFile);                //列出文件上传列表
   esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);      //删除文件
   esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);  //下载文件
-  esp32_server.on("/videolist", listvideo);                              //列出视频列表
+  esp32_server.on("/videolist", HTTP_GET, listvideo);                    //列出视频列表
   esp32_server.on("/openvideo", HTTP_GET, openVideo);                    //打开视频
   esp32_server.on("/edittxt", HTTP_GET, editTxt);                        //编辑txt文件
   esp32_server.on("/clipboard", HTTP_GET, clipBoard);                    //剪切板
-  esp32_server.on("/wificonnect", changemode);                           //模式转换
-  esp32_server.on("/setTime", setTime);                                  //设置时间
+  esp32_server.on("/wificonnect", HTTP_GET, changemode);                 //模式转换
+  esp32_server.on("/setTime", HTTP_GET, setTime);                        //设置时间
 
   esp32_server.begin();  // 启动网站服务
   // Serial.println("HTTP server started");
@@ -168,12 +168,12 @@ void server_sta() {
   esp32_server.on("/filelist", HTTP_GET, listUploadFile);                //列出文件上传列表
   esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);      //删除文件
   esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);  //下载文件
-  esp32_server.on("/videolist", listvideo);                              //列出视频列表
+  esp32_server.on("/videolist", HTTP_GET, listvideo);                    //列出视频列表
   esp32_server.on("/openvideo", HTTP_GET, openVideo);                    //打开视频
   esp32_server.on("/edittxt", HTTP_GET, editTxt);                        //编辑txt文件
   esp32_server.on("/clipboard", HTTP_GET, clipBoard);                    //剪切板
-  esp32_server.on("/wificonnect", changemode);                           //模式转换
-  esp32_server.on("/setTime", setTime);                                  //设置时间
+  esp32_server.on("/wificonnect", HTTP_GET, changemode);                 //模式转换
+  esp32_server.on("/setTime", HTTP_GET, setTime);                        //设置时间
 
   esp32_server.begin();  // 启动网站服务
   // Serial.println("HTTP server started");
@@ -222,12 +222,12 @@ void server_presta() {
     esp32_server.on("/filelist", HTTP_GET, listUploadFile);                //列出文件上传列表
     esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);      //删除文件
     esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);  //下载文件
-    esp32_server.on("/videolist", listvideo);                              //列出视频列表
+    esp32_server.on("/videolist", HTTP_GET, listvideo);                    //列出视频列表
     esp32_server.on("/openvideo", HTTP_GET, openVideo);                    //打开视频
     esp32_server.on("/edittxt", HTTP_GET, editTxt);                        //编辑txt文件
     esp32_server.on("/clipboard", HTTP_GET, clipBoard);                    //剪切板
-    esp32_server.on("/wificonnect", changemode);                           //模式转换
-    esp32_server.on("/setTime", setTime);                                  //设置时间
+    esp32_server.on("/wificonnect", HTTP_GET, changemode);                 //模式转换
+    esp32_server.on("/setTime", HTTP_GET, setTime);                        //设置时间
 
     esp32_server.begin();  // 启动网站服务
     // Serial.println("HTTP server started");

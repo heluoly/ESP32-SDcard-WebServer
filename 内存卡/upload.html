@@ -27,7 +27,15 @@
 <script>
 function listFilesButton() {
   xmlhttp=new XMLHttpRequest();
-  xmlhttp.open("GET", "/filelist", false);
+  xmlhttp.open("GET", "/filelist?page=1", false);
+  xmlhttp.send();
+  document.getElementById("detailsheader").innerHTML = "<h3>文件列表<h3>";
+  document.getElementById("details").innerHTML = xmlhttp.responseText;
+}
+function listFilesPage(page) {
+  xmlhttp=new XMLHttpRequest();
+  var urlPage="/filelist?page=" + page;
+  xmlhttp.open("GET", urlPage, false);
   xmlhttp.send();
   document.getElementById("detailsheader").innerHTML = "<h3>文件列表<h3>";
   document.getElementById("details").innerHTML = xmlhttp.responseText;
@@ -39,7 +47,7 @@ function deleteButton(filepath) {
 		xmlhttp.open("GET", urltocall, false);
 		xmlhttp.send();
 		document.getElementById("status").innerHTML = xmlhttp.responseText;
-		xmlhttp.open("GET", "/filelist", false);
+		xmlhttp.open("GET", "/filelist?page=1", false);
 		xmlhttp.send();
 		document.getElementById("details").innerHTML = xmlhttp.responseText;
 		
@@ -94,7 +102,7 @@ function completeHandler(event) {
   _("status").innerHTML = "上传完成";
   _("progressBar").value = 0;
   xmlhttp=new XMLHttpRequest();
-  xmlhttp.open("GET", "/filelist", false);
+  xmlhttp.open("GET", "/filelist?page=1", false);
   xmlhttp.send();
   document.getElementById("status").innerHTML = "上传成功";
   document.getElementById("detailsheader").innerHTML = "<h3>文件列表<h3>";
