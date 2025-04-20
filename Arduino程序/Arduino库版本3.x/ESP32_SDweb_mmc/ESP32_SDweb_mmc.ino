@@ -31,8 +31,8 @@ OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的
 #include "oled.h"
 #include "oledfont.h"
 
-#define LED_ON HIGH
-#define LED_OFF LOW
+// #define LED_ON HIGH
+// #define LED_OFF LOW
 #define SWITCH_ON LOW
 #define SWITCH_OFF HIGH
 
@@ -66,7 +66,7 @@ hw_timer_t *tim2 = NULL;    // 定时器2，用于时钟计数
 const char switchInput = 0;  //IO0作为按键
 const char led = 33;         //IO33作为led指示灯
 //状态标志
-char switchState;       //按键装
+char switchState;       //按键状态
 char LEDState;          //led灯状态
 char flag_tim1 = 0;     //定时器1中断标志
 char flag_tim2 = 0;     //定时器2中断标志
@@ -90,7 +90,7 @@ unsigned char oled_RAM[128][8];
 
 
 void setup() {
-  // Serial.begin(115200);          // 启动串口通讯
+  // Serial.begin(115200);  // 启动串口通讯
   // Serial.println("");
 }
 
@@ -187,8 +187,11 @@ void closeServer() {
 
 //第2核心任务
 void task_display(void *pvParameters) {
-  int pressTime = 0;    //长按时间计时
-  char flag_press = 0;  //长按标志
+  uint16_t pressTime = 0;      //长按时间计时
+  uint8_t flag_press = 0;      //长按标志
+  uint8_t wifiState = 254;     //WiFi状态 0:WL_IDLE_STATUS, 1:WL_NO_SSID_AVAIL, 3:WL_CONNECTED, 4:WL_CONNECT_FAILED, 6:WL_DISCONNECTED. 254:WL_STOPPED
+  uint8_t flag_wifiState = 0;  //判断WiFi是否掉线
+  uint8_t RSSI_value = 0;      //WiFi信号强度
 
   OLED_Init();  //oled初始化
   // OLED_ColorTurn(0);//0正常显示 1反色显示
@@ -286,8 +289,37 @@ void task_display(void *pvParameters) {
             }
             OLED_ShowString(0, 6, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
           } else if (mode_wifi == 3) {
+            wifiState = WiFi.status();  //读取WiFi状态
             OLED_ShowString(0, 2, "Mode: STA   ", 16);
-            OLED_ShowString(0, 4, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
+            if (wifiState == WL_CONNECTED) {
+              if (flag_wifiState == 1) {
+                IPAD = WiFi.localIP().toString();  //刷新IP地址
+                flag_wifiState = 0;
+              }
+              OLED_ShowString(0, 4, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
+              OLED_ShowString(0, 6, "RSSI: -", 16);
+              RSSI_value = -WiFi.RSSI();
+              OLED_ShowNum(56, 6, RSSI_value, 2, 16);
+              // Serial.println(WiFi.RSSI());
+            } else if (wifiState == WL_IDLE_STATUS) {
+              OLED_ShowString(0, 4, "Reconnecting", 16);
+              flag_wifiState = 1;
+            } else if (wifiState == WL_NO_SSID_AVAIL) {
+              OLED_ShowString(0, 4, "No SSID Avail", 16);
+              flag_wifiState = 1;
+            } else if (wifiState == WL_CONNECT_FAILED) {
+              OLED_ShowString(0, 4, "Connect Failed", 16);
+              WiFi.reconnect();  //尝试重新连接WiFi
+              flag_wifiState = 1;
+            } else if (wifiState == WL_DISCONNECTED) {
+              OLED_ShowString(0, 4, "Disconnected", 16);
+              flag_wifiState = 1;
+            } else {
+              OLED_ShowString(0, 4, "Failed", 16);
+              flag_wifiState = 1;
+            }
+            // Serial.printf("WL: %d\n", wifiState);
+
           } else {
             OLED_ShowString(0, 2, "Mode: STA   ", 16);
             OLED_ShowString(0, 4, "Connecting", 16);
@@ -308,20 +340,20 @@ void task_display(void *pvParameters) {
       //更新息屏倒计时
       if (oledState) {
         timerRestart(tim1);  //重置定时器1
+        timerStop(tim1);
+        timerStart(tim1);  //使能定时器1
       } else {
         timerRestart(tim1);  //重置定时器1
         timerStart(tim1);    //使能定时器1
       }
 
       //开定时器，定时完成息屏
-      // timerStop(tim1);
-      // timerRestart(tim1);  //重置定时器1
-      // timerStart(tim1);    //使能定时器1
       flag_tim1 = 0;
       oledState = 1;  //oled状态变为点亮
 
       // istack = uxTaskGetStackHighWaterMark(Task_Display);
       // printf("Task_Display istack = %d\n", istack);
+
     } else {
       //息屏
       if (flag_tim1) {
