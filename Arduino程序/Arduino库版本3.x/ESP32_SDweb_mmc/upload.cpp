@@ -110,7 +110,7 @@ String listUploadDir(fs::FS &fs, const char *dirname, uint8_t levels) {
 }
 
 void listUploadFile() {
-  String message = listUploadDir(SD_MMC, "/upload", 1);
+  String message = listUploadDir(my_fs, "/upload", 1);
   esp32_server.send(200, "text/html", message);
 }
 
@@ -121,15 +121,15 @@ void handleFileUpload() {
 
   if (upload.status == UPLOAD_FILE_START) {  // 如果上传状态为UPLOAD_FILE_START
 
-    if (SD_MMC.exists((char *)upload.filename.c_str())) {
-      SD_MMC.remove((char *)upload.filename.c_str());
+    if (my_fs.exists((char *)upload.filename.c_str())) {
+      my_fs.remove((char *)upload.filename.c_str());
     }
 
     String filename = upload.filename;                                // 建立字符串变量用于存放上传文件名
     if (!filename.startsWith("/")) filename = "/upload/" + filename;  // 为上传文件名前加上"/"
     // Serial.println("File Name: " + filename);                 // 通过串口监视器输出上传文件的名称
 
-    fsUploadFile = SD_MMC.open(filename, FILE_WRITE);  // 在SD卡中建立文件用于写入用户上传的文件数据
+    fsUploadFile = my_fs.open(filename, FILE_WRITE);  // 在SD卡中建立文件用于写入用户上传的文件数据
 
   } else if (upload.status == UPLOAD_FILE_WRITE) {  // 如果上传状态为UPLOAD_FILE_WRITE
 
@@ -149,7 +149,7 @@ void handleFileUpload() {
 void deleteUploadFile() {
   String deletePath = esp32_server.arg("deletePath");
   char flag = 0;
-  flag = deleteFile(SD_MMC, (char *)deletePath.c_str());
+  flag = deleteFile(my_fs, (char *)deletePath.c_str());
   if (flag) {
     esp32_server.send(200, "text/html", "删除成功");
   } else {
@@ -163,8 +163,8 @@ void downloadUploadFile() {
   String downloadPath = esp32_server.arg("downloadPath");
   String attachment = "";
   attachment += "attachment; filename=" + attname;
-  if (SD_MMC.exists(downloadPath)) {
-    File file = SD_MMC.open(downloadPath, FILE_READ);
+  if (my_fs.exists(downloadPath)) {
+    File file = my_fs.open(downloadPath, FILE_READ);
     esp32_server.sendHeader("Content-Disposition", (char *)attachment.c_str());
     esp32_server.streamFile(file, "application/octet-stream");
     file.close();

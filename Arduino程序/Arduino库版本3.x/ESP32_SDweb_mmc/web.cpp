@@ -24,8 +24,8 @@ void handleUserRequet() {
   else if (path.endsWith(".m3u8")) contentType = "application/x-mpegURL";
   else contentType = "text/plain";
 
-  if (SD_MMC.exists(path)) {                     // 如果访问的文件可以在SD卡中找到
-    File file = SD_MMC.open(path, FILE_READ);    // 则尝试打开该文件
+  if (my_fs.exists(path)) {                     // 如果访问的文件可以在SD卡中找到
+    File file = my_fs.open(path, FILE_READ);    // 则尝试打开该文件
     esp32_server.streamFile(file, contentType);  // 并且将该文件返回给浏览器
     file.close();                                // 并且关闭文件
     fileReadOK = true;
@@ -34,8 +34,8 @@ void handleUserRequet() {
   }
 
   if (!fileReadOK) {
-    SD_MMC.end();
-    if (SD_MMC.begin("/sdcard", ONE_BIT_MODE))  //SD卡初始化
+    my_fs.end();
+    if (my_fs.begin("/sdcard", ONE_BIT_MODE))  //SD卡初始化
     {
       if (!hasSD) {
         esp32_server.send(404, "text/plain", "Card Mount Succeed");  // 如果在SD卡初始化成功，则回复Card Mount Succeed

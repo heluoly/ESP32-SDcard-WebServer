@@ -60,11 +60,12 @@ char writeFile(fs::FS &fs, const char *path, const char *message) {
     return 0;
   }
   if (file.print(message)) {
+    file.close();
     return 1;
   } else {
+    file.close();
     return 0;
   }
-  file.close();
 }
 
 //字符串转数字
@@ -223,6 +224,117 @@ char configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
     file.close();
     return 1;
   } else {
+    file.close();
+    return 0;
+  }
+}
+
+// char filetxt[configMaximumLength] = { 0 };
+//一次写入配置文件多个参数1
+char configWriteOpen(fs::FS &fs, const char *filename, char *filetxt) {
+  uint16_t i = 0;
+
+  File file = fs.open(filename);
+  if (!file) {
+    // Serial.println("Failed to open file for reading");
+    return 0;
+  }
+  while (file.available()) {
+    if (i < configMaximumLength - 1) {
+      filetxt[i] = file.read();
+      i++;
+    } else {
+      filetxt[i] = '\0';
+      break;
+    }
+  }
+  file.close();
+  return 1;
+}
+
+//一次写入配置文件多个参数2
+char configRewrite(const char *key, const char *val, char *filetxt) {
+  char flag_line = 0;
+  char flag_ok = 0;
+  char fileAll[configMaximumLength] = { 0 };
+  char fileLine[configMaximumLength];
+  char temp;
+  char *n;
+  int i = 0, k = 0, j = 0;
+
+  for (j = 0; j < configMaximumLength; j++) {
+    if (flag_ok == 0) {
+      temp = filetxt[j];
+      if (temp == '\r') {
+        flag_line = 1;  //读取完一行
+        fileLine[i] = '\0';
+        i = 0;
+      } else if (temp == '\n') {
+        if (i > 2) {
+          flag_line = 2;  //读取完一行
+          fileLine[i] = '\0';
+        }
+        i = 0;
+      } else if (temp == '\0') {
+        if (i > 2) {
+          flag_line = 2;  //读取完
+          fileLine[i] = '\0';
+        }
+      } else {
+        fileLine[i] = temp;
+        if (i < configMaximumLength - 1) {
+          i++;  //读取下一位
+        } else {
+          return 0;
+        }
+      }
+    } else {  //找到修改值后保存修改值后面的数据
+
+      fileAll[k] = filetxt[j];
+      k++;
+    }
+    //行操作
+    if (flag_line) {
+      if (strncmp(key, fileLine, strlen(key)) == 0) {
+        n = strchr(fileLine, '=');  //关键字符第一次出现的位置
+        if (n != NULL) {
+          if (flag_line == 1) {  //判断是那种系统
+            sprintf(n + 1, "%s\r\0", val);
+          } else {
+            sprintf(n + 1, "%s\r\n\0", val);
+          }
+          strcat(fileAll, n - strlen(key));
+          k = strlen(fileAll);
+          flag_ok = 1;
+        }
+      } else {
+        strcat(fileAll, fileLine);  //找到修改值前缓存前面数据
+        strcat(fileAll, "\r\n");
+      }
+      flag_line = 0;
+    }
+  }
+  if (flag_ok) {
+    strcpy(filetxt, fileAll);  //复制字符串输出
+    // Serial.println(filetxt);
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+//一次写入配置文件多个参数3
+char configWriteClose(fs::FS &fs, const char *filename, char *filetxt) {
+  File file = fs.open(filename, FILE_WRITE);
+  if (!file) {
+    // Serial.println("Failed to open file for reading");
+    return 0;
+  }
+  if (file.print(filetxt)) {
+    file.close();
+    return 1;
+  } else {
+    file.close();
     return 0;
   }
 }

@@ -34,7 +34,7 @@ void editTxt() {
   String txtPath = esp32_server.arg("txtpath");  //提取文件路径
   String txtContent = esp32_server.arg("con");   //提取要保存的内容
   char flag = 0;
-  flag = writeFile(SD_MMC, (char *)txtPath.c_str(), (char *)txtContent.c_str());
+  flag = writeFile(my_fs, (char *)txtPath.c_str(), (char *)txtContent.c_str());
   if (flag) {
     esp32_server.send(200, "text/html", "保存成功");
   } else {
@@ -45,7 +45,7 @@ void editTxt() {
 //剪切板HTML代码
 void clipBoard() {
   String content = "";
-  content = readFile2(SD_MMC, "/copy.txt");  //读取copy.txt的内容
+  content = readFile2(my_fs, "/copy.txt");  //读取copy.txt的内容
   String message = htmlHeader + "<title>剪切板</title></head><body><h2>剪切板</h2><br><label style=\"display: block\"><textarea id=\"textArea\" rows=\"8\" style=\"width:100%;\">";
   message += content;
   message += "</textarea></label><br><button type=\"button\" onclick=\"theCopy()\">复制</button> <button type=\"button\" onclick=\"theSave()\">保存</button></body><script>function theCopy() {var textArea = document.getElementById('textArea');console.log(textArea);textArea.select();document.execCommand('copy');alert('复制成功');}</script><script>function theSave() {var text=document.getElementById('textArea').value;var con=encodeURI(text).replace(/#/g, '%23');var xmlhttp=new XMLHttpRequest();xmlhttp.open(\"GET\",\"/edittxt?txtpath=/copy.txt&con=\"+con,true);xmlhttp.send();xmlhttp.onload = function(e){alert(this.responseText);}}</script></html>";

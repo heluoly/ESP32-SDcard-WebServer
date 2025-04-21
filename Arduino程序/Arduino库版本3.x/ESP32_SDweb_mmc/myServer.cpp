@@ -39,22 +39,22 @@ void backToAP() {
 //读取SD卡中保存的热点名称和密码
 void WiFiconfigRead() {
   char buff[configMaximumLength];
-  if (configRead(SD_MMC, "ssid", "/config.txt", buff)) {
+  if (configRead(config_fs, "ssid", "/config.txt", buff)) {
     ssid = buff;
   }
-  if (configRead(SD_MMC, "password", "/config.txt", buff)) {
+  if (configRead(config_fs, "password", "/config.txt", buff)) {
     password = buff;
   }
-  if (configRead(SD_MMC, "channel", "/config.txt", buff)) {
+  if (configRead(config_fs, "channel", "/config.txt", buff)) {
     channel = String2Char((char*)buff);
   }
-  if (configRead(SD_MMC, "autoconnect", "/config.txt", buff)) {
+  if (configRead(config_fs, "autoconnect", "/config.txt", buff)) {
     autoconnect = String2Char((char*)buff);
   }
-  if (configRead(SD_MMC, "pressid", "/config.txt", buff)) {
+  if (configRead(config_fs, "pressid", "/config.txt", buff)) {
     pressid = buff;
   }
-  if (configRead(SD_MMC, "prepassword", "/config.txt", buff)) {
+  if (configRead(config_fs, "prepassword", "/config.txt", buff)) {
     prepassword = buff;
   }
 }

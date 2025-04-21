@@ -47,7 +47,7 @@ void listvideo() {
   char page2 = page0 * pageBreak + 1;
   String message = htmlHeader + "<style>.container {width: 500px;margin: 0 auto;}</style></head><body><div class=\"container\"><h2>" + tapeName + "</h2>";
 
-  File root = SD_MMC.open((char *)videoTape.c_str());
+  File root = my_fs.open((char *)videoTape.c_str());
   if (!root) {
     message += "Failed to open directory <br />";
   } else if (!root.isDirectory()) {
@@ -59,7 +59,7 @@ void listvideo() {
 
         namepath = String(file.path()) + "/0.txt";               //视频标题路径
         picpath = String(file.path()) + "/0.jpg";                //视频预览图路径
-        videoName = readFile(SD_MMC, (char *)namepath.c_str());  //读取视频标题
+        videoName = readFile(my_fs, (char *)namepath.c_str());  //读取视频标题
         message += "<a href=\"/openvideo?videoPath=" + String(file.path());
         message += "\"><img src=\"" + picpath + "\" alt=\"" + videoName + "\" width=auto height=\"200px\"/></a>";  //配置预览图大小
         message += "<form action=\"/openvideo\">  ";
@@ -153,7 +153,7 @@ void openVideo() {
 
   //调用videoJS
   String message = htmlHeader + "<title>Theater</title><link href=\"" + "/video/bin/video-js.min.css\" rel=\"stylesheet\"><script src=\"" + "/video/bin/video.min.js\"></script><script src=\"" + "/video/bin/videojs-contrib-hls.js\"></script></head><body><center><h2>";
-  message += readFile(SD_MMC, (char *)namepath.c_str());  //读取视频标题
+  message += readFile(my_fs, (char *)namepath.c_str());  //读取视频标题
   message += "</h2><section id=\"videoPlayer\"></section></center><script type=\"text/javascript\"> function createvideo(url) {let str = `";
   message += enter2;
   message += "<video id=\"video_demo\" autoplay width=\"\" class=\"video-js vjs-default-skin vjs-big-play-centered\" poster=\"\"><source src=\"";

@@ -16,6 +16,7 @@ OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的
 #include <WebServer.h>
 #include "FS.h"
 #include "SD_MMC.h"
+#include "SPIFFS.h"
 #include "common.h"
 #include "myServer.h"
 #include "game.h"
@@ -35,7 +36,7 @@ OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的
 // #define LED_OFF LOW
 #define SWITCH_ON LOW
 #define SWITCH_OFF HIGH
-
+#define FORMAT_SPIFFS_IF_FAILED false  //如出现SPIFFS初始化失败，将该参数改true格式化SPIFFS
 
 bool hasSD = false;         //是否有SD卡
 bool ONE_BIT_MODE = false;  //设置SD卡模式 1bit：true 4bit：false
@@ -47,7 +48,7 @@ File fsUploadFile;           // 建立文件对象用于闪存文件上传
 bool mode_switch = 1;   //用于控制模式变换中的跳出while循环
 bool mode_switch2 = 1;  //用于跳过STA模式，转换到AP模式
 bool mode_switch3 = 0;  //用于关闭WIFI标志
-char mode_wifi = 0;
+char mode_wifi = 0;     //用于显示当前WiFi模式
 
 String IPAD = "192.168.1.1";      //在AP和STA模式下存储ESP32的IP地址
 String ssid = "ESP32_WebServer";  //wifi名称
@@ -92,10 +93,29 @@ unsigned char oled_RAM[128][8];
 void setup() {
   // Serial.begin(115200);  // 启动串口通讯
   // Serial.println("");
+  //SPIFFS初始化
+  if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
+    // Serial.println("SPIFFS Mount Failed");
+    hasSD = false;
+    return;
+  } else {
+    // Serial.println("SPIFFS Ready!");
+    hasSD = true;
+  }
+  //SPIFFS里是否存在配置文件config.txt
+  if (!config_fs.exists("/config.txt")) {
+    File configFile = config_fs.open("/config.txt", FILE_WRITE);
+    if (!configFile) {
+      // Serial.println("failed to open file for writing");
+      return;
+    }
+    configFile.print("ssid=ESP32_WebServer\r\npassword=123456789\r\nchannel=1\r\nautoconnect=1\r\npressid=yourwifi\r\nprepassword=yourpassword\r\nstaticIP=192.168.1.80\r\ngateway=192.168.1.1\r\nsubnet=255.255.255.0\r\ndns=223.5.5.5\r\n");
+    configFile.close();
+  }
 }
 
 void loop(void) {
-  xTaskCreatePinnedToCore(task_server, "Task_Server", 20480, NULL, 1, &Task_Server, 1);    //创建第1核心服务器任务
+  xTaskCreatePinnedToCore(task_server, "Task_Server", 30720, NULL, 1, &Task_Server, 1);    //创建第1核心服务器任务
   xTaskCreatePinnedToCore(task_display, "Task_Display", 4096, NULL, 1, &Task_Display, 0);  //创建第2核心显示任务
   vTaskDelete(NULL);
 }
@@ -120,20 +140,20 @@ void task_server(void *pvParameters) {
   int d3  = 39;
   SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
   */
-  if (!SD_MMC.begin("/sdcard", ONE_BIT_MODE))  //SD卡初始化
+  if (!my_fs.begin("/sdcard", ONE_BIT_MODE))  //SD卡初始化
   {
     // Serial.println("Card Mount Failed");
+    hasSD = false;
     return;
   } else {
     // Serial.println("SD Card Ready!");
     hasSD = true;
   }
-  // uint8_t cardType = SD_MMC.cardType();
+  // uint8_t cardType = my_fs.cardType();
   // if(cardType == CARD_NONE){
   //   // Serial.println("No SD card attached");
   //   return;
   // }
-
   // Serial.print("SD Card Type: ");   //输出SD卡信息
   // if(cardType == CARD_MMC){
   //   Serial.println("MMC");
@@ -144,11 +164,11 @@ void task_server(void *pvParameters) {
   // } else {
   //   Serial.println("UNKNOWN");
   // }
-  // uint64_t cardSize = SD_MMC.cardSize() / (1024 * 1024);
+  // uint64_t cardSize = my_fs.cardSize() / (1024 * 1024);
   // Serial.printf("SD Card Size: %lluMB\n", cardSize);
-  // listDir(SD_MMC, "/", 0);
-  // Serial.printf("Total space: %lluMB\n", SD_MMC.totalBytes() / (1024 * 1024));
-  // Serial.printf("Used space: %lluMB\n", SD_MMC.usedBytes() / (1024 * 1024));
+  // listDir(my_fs, "/", 0);
+  // Serial.printf("Total space: %lluMB\n", my_fs.totalBytes() / (1024 * 1024));
+  // Serial.printf("Used space: %lluMB\n", my_fs.usedBytes() / (1024 * 1024));
 
   if (hasSD) {
     WiFiconfigRead();  //读取保存的AP名称和密码
@@ -178,7 +198,7 @@ void closeServer() {
   if (mode_switch3) {
     ssid_hidden = 0;
     WiFi.mode(WIFI_OFF);     //关闭WIFI
-    SD_MMC.end();            //关闭SD卡
+    my_fs.end();             //关闭SD卡
     setCpuFrequencyMhz(80);  //CPU频率变为80MHz
 
     vTaskDelete(NULL);  //删除任务
@@ -310,6 +330,9 @@ void task_display(void *pvParameters) {
             } else if (wifiState == WL_CONNECT_FAILED) {
               OLED_ShowString(0, 4, "Connect Failed", 16);
               WiFi.reconnect();  //尝试重新连接WiFi
+              flag_wifiState = 1;
+            } else if (wifiState == WL_CONNECTION_LOST) {
+              OLED_ShowString(0, 4, "Connect Lost", 16);
               flag_wifiState = 1;
             } else if (wifiState == WL_DISCONNECTED) {
               OLED_ShowString(0, 4, "Disconnected", 16);

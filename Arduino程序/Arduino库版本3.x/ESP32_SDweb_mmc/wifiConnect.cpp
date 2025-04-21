@@ -53,16 +53,16 @@ void handleRoot() {
   String gateway1 = "";
   String subnet1 = "";
   String dns1 = "";
-  if (configRead(SD_MMC, "staticIP", "/config.txt", buff)) {
+  if (configRead(config_fs, "staticIP", "/config.txt", buff)) {
     staticIP1 = buff;
   }
-  if (configRead(SD_MMC, "gateway", "/config.txt", buff)) {
+  if (configRead(config_fs, "gateway", "/config.txt", buff)) {
     gateway1 = buff;
   }
-  if (configRead(SD_MMC, "subnet", "/config.txt", buff)) {
+  if (configRead(config_fs, "subnet", "/config.txt", buff)) {
     subnet1 = buff;
   }
-  if (configRead(SD_MMC, "dns", "/config.txt", buff)) {
+  if (configRead(config_fs, "dns", "/config.txt", buff)) {
     dns1 = buff;
   }
   String message = htmlWIFIConnect1 + staticIP1 + htmlWIFIConnect2 + gateway1 + htmlWIFIConnect3 + subnet1 + htmlWIFIConnect4 + dns1 + htmlWIFIConnect5;
@@ -146,14 +146,26 @@ void HandleWifi() {
       mode_switch = 0;  //函数跳出while循环，从而在loop函数中进入下一个模式
 
       //写入配置文件当前连接的WiFi
-      configWrite(SD_MMC, "pressid", (char*)wifis.c_str(), "/config.txt");
-      configWrite(SD_MMC, "prepassword", (char*)wifip.c_str(), "/config.txt");
+      // configWrite(config_fs, "pressid", (char*)wifis.c_str(), "/config.txt");
+      // configWrite(config_fs, "prepassword", (char*)wifip.c_str(), "/config.txt");
+      char filetxt[configMaximumLength] = { 0 };
+      configWriteOpen(config_fs, "/config.txt", (char*)filetxt);
+      configRewrite("pressid", (char*)wifis.c_str(), (char*)filetxt);
+      configRewrite("prepassword", (char*)wifip.c_str(), (char*)filetxt);
+      configWriteClose(config_fs, "/config.txt", (char*)filetxt);
       if (ip2 == "1")  //保存静态IP
       {
-        configWrite(SD_MMC, "staticIP", (char*)staticIP2.c_str(), "/config.txt");
-        configWrite(SD_MMC, "gateway", (char*)gateway2.c_str(), "/config.txt");
-        configWrite(SD_MMC, "subnet", (char*)subnet2.c_str(), "/config.txt");
-        configWrite(SD_MMC, "dns", (char*)dns2.c_str(), "/config.txt");
+        // configWrite(config_fs, "staticIP", (char*)staticIP2.c_str(), "/config.txt");
+        // configWrite(config_fs, "gateway", (char*)gateway2.c_str(), "/config.txt");
+        // configWrite(config_fs, "subnet", (char*)subnet2.c_str(), "/config.txt");
+        // configWrite(config_fs, "dns", (char*)dns2.c_str(), "/config.txt");
+        memset(filetxt, 0, sizeof(filetxt));
+        configWriteOpen(config_fs, "/config.txt", (char*)filetxt);
+        configRewrite("staticIP", (char*)staticIP2.c_str(), (char*)filetxt);
+        configRewrite("gateway", (char*)gateway2.c_str(), (char*)filetxt);
+        configRewrite("subnet", (char*)subnet2.c_str(), (char*)filetxt);
+        configRewrite("dns", (char*)dns2.c_str(), (char*)filetxt);
+        configWriteClose(config_fs, "/config.txt", (char*)filetxt);
       }
       return;  //如果成功连接，则返回到主函数
 
@@ -224,11 +236,16 @@ void configAP() {
   String channel2 = server.arg("channel");           //获取AP信道
   String hidden2 = server.arg("hidden");             //获取wifi隐身配置
   String str = "";
-
+  char filetxt[configMaximumLength] = { 0 };
   char flag = 0;
-  flag = flag + configWrite(SD_MMC, "ssid", (char*)ssid2.c_str(), "/config.txt");
-  flag = flag + configWrite(SD_MMC, "password", (char*)password2.c_str(), "/config.txt");
-  flag = flag + configWrite(SD_MMC, "channel", (char*)channel2.c_str(), "/config.txt");
+  // flag = flag + configWrite(config_fs, "ssid", (char*)ssid2.c_str(), "/config.txt");
+  // flag = flag + configWrite(config_fs, "password", (char*)password2.c_str(), "/config.txt");
+  // flag = flag + configWrite(config_fs, "channel", (char*)channel2.c_str(), "/config.txt");
+  configWriteOpen(config_fs, "/config.txt", filetxt);
+  flag = flag + configRewrite("ssid", (char*)ssid2.c_str(), (char*)filetxt);
+  flag = flag + configRewrite("password", (char*)password2.c_str(), (char*)filetxt);
+  flag = flag + configRewrite("channel", (char*)channel2.c_str(), (char*)filetxt);
+  configWriteClose(config_fs, "/config.txt", (char*)filetxt);
 
   if (flag == 3) {
     ssid = ssid2;
@@ -265,11 +282,16 @@ void configAutoConnect() {
   String pressid2 = server.arg("pressid");          //获取WiFi名称
   String prepassword2 = server.arg("prepassword");  //获取WiFi密码
   String str = "";
-
+  char filetxt[configMaximumLength] = { 0 };
   char flag = 0;
-  flag = flag + configWrite(SD_MMC, "autoconnect", (char*)autoconnect2.c_str(), "/config.txt");
-  flag = flag + configWrite(SD_MMC, "pressid", (char*)pressid2.c_str(), "/config.txt");
-  flag = flag + configWrite(SD_MMC, "prepassword", (char*)prepassword2.c_str(), "/config.txt");
+  // flag = flag + configWrite(config_fs, "autoconnect", (char*)autoconnect2.c_str(), "/config.txt");
+  // flag = flag + configWrite(config_fs, "pressid", (char*)pressid2.c_str(), "/config.txt");
+  // flag = flag + configWrite(config_fs, "prepassword", (char*)prepassword2.c_str(), "/config.txt");
+  configWriteOpen(config_fs, "/config.txt", filetxt);
+  flag = flag + configRewrite("autoconnect", (char*)autoconnect2.c_str(), (char*)filetxt);
+  flag = flag + configRewrite("pressid", (char*)pressid2.c_str(), (char*)filetxt);
+  flag = flag + configRewrite("prepassword", (char*)prepassword2.c_str(), (char*)filetxt);
+  configWriteClose(config_fs, "/config.txt", (char*)filetxt);
 
   if (flag == 3) {
     autoconnect = String2Char((char*)autoconnect2.c_str());

@@ -19,7 +19,7 @@ void listGame() {
   String message = htmlHeader + "<style>.container {width: 500px;margin: 0 auto;}</style><body><div class=\"container\"><h2>";
   message += folder + ":</h2>";
 
-  File root = SD_MMC.open((char*)folder.c_str());
+  File root = my_fs.open((char*)folder.c_str());
   if (!root) {
     message += "Failed to open directory <br />";
   } else if (!root.isDirectory()) {
