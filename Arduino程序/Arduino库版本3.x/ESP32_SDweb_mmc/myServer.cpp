@@ -9,6 +9,7 @@ extern bool mode_switch;
 extern bool mode_switch2;
 extern char mode_wifi;
 
+extern String mdnsName;
 extern String IPAD;
 extern String ssid;
 extern String password;
@@ -90,7 +91,10 @@ void server_ap() {
   // Serial.println(WiFi.softAPgetStationNum());
 
   IPAD = WiFi.softAPIP().toString();  //将当前IP地址存储起来
-
+  //mdns服务
+  if (!MDNS.begin(mdnsName)) {
+    Serial.println("Error setting up MDNS responder!");
+  }
   esp32_server.onNotFound(handleUserRequet);                             // 告知系统如何处理用户请求
   esp32_server.on("/gamelist", HTTP_GET, listGame);                      //列出游戏列表
   esp32_server.on("/opengame", HTTP_GET, openGame);                      //打开游戏
@@ -120,13 +124,17 @@ void server_ap() {
   }
 
   mode_switch = 1;
+  MDNS.end();            //关闭mdns
   esp32_server.close();  //关闭网站服务
 }
 
 void server_ap_sta() {
   mode_wifi = 2;
   WiFi.mode(WIFI_AP_STA);
-
+  //mdns服务
+  if (!MDNS.begin(mdnsName)) {
+    Serial.println("Error setting up MDNS responder!");
+  }
   server.on("/wificonnect", handleRoot);                       //发送配网页面
   server.on("/HandleWifi", HTTP_GET, HandleWifi);              //尝试连接网页发送的WIFI
   server.on("/HandleScanWifi", HandleScanWifi);                //扫描附近WIFI并返回
@@ -143,6 +151,7 @@ void server_ap_sta() {
     vTaskDelay(2 / portTICK_PERIOD_MS);
   }
   mode_switch = 1;
+  MDNS.end();  //关闭mdns
   server.close();
 }
 
@@ -157,7 +166,10 @@ void server_sta() {
   // Serial.println(WiFi.localIP());           // 通过串口监视器输出ESP32-NodeMCU的IP
 
   IPAD = WiFi.localIP().toString();
-
+  //mdns服务
+  if (!MDNS.begin(mdnsName)) {
+    Serial.println("Error setting up MDNS responder!");
+  }
   esp32_server.onNotFound(handleUserRequet);                             // 告知系统如何处理用户请求
   esp32_server.on("/gamelist", HTTP_GET, listGame);                      //列出游戏列表
   esp32_server.on("/opengame", HTTP_GET, openGame);                      //打开游戏
@@ -187,6 +199,7 @@ void server_sta() {
   }
 
   mode_switch = 1;
+  MDNS.end();            //关闭mdns
   esp32_server.close();  //关闭网站服务
 }
 
@@ -211,7 +224,10 @@ void server_presta() {
   if (flag_ok) {
     mode_wifi = 3;
     IPAD = WiFi.localIP().toString();
-
+    //mdns服务
+    if (!MDNS.begin(mdnsName)) {
+      Serial.println("Error setting up MDNS responder!");
+    }
     esp32_server.onNotFound(handleUserRequet);                             // 告知系统如何处理用户请求
     esp32_server.on("/gamelist", HTTP_GET, listGame);                      //列出游戏列表
     esp32_server.on("/opengame", HTTP_GET, openGame);                      //打开游戏
@@ -241,6 +257,7 @@ void server_presta() {
     }
 
     mode_switch = 1;
+    MDNS.end();            //关闭mdns
     esp32_server.close();  //关闭网站服务
   }
 }

@@ -27,6 +27,7 @@ OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的
 #include "wifiConnect.h"
 #include "time.h"
 #include "esp_sntp.h"
+#include <ESPmDNS.h>
 
 #include "Wire.h"
 #include "oled.h"
@@ -50,14 +51,15 @@ bool mode_switch2 = 1;  //用于跳过STA模式，转换到AP模式
 bool mode_switch3 = 0;  //用于关闭WIFI标志
 char mode_wifi = 0;     //用于显示当前WiFi模式
 
-String IPAD = "192.168.1.1";      //在AP和STA模式下存储ESP32的IP地址
-String ssid = "ESP32_WebServer";  //wifi名称
-String password = "123456789";    //wifi密码（注意WiFi密码位数不要小于8位）
-char channel = 1;                 //wifi信道
-char ssid_hidden = 0;             //WiFi隐身
-char autoconnect = 0;             //开机自动连接上次成功连接WiFi
-String pressid = "";              //上次成功连接wifi名称
-String prepassword = "";          //上次成功连接wifi密码（注意WiFi密码位数不要小于8位）
+String mdnsName = "esp32";            //mdns名字
+String IPAD = "192.168.1.1";          //在AP和STA模式下存储ESP32的IP地址
+String ssid = "ESP32_WebServer";      //wifi名称
+String password = "123456789";        //wifi密码（注意WiFi密码位数不要小于8位）
+char channel = 1;                     //wifi信道
+char ssid_hidden = 0;                 //WiFi隐身
+char autoconnect = 0;                 //开机自动连接上次成功连接WiFi
+String pressid = "yourwifi";          //上次成功连接wifi名称
+String prepassword = "yourpassword";  //上次成功连接wifi密码（注意WiFi密码位数不要小于8位）
 
 TaskHandle_t Task_Server;   //第1核心任务
 TaskHandle_t Task_Display;  //第2核心任务
@@ -93,8 +95,32 @@ unsigned char oled_RAM[128][8];
 void setup() {
   // Serial.begin(115200);  // 启动串口通讯
   // Serial.println("");
+  #if CONFIG_SD
+  //SD卡初始化
+  /*
+  //ESP32-S3 SD卡引脚定义
+  int clk = 41;
+  int cmd = 40;
+  int d0  = 42;
+  int d1  = 2;
+  int d2  = 38;
+  int d3  = 39;
+  SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
+  */
+  // Serial.println("SD");
+  if (!config_fs.begin("/sdcard", ONE_BIT_MODE))  //SD卡初始化
+  {
+    // Serial.println("Card Mount Failed");
+    hasSD = false;
+    return;
+  } else {
+    // Serial.println("SD Card Ready!");
+    hasSD = true;
+  }
+  #else
+  // Serial.println("SPIFFS");
   //SPIFFS初始化
-  if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
+  if (!config_fs.begin(FORMAT_SPIFFS_IF_FAILED)) {
     // Serial.println("SPIFFS Mount Failed");
     hasSD = false;
     return;
@@ -102,6 +128,8 @@ void setup() {
     // Serial.println("SPIFFS Ready!");
     hasSD = true;
   }
+  #endif
+
   //SPIFFS里是否存在配置文件config.txt
   if (!config_fs.exists("/config.txt")) {
     File configFile = config_fs.open("/config.txt", FILE_WRITE);
@@ -109,7 +137,7 @@ void setup() {
       // Serial.println("failed to open file for writing");
       return;
     }
-    configFile.print("ssid=ESP32_WebServer\r\npassword=123456789\r\nchannel=1\r\nautoconnect=1\r\npressid=yourwifi\r\nprepassword=yourpassword\r\nstaticIP=192.168.1.80\r\ngateway=192.168.1.1\r\nsubnet=255.255.255.0\r\ndns=223.5.5.5\r\n");
+    configFile.print("ssid=" + ssid + "\r\npassword=" + password + "\r\nchannel=1\r\nautoconnect=1\r\npressid=" + pressid + "\r\nprepassword=" + prepassword + "\r\nstaticIP=192.168.1.80\r\ngateway=192.168.1.1\r\nsubnet=255.255.255.0\r\ndns=223.5.5.5\r\n\0");
     configFile.close();
   }
 }

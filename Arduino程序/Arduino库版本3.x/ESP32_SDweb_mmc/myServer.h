@@ -3,8 +3,6 @@
 
 #include <WiFi.h>
 #include <WebServer.h> 
-#include "FS.h"
-#include "SD_MMC.h"
 #include "common.h"
 #include "game.h"
 #include "upload.h"
@@ -13,6 +11,7 @@
 #include "copy.h"
 #include "wifiConnect.h"
 #include "oledClock.h"
+#include <ESPmDNS.h>
 
 void changemode();
 void backToAP();

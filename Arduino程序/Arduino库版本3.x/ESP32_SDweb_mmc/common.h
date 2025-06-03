@@ -7,7 +7,14 @@
 
 #define configMaximumLength 1024   //配置文件缓冲区数值
 #define my_fs SD_MMC
+//选择配置文件储存位置，0为SPIFFS，1为SD_MMC
+#define CONFIG_SD 0
+#if CONFIG_SD
+#define config_fs SD_MMC
+#else
 #define config_fs SPIFFS
+#endif
+
 
 //String indexOfFilename(String filename);
 String formatBytes(size_t bytes);
