@@ -62,7 +62,7 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 4、拨动开关开机。
 
 
-# 内存卡中网页视频与flash游戏的配置
+# 内存卡中网页视频与flash游戏的配置，以及服务器配置
 
 参考视频：https://www.bilibili.com/video/BV1r34117746/
 
@@ -78,6 +78,9 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 
 视频的预览图存放在与视频相同路径下的 0.jpg文件内。
 
+3、服务器配置
+
+服务器配置存放位置通过common.h中的CONFIG_SD设置，0为SPIFFS，1为SD_MMC，默认存放在SPIFFS中，文件名为config.txt，其中存放WiFi名称密码等信息。
 
 # 使用说明
 
@@ -96,7 +99,7 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 
 # 参考项目
 
-SD卡代码参考 https://youtu.be/QAbn-7Ai6UU
+SD卡代码参考 https://youtu.be/e1xOgZsnAuw
 
 网页响应代码参考 http://www.taichi-maker.com/homepage/esp8266-nodemcu-iot/iot-c/spiffs/spiffs-web-server/file-upload-server/
 
