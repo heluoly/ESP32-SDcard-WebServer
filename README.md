@@ -118,5 +118,9 @@ OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的
 
 如需旧版代码，请到release中下载
 
-目前的3.0.1库编译的固件，在STA模式下的传输速度比2.x库编译的固件传输速度快
+2025.11.14新增异步库版本，在ESP32_SDwebserver_async文件夹下，该版本使用ESP32-S3运行能大幅提高视频播放的流畅性，普通的ESP32跑起来反而很卡；使用该版本需要额外安装如下依赖库
+
+https://github.com/ESP32Async/ESPAsyncWebServer
+
+https://github.com/ESP32Async/AsyncTCP
 
