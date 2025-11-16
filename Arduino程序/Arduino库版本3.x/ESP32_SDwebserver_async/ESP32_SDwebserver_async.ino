@@ -21,7 +21,7 @@ https://github.com/ESP32Async/AsyncTCP
 #include "SPIFFS.h"
 #include "time.h"
 #include "esp_sntp.h"
-#include <ESPmDNS.h>
+// #include <ESPmDNS.h>
 
 #include "common.h"
 #include "myServer.h"
