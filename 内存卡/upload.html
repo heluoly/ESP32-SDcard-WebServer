@@ -56,7 +56,9 @@ function deleteButton(filepath) {
 	}
 }
 function downloadButton(filepath,filename) {
-  var urltocall = "/downloadUploadFile?attname=" + filename + "&downloadPath=" + filepath;
+  var filepath2=encodeURIComponent(filepath);
+  var filename2=encodeURIComponent(filename);
+  var urltocall = "/downloadUploadFile?attname=" + filename2 + "&downloadPath=" + filepath2;
   document.getElementById("status").innerHTML = "";
   window.open(urltocall , '_blank');
 }
