@@ -1,5 +1,7 @@
 #include "myServer.h"
 
+// extern TaskHandle_t Task_Server;
+
 extern AsyncWebServer esp32_server;  //网页服务
 extern AsyncWebServer server;        //WIFI配网
 
@@ -104,7 +106,8 @@ void server_ap() {
   // }
   esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
   esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
-  esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件
+  esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
+  esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
   esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
   esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
   esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
@@ -122,7 +125,7 @@ void server_ap() {
   while (mode_switch)  //监听用户请求，直到模式转换
   {
     // istack = uxTaskGetStackHighWaterMark(Task_Server);
-    // printf("Task_Server istack = %d\n", istack);
+    // Serial.printf("Task_Server istack = %d\n", istack);
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
   vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -162,6 +165,7 @@ void server_ap_sta() {
 }
 
 void server_sta() {
+  // UBaseType_t istack;
   mode_wifi = 3;
   WiFi.softAPdisconnect(true);
   // WiFi.setAutoReconnect(true);
@@ -179,7 +183,8 @@ void server_sta() {
   // }
   esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
   esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
-  esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件
+  esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
+  esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
   esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
   esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
   esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
@@ -198,6 +203,8 @@ void server_sta() {
 
   while (mode_switch)  //监听用户请求，直到模式转换
   {
+    // istack = uxTaskGetStackHighWaterMark(Task_Server);
+    // Serial.printf("Task_Server istack = %d\n", istack);
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
   vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -209,6 +216,7 @@ void server_sta() {
 }
 
 void server_presta() {
+  // UBaseType_t istack;
   char flag_ok = 0;
   mode_wifi = 4;
   WiFi.mode(WIFI_STA);
@@ -235,7 +243,8 @@ void server_presta() {
     // }
     esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
     esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
-    esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件
+    esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
+    esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
     esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
     esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
     esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
@@ -254,6 +263,8 @@ void server_presta() {
 
     while (mode_switch)  //监听用户请求，直到模式转换
     {
+      // istack = uxTaskGetStackHighWaterMark(Task_Server);
+      // Serial.printf("Task_Server istack = %d\n", istack);
       vTaskDelay(100 / portTICK_PERIOD_MS);
     }
     vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -309,3 +320,4 @@ void handleUserRequest(AsyncWebServerRequest *request) {
     }
   }
 }
+

@@ -35,8 +35,9 @@ void listvideo(AsyncWebServerRequest *request) {
   String videoTape = request->getParam("videoTape")->value();  //获取视频分区路径
   String page = request->getParam("page")->value();            //获取页数
   String tapeName = request->getParam("tapeName")->value();    //获取视频分区名称
-  String namepath = "";
-  String picpath = "";
+  String filePath = "";
+  String namePath = "";
+  String picPath = "";
   String videoName = "";
   uint8_t i = 1;
   char pageState = 0;
@@ -44,7 +45,7 @@ void listvideo(AsyncWebServerRequest *request) {
   char page0 = String2Char((char *)page.c_str());
   char page1 = (page0 - 1) * pageBreak;
   char page2 = page0 * pageBreak + 1;
-  String message = htmlHeader + "<style>.container {width: 500px;margin: 0 auto;}</style></head><body><div class=\"container\"><h2>" + tapeName + "</h2>";
+  String message = htmlHeader + "<title>" + tapeName + "</title><style>.container {width: 500px;margin: 0 auto;}</style></head><body><div class=\"container\"><h2>" + tapeName + "</h2>";
 
   File root = my_fs.open((char *)videoTape.c_str());
   if (!root) {
@@ -56,18 +57,14 @@ void listvideo(AsyncWebServerRequest *request) {
     while (file) {
       if (file.isDirectory() && i > page1 && i < page2) {
 
-        namepath = String(file.path()) + "/0.txt";               //视频标题路径
-        picpath = String(file.path()) + "/0.jpg";                //视频预览图路径
-        videoName = readFile(my_fs, (char *)namepath.c_str());  //读取视频标题
-        message += "<a href=\"/openvideo?videoPath=" + String(file.path());
-        message += "\"><img src=\"" + picpath + "\" alt=\"" + videoName + "\" width=auto height=\"200px\" loading=\"lazy\"/></a>";  //配置预览图大小
-        message += "<form action=\"/openvideo\">  ";
-        message += videoName;
-        message += "<input type=\"hidden\" name=\"videoPath\" value=\"" + String(file.path()) + "\">";
-        message += ": <input type=\"submit\" value=\"播放\">";
-        message += "</form><br />";
-        namepath = "";
-        picpath = "";
+        filePath = String(file.path());
+        namePath = filePath + "/0.txt";               //视频标题路径
+        picPath = filePath + "/0.jpg";                //视频预览图路径
+        videoName = readFile(my_fs, (char *)namePath.c_str());  //读取视频标题
+        message += "<a href=\"/openvideo?videoPath=" + filePath;
+        message += "\"><img src=\"" + picPath + "\" alt=\"" + videoName + "\" width=auto height=\"200px\" loading=\"lazy\"/></a><br />";  //配置预览图大小
+        message += videoName + "<button onclick=\"openVideoButton(\'" + filePath + "\')\">播放</button><br /><br />";
+
       }
       file = root.openNextFile();
       i++;
@@ -132,15 +129,16 @@ void listvideo(AsyncWebServerRequest *request) {
     }
   }
 
-  message += "</div></body></html>";
+  message += "</div></body><script>function openVideoButton(filepath) {var filepath2=encodeURIComponent(filepath);var urltocall = \"/openvideo?videoPath=\" + filepath2;window.open(urltocall);}</script></html>";
   request->send(200, "text/html", message);
 }
 
 //打开视频
 void openVideo(AsyncWebServerRequest *request) {
   String videoPath = request->getParam("videoPath")->value();  //获取视频路径
-  String namepath = videoPath;
-  namepath += "/0.txt";
+  String namePath = videoPath;
+  namePath += "/0.txt";
+  String videoName = readFile(my_fs, (char *)namePath.c_str());  //读取视频标题
 
   //得到回车字符串
   char enter[3];
@@ -151,8 +149,8 @@ void openVideo(AsyncWebServerRequest *request) {
   enter2 = enter;
 
   //调用videoJS
-  String message = htmlHeader + "<title>Theater</title><link href=\"" + "/video/bin/video-js.min.css\" rel=\"stylesheet\"><script src=\"" + "/video/bin/video.min.js\"></script><script src=\"" + "/video/bin/videojs-contrib-hls.js\"></script></head><body><center><h2>";
-  message += readFile(my_fs, (char *)namepath.c_str());  //读取视频标题
+  String message = htmlHeader + "<title>" + videoName + "</title><link href=\"/video/bin/video-js.min.css\" rel=\"stylesheet\"><script src=\"/video/bin/video.min.js\"></script><script src=\"/video/bin/videojs-contrib-hls.js\"></script></head><body><center><h2>";
+  message += videoName;
   message += "</h2><section id=\"videoPlayer\"></section></center><script type=\"text/javascript\"> function createvideo(url) {let str = `";
   message += enter2;
   message += "<video id=\"video_demo\" autoplay width=\"\" class=\"video-js vjs-default-skin vjs-big-play-centered\" poster=\"\"><source src=\"";

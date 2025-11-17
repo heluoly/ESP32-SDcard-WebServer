@@ -9,8 +9,8 @@ String listUploadDir(fs::FS &fs, const char *dirname, uint8_t levels, String pag
   char page1 = (page0 - 1) * pageBreak;
   char page2 = page0 * pageBreak + 1;
 
+  String filepath = "";
   String filename = "";
-  String filename2 = "";
 
   String message = "";
   File root = fs.open(dirname);
@@ -32,13 +32,12 @@ String listUploadDir(fs::FS &fs, const char *dirname, uint8_t levels, String pag
       //     message += listUploadDir(fs, file.path(), levels -1);
       // }
     } else if (i > page1 && i < page2) {
-      filename = String(file.path());
-      //filename2 = indexOfFilename(filename);
-      filename2 = String(file.name());
+      filepath = String(file.path());
+      filename = String(file.name());
 
-      message += "<tr align='left'><td>" + filename2 + "</td><td>" + formatBytes(file.size());
-      message += "</td><td><button onclick=\"downloadButton(\'" + filename + "\',\'" + filename2 + "\')\">下载</button></td>";
-      message += "<td><button onclick=\"deleteButton(\'" + filename + "\')\">删除</button></tr>";
+      message += "<tr align='left'><td>" + filename + "</td><td>" + formatBytes(file.size());
+      message += "</td><td><button onclick=\"downloadButton(\'" + filepath + "\',\'" + filename + "\')\">下载</button></td>";
+      message += "<td><button onclick=\"deleteButton(\'" + filepath + "\')\">删除</button></tr>";
     }
     file = root.openNextFile();
     i++;
@@ -266,7 +265,7 @@ void downloadUploadFile(AsyncWebServerRequest *request) {
   // 解析Range头部
   if (request->hasHeader("Range")) {
     String rangeHeader = request->getHeader("Range")->value();
-    Serial.println("Range Header: " + rangeHeader);
+    // Serial.println("Range Header: " + rangeHeader);
 
     if (rangeHeader.startsWith("bytes=")) {
       String rangeValue = rangeHeader.substring(6);

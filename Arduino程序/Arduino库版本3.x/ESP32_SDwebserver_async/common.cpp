@@ -338,3 +338,10 @@ char configWriteClose(fs::FS &fs, const char *filename, char *filetxt) {
     return 0;
   }
 }
+
+//下载带中文名文件
+void downloadFile(AsyncWebServerRequest *request) {
+  String filePath = request->getParam("filePath")->value();
+  AsyncWebServerResponse *response = request->beginResponse(my_fs, filePath, String());
+  request->send(response);
+}

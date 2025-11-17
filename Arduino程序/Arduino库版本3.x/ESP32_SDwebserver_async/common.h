@@ -29,5 +29,6 @@ char configWrite(fs::FS &fs , const char *key, const char *val, const char *file
 char configWriteOpen(fs::FS &fs, const char *filename, char *filetxt);
 char configRewrite(const char *key, const char *val, char *filetxt);
 char configWriteClose(fs::FS &fs, const char *filename, char *filetxt);
+void downloadFile(AsyncWebServerRequest *request);
 
 #endif

@@ -142,7 +142,7 @@ void setup() {
 }
 
 void loop() {
-  xTaskCreatePinnedToCore(task_server, "Task_Server", 51200, NULL, 1, &Task_Server, 1);     //创建第1核心服务器任务
+  xTaskCreatePinnedToCore(task_server, "Task_Server", 8192, NULL, 1, &Task_Server, 1);     //创建第1核心服务器任务
   xTaskCreatePinnedToCore(task_display, "Task_Display", 4096, NULL, 1, &Task_Display, 0);   //创建第2核心显示任务
   vTaskDelete(NULL);
 }
