@@ -56,7 +56,7 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 
 # 开始前准备
 
-1、选择你的内存卡连接方式，参照"image/连接图"上的方式连接，目前只支持MMC_4bit和MMC_1bit连接，如需SPI连接请自行修改程序；ESP32-S3可用SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);函数自由设置SD卡管脚。
+1、选择你的内存卡连接方式，参照"image/连接图"上的方式连接，目前只支持MMC_4bit和MMC_1bit连接，如需SPI连接请自行修改程序；ESP32-S3可用SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);函数自由设置SD卡管脚；OLED屏幕使用I2C驱动，sda：21，scl：22。
 
 2、使用arduino将程序编译烧录进入ESP32，arduino-esp32库版本为2.0.14+或3.3.4(需选择对应版本程序)，根据你内存卡的连接方式修改程序中"ONE_BIT_MODE"参数，默认为MMC_4bit，注意，烧录时需要将内存卡从卡槽中取出，同时确保IO12管脚悬空。
 
