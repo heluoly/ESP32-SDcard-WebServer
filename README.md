@@ -1,20 +1,23 @@
 # ESP32-SDcard-WebServer
-<div style="font-size: 16px; line-height: 1.6;">
+<div style="font-size: 24px; line-height: 1.6;">
 项目名称：ESP32便携SD(TF)卡服务器<br>
 作者：B站 狼尾巴的猫<br>
 项目实现文件上传下载、网页flash游戏、播放视频、模式转换（AP STA AP+STA互相转换）、剪切板功能<br>
+</div>
+
 ![image](/image/image1.jpg)<br>
 ![image](/image/image2.jpg)<br>
-</div>
+
 # 演示视频：<br>
-<div style="font-size: 16px; line-height: 1.6;">
+<div style="font-size: 24px; line-height: 1.6;">
 1、  https://www.bilibili.com/video/BV1pu4m1A7bo/<br>
 2、  https://www.bilibili.com/video/BV1r34117746<br>
 3、  https://www.bilibili.com/video/BV1SG411x7tz<br>
 PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy<br>
 </div>
+
 # 功能<br>
-<div style="font-size: 16px; line-height: 1.6;">
+<div style="font-size: 24px; line-height: 1.6;">
 1、文件上传下载<br>
 可将终端设备的文件上传到服务器的内存卡中，也可将服务器中的文件取回。<br>
 2、网页视频<br>
@@ -30,16 +33,18 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy<br>
 7、OLED屏显示服务器状态及时间。<br>
 8、服务器低功耗模式。<br>
 </div>
+
 # 开始前准备<br>
-<div style="font-size: 16px; line-height: 1.6;">
+<div style="font-size: 24px; line-height: 1.6;">
 1、选择你的内存卡连接方式，参照"image/连接图"上的方式连接，目前只支持MMC_4bit和MMC_1bit连接，如需SPI连接请自行修改程序；ESP32-S3可用SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);函数自由设置SD卡管脚。<br>
 1、使用arduino将程序编译烧录进入ESP32，arduino-esp32库版本为2.0.14+或3.3.4(需选择对应版本程序)，根据你内存卡的连接方式修改程序中"ONE_BIT_MODE"参数，默认为MMC_4bit，注意，烧录时需要将内存卡从卡槽中取出，同时确保IO12管脚悬空。<br>
 2、准备一张32G以下大小的内存卡，将“内存卡”文件夹中的所有文件复制进入内存卡根目录，同时参照下一节存入你的swf游戏文件或m3u8视频文件。<br>
 3、将内存卡插入内存卡插槽，参照"image/连接图"上的方式连接。<br>
 4、接上电源开机。<br>
 </div>
+
 # 内存卡中网页视频与flash游戏的配置，以及服务器配置<br>
-<div style="font-size: 16px; line-height: 1.6;">
+<div style="font-size: 24px; line-height: 1.6;">
 参考视频：https://www.bilibili.com/video/BV1r34117746/<br>
 1、flash游戏配置<br>
 请将swf文件复制到内存卡中的/webgame/oldGame内。<br>
@@ -50,8 +55,9 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy<br>
 3、服务器配置<br>
 服务器配置存放位置通过common.h中的CONFIG_SD设置，0为SPIFFS，1为SD_MMC，默认存放在SPIFFS中，文件名为config.txt，其中存放WiFi名称密码等信息。<br>
 </div>
+
 # 使用说明<br>
-<div style="font-size: 16px; line-height: 1.6;">
+<div style="font-size: 24px; line-height: 1.6;">
 1、Boot键功能<br>
 单击：服务器状态/时钟表盘切换显示<br>
 长按：关闭/开启WIFI<br>
@@ -59,8 +65,9 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy<br>
 2、如何连接服务器<br>
 服务器上电默认处于AP模式，使用手机或者电脑，找到ESP32_webserver这个WIFI进行连接，密码是123456789，连接成功后，用浏览器访问192.168.1.1即可进入服务器主页。<br>
 </div>
+
 # 关于使用异步库版本的说明<br>
-<div style="font-size: 16px; line-height: 1.6;">
+<div style="font-size: 24px; line-height: 1.6;">
 1、这是一个采用webserver异步库的版本，程序在"ESP32-SDcard-WebServer/Arduino程序\Arduino库版本3.x/ESP32_SDwebserver_async"文件夹下，使用异步库可以并发处理任务。<br>
 2、目前测试该版本只适用于ESP32-S3，且使用ESP32-S3运行能大幅提高视频播放的流畅性，而普通的ESP32运行起来会卡死。<br>
 3、使用该版本需要额外安装如下依赖库：<br>
@@ -69,8 +76,9 @@ https://github.com/ESP32Async/AsyncTCP<br>
 4、该版本程序需要搭配"内存卡_async"内的文件，目前对在线影院的界面进行了美化，采用了动态加载的方式。<br>
 5、该版本文件管理中支持了断点下载和多线程下载，最高支持4线程下载。<br>
 </div>
+
 # 参考项目<br>
-<div style="font-size: 16px; line-height: 1.6;">
+<div style="font-size: 24px; line-height: 1.6;">
 SD卡代码参考 https://youtu.be/e1xOgZsnAuw<br>
 网页响应代码参考 http://www.taichi-maker.com/homepage/esp8266-nodemcu-iot/iot-c/spiffs/spiffs-web-server/file-upload-server/<br>
 文件上传代码参考 https://github.com/smford/esp32-asyncwebserver-fileupload-example<br>
@@ -80,7 +88,8 @@ flash播放器使用objecty<br>
 OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的 examples/SSD1306ClockDemo<br>
 Font Awesome https://fontawesome.com/<br>
 </div>
+
 # 额外说明<br>
-<div style="font-size: 16px; line-height: 1.6;">
+<div style="font-size: 24px; line-height: 1.6;">
 如需旧版代码，请到release中下载<br>
 </div>
