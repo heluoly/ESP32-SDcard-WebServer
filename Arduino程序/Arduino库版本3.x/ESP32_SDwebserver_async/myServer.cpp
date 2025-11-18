@@ -301,23 +301,25 @@ void handleUserRequest(AsyncWebServerRequest *request) {
     request->send(response);
     fileReadOK = true;
   } else {
+    request->send(404, "text/plain", "Not found");
     fileReadOK = false;
   }
+  
+  //检测SD卡以外弹出
+  // if (!fileReadOK) {
+  //   my_fs.end();
+  //   if (my_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, 10)) {  //SD卡初始化
+  //     if (!hasSD) {
+  //       request->send(404, "text/plain", "Card Mount Succeed");  //如果在SD卡初始化成功，则回复Card Mount Succeed
+  //       hasSD = true;
+  //     } else {
+  //       request->send(404, "text/plain", "Not found");  //如果在SD卡无法找到用户访问的资源，则回复404 Not Found
+  //     }
 
-  if (!fileReadOK) {
-    my_fs.end();
-    if (my_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, 10)) {  //SD卡初始化
-      if (!hasSD) {
-        request->send(404, "text/plain", "Card Mount Succeed");  //如果在SD卡初始化成功，则回复Card Mount Succeed
-        hasSD = true;
-      } else {
-        request->send(404, "text/plain", "Not found");  //如果在SD卡无法找到用户访问的资源，则回复404 Not Found
-      }
-
-    } else {
-      hasSD = false;
-      request->send(404, "text/plain", "Card Mount Failed");  // 如果无法读取SD卡，则回复Card Mount Failed
-    }
-  }
+  //   } else {
+  //     hasSD = false;
+  //     request->send(404, "text/plain", "Card Mount Failed");  // 如果无法读取SD卡，则回复Card Mount Failed
+  //   }
+  // }
 }
 

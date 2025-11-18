@@ -1,0 +1,10 @@
+ssid=ESP32_WebServer
+password=123456789
+channel=1
+autoconnect=1
+pressid=yourwifi
+prepassword=yourpassword
+staticIP=192.168.1.80
+gateway=192.168.1.1
+subnet=255.255.255.0
+dns=223.5.5.5

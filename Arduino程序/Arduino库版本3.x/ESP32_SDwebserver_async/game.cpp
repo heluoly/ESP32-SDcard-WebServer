@@ -15,14 +15,14 @@ void listGame(AsyncWebServerRequest *request) {
   char page1 = (page0 - 1) * 20;  //设定分页区间，现在是每20个视频一页
   char page2 = page0 * 20 + 1;
 
-  String message = htmlHeader + "<title>" + folder + "</title><style>.container {width: 500px;margin: 0 auto;}</style></head><body><div class=\"container\"><h2>";
+  String message = htmlHeader + "<title>" + folder + "</title><style>.container {width: 500px;margin: 0 auto;}</style><script>function openGameButton(filepath) {var filepath2=encodeURIComponent(filepath);var urltocall = \"/opengame?gamePath=\" + filepath2;window.open(urltocall);}</script></head><body><div class=\"container\"><h2>";
   message += folder + ":</h2>";
 
   File root = my_fs.open((char *)folder.c_str());
   if (!root) {
-    message += "Failed to open directory <br />";
+    message += "Failed to open directory <br>";
   } else if (!root.isDirectory()) {
-    message += "Not a directory <br />";
+    message += "Not a directory <br>";
   } else {
     File file = root.openNextFile();
     while (file) {
@@ -30,8 +30,8 @@ void listGame(AsyncWebServerRequest *request) {
         filepath = String(file.path());
         filename = String(file.name());
 
-        message += "FILE: " + filename + "<button onclick=\"openGameButton(\'" + filepath + "\')\">play</button><br />";
-        message += "SIZE: " + formatBytes(file.size()) + "<br /><br />";
+        message += "FILE: " + filename + " <button onclick=\"openGameButton(\'" + filepath + "\')\">play</button><br>";
+        message += "SIZE: " + formatBytes(file.size()) + "<br><br>";
 
       }
       file = root.openNextFile();
@@ -47,7 +47,7 @@ void listGame(AsyncWebServerRequest *request) {
       message += i;
       message += "\">  ";
     }
-    message += "<br />当前页: ";
+    message += "<br>当前页: ";
     message += page;
 
     //判断当前页位置
@@ -97,17 +97,17 @@ void listGame(AsyncWebServerRequest *request) {
     }
   }
 
-  message += "</div></body><script>function openGameButton(filepath) {var filepath2=encodeURIComponent(filepath);var urltocall = \"/opengame?gamePath=\" + filepath2;window.open(urltocall);}</script></html>";
+  message += "</div></body></html>";
   request->send(200, "text/html", message);
 }
 
 //打开游戏
 void openGame(AsyncWebServerRequest *request) {
   String gamePath = request->getParam("gamePath")->value();  //获取游戏路径
-  String message = htmlHeader + "<title>Game</title></head><body><center><br />";
+  String message = htmlHeader + "<title>Game</title></head><body><center><br>";
   message += "<object class=\"ObjectyMe\" uri=\"/download?filePath=";
   message += gamePath;
-  message += "\" width=\"800\" height=\"600\"></object></center><br />";  //设置游戏窗口大小
+  message += "\" width=\"800\" height=\"600\"></object></center><br>";  //设置游戏窗口大小
   message += "<script type=\"text/javascript\" src=\"/webgame/objecty/objecty.js\"></script></body></html>";
 
   request->send(200, "text/html", message);

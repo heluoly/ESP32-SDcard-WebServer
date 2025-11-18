@@ -142,8 +142,8 @@ void setup() {
 }
 
 void loop() {
-  xTaskCreatePinnedToCore(task_server, "Task_Server", 8192, NULL, 1, &Task_Server, 1);     //创建第1核心服务器任务
-  xTaskCreatePinnedToCore(task_display, "Task_Display", 4096, NULL, 1, &Task_Display, 0);   //创建第2核心显示任务
+  xTaskCreatePinnedToCore(task_server, "Task_Server", 5120, NULL, 1, &Task_Server, 1);     //创建第1核心服务器任务
+  // xTaskCreatePinnedToCore(task_display, "Task_Display", 4096, NULL, 1, &Task_Display, 0);   //创建第2核心显示任务
   vTaskDelete(NULL);
 }
 
@@ -295,7 +295,7 @@ void task_display(void *pvParameters) {
           } else {
             mode_wifi = 1;
           }
-          xTaskCreatePinnedToCore(task_server, "Task_Server", 15360, NULL, 1, &Task_Server, 1);  //创建新的服务器任务
+          xTaskCreatePinnedToCore(task_server, "Task_Server", 5120, NULL, 1, &Task_Server, 1);  //创建新的服务器任务
         } else {
           mode_switch3 = 1;  //服务器状态变为关闭
           mode_switch = 0;   //让服务器任务跳出循环，运行结束程序

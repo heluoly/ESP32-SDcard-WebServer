@@ -9,17 +9,17 @@ String listUploadDir(fs::FS &fs, const char *dirname, uint8_t levels, String pag
   char page1 = (page0 - 1) * pageBreak;
   char page2 = page0 * pageBreak + 1;
 
-  String filepath = "";
-  String filename = "";
+  String filePath = "";
+  String fileName = "";
 
   String message = "";
   File root = fs.open(dirname);
   if (!root) {
-    message += "Failed to open directory <br />";
+    message += "Failed to open directory <br>";
     return message;
   }
   if (!root.isDirectory()) {
-    message += "Not a directory <br />";
+    message += "Not a directory <br>";
     return message;
   }
   message += "<table><tr><th align='left'>文件名</th><th align='left'>大小</th><th></th><th></th></tr>";
@@ -27,17 +27,17 @@ String listUploadDir(fs::FS &fs, const char *dirname, uint8_t levels, String pag
   while (file) {
     if (file.isDirectory()) {
       // message +="  DIR : ";
-      // message += String(file.path())+String("<br />");
+      // message += String(file.path())+String("<br>");
       // if(levels){
       //     message += listUploadDir(fs, file.path(), levels -1);
       // }
     } else if (i > page1 && i < page2) {
-      filepath = String(file.path());
-      filename = String(file.name());
+      filePath = String(file.path());
+      fileName = String(file.name());
 
-      message += "<tr align='left'><td>" + filename + "</td><td>" + formatBytes(file.size());
-      message += "</td><td><button onclick=\"downloadButton(\'" + filepath + "\',\'" + filename + "\')\">下载</button></td>";
-      message += "<td><button onclick=\"deleteButton(\'" + filepath + "\')\">删除</button></tr>";
+      message += "<tr align='left'><td>" + fileName + "</td><td>" + formatBytes(file.size());
+      message += "</td><td><button onclick=\"downloadButton(\'" + filePath + "\',\'" + fileName + "\')\">下载</button></td>";
+      message += "<td><button onclick=\"deleteButton(\'" + filePath + "\')\">删除</button></tr>";
     }
     file = root.openNextFile();
     i++;
@@ -45,7 +45,7 @@ String listUploadDir(fs::FS &fs, const char *dirname, uint8_t levels, String pag
   message += "</table>";
 
   page1 = (i + pageBreak - 2) / pageBreak;
-  message += "<br />页数: ";
+  message += "<br>页数: ";
   for (i = 1; i <= page1; i++) {
     message += "<button onclick=\"listFilesPage(\'";
     message += i;
@@ -53,7 +53,7 @@ String listUploadDir(fs::FS &fs, const char *dirname, uint8_t levels, String pag
     message += i;
     message += "</button>  ";
   }
-  message += "<br />当前页: ";
+  message += "<br>当前页: ";
   message += page;
 
   //判断当前页位置

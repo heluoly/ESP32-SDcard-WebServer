@@ -21,15 +21,15 @@ const String htmlWIFIConnect5 = "\" disabled=\"\"><br><br><input type=\"button\"
 const String htmlAP1 = "<!DOCTYPE html><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" /><title>配置热点</title><style>.container {width: 320px;margin: 0 auto;}</style></head><body></div><div class=\"container\">";
 const String htmlAP2 = "<h2>配置热点</h2><form action=\"/configAP\">热点名称： <input name=\"hotspotName\" type=\"text\" value=\"";
 const String htmlAP3 = "\" required=\"required\" maxlength=\"63\" placeholder=\"请输入热点名称\" /><br />热点密码： <input name=\"hotspotPassword\" type=\"text\" value=\"";
-const String htmlAP4 = "\" onkeyup=\"value=value.replace(/[\u4e00-\u9fa5]/ig,&#39;&#39;)\" required=\"required\" maxlength=\"63\" placeholder=\"密码请不要少于8位\" /><br />WIFI信道： <select name=\"channel\">";
-const String htmlAP5 = "</select><br />WIFI隐身： <input name=\"hidden\" type=\"radio\" value=\"0\"";
+const String htmlAP4 = "\" onkeyup=\"value=value.replace(/[\u4e00-\u9fa5]/ig,&#39;&#39;)\" required=\"required\" maxlength=\"63\" placeholder=\"密码请不要少于8位\" /><br>WIFI信道： <select name=\"channel\">";
+const String htmlAP5 = "</select><br>WIFI隐身： <input name=\"hidden\" type=\"radio\" value=\"0\"";
 const String htmlAP6 = "<br /><br /><input type=\"submit\" value=\"提交\" /></form><p><a href=\"/\">返回AP模式</a> <a href=\"/wificonnect\">网页配网</a> <a href=\"/pageConfigAutoConnect\">配置WiFi</a></p></div></body></html>";
 
 
 const String htmlAutoConnect1 = "<!DOCTYPE html><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" /><title>配置WiFi自动连接</title><style>.container {width: 320px;margin: 0 auto;}</style></head><body></div><div class=\"container\">";
 const String htmlAutoConnect2 = "<h2>配置WiFi自动连接</h2><form action=\"/configAutoConnect\">WiFi自动连接： <input name=\"autoconnect\" type=\"radio\" value=\"0\"";
-const String htmlAutoConnect3 = "<br />WiFi名称： <input name=\"pressid\" type=\"text\" value=\"";
-const String htmlAutoConnect4 = "\" required=\"required\" maxlength=\"63\" placeholder=\"请输入WiFi名称\" /><br />WiFi密码： <input name=\"prepassword\" type=\"text\" value=\"";
+const String htmlAutoConnect3 = "<br>WiFi名称： <input name=\"pressid\" type=\"text\" value=\"";
+const String htmlAutoConnect4 = "\" required=\"required\" maxlength=\"63\" placeholder=\"请输入WiFi名称\" /><br>WiFi密码： <input name=\"prepassword\" type=\"text\" value=\"";
 const String htmlAutoConnect5 = "\" required=\"required\" maxlength=\"63\" placeholder=\"密码请不要少于8位\" /><br /><br /><input type=\"submit\" value=\"提交\" /></form><p><a href=\"/\">返回AP模式</a> <a href=\"/wificonnect\">网页配网</a> <a href=\"/pageConfigAP\">配置热点</a></p></div></body></html>";
 
 const String htmlfoot = "<p><a href=\"/\">返回AP模式</a> <a href=\"/wificonnect\">网页配网</a> <a href=\"/pageConfigAP\">配置热点</a> <a href=\"/pageConfigAutoConnect\">配置WiFi</a></p></div></body></html>";

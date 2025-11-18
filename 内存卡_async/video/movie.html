@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes">
+    <title>电影</title>
+    <link rel="stylesheet" href="/bin/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 36px;
+            color: #333;
+            padding-top: 20px;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .thumbnail-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .video-card:hover .thumbnail {
+            transform: scale(1.05);
+        }
+        
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .video-card:hover .play-overlay {
+            opacity: 1;
+        }
+        
+        .play-icon {
+            width: 60px;
+            height: 60px;
+            background: #ff4757;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 20px rgba(255, 71, 87, 0.7);
+        }
+        .video-info {
+            padding: 15px;
+        }
+        
+        .video-title {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .pagination {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .pagination-pages {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 100%;
+        }
+        
+        .pagination-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 5px;
+            padding: 10px 0;
+            max-width: 100%;
+            scrollbar-width: thin;
+            scrollbar-color: #ff4757 #f0f0f0;
+        }
+        
+        .pagination-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .pagination-scroll::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 3px;
+        }
+        
+        .pagination-scroll::-webkit-scrollbar-thumb {
+            background: #ff4757;
+            border-radius: 3px;
+        }
+        
+        .pagination button {
+            padding: 10px 15px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .pagination button:hover {
+            background: #f5f5f5;
+            border-color: #ccc;
+        }
+        
+        .pagination button.active {
+            background: #ff4757;
+            color: white;
+            border-color: #ff4757;
+        }
+        
+        .pagination button.ellipsis {
+            background: transparent;
+            border: none;
+            cursor: default;
+            color: #777;
+        }
+        
+        .pagination button.ellipsis:hover {
+            background: transparent;
+        }
+        
+        .pagination-nav {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .pagination-nav button {
+            padding: 10px 20px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .pagination-nav button:hover {
+            background: #f5f5f5;
+            border-color: #ccc;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #777;
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .pagination-scroll {
+                justify-content: flex-start;
+            }
+            
+            .pagination button {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .pagination-nav {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>电影</h1>
+        
+        <div class="video-grid" id="videoGrid">
+        </div>
+        
+        <div class="pagination" id="pagination">
+        </div>
+    </div>
+
+    <script>
+        // 获取视频列表
+        async function fetchVideos(page) {
+            try {
+                const response = await fetch(`/videolist?videoTape=/video/movie/&page=${page}`);
+                const data = await response.json();
+                return data;
+
+            } catch (error) {
+                console.error('获取视频数据失败:', error);
+                throw error;
+            }
+        }
+
+        // 渲染视频卡片
+        function renderVideos(videos) {
+            const videoGrid = document.getElementById('videoGrid');
+            videoGrid.innerHTML = '';
+            
+            if (videos.length === 0) {
+                videoGrid.innerHTML = '<div class="loading">暂无视频数据</div>';
+                return;
+            }
+            
+            videos.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
+                
+                videoCard.innerHTML = `
+                    <div class="thumbnail-container">
+                        <img src="${video.cover}" alt="${video.title}" class="thumbnail" loading="lazy">
+                        <div class="play-overlay">
+                            <div class="play-icon">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title">${video.title}</h3>
+                    </div>
+                `;
+                
+                videoCard.addEventListener('click', () => {
+                    openVideo(video.path);
+                });
+                
+                videoGrid.appendChild(videoCard);
+            });
+        }
+
+        // 渲染分页
+        function renderPagination(currentPage, totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            // 如果没有数据，不显示分页
+            if (totalPages <= 0) return;
+            
+            // 创建页码区域
+            const pagesContainer = document.createElement('div');
+            pagesContainer.className = 'pagination-pages';
+            
+            // 如果页数较多，使用智能分页显示
+            if (totalPages <= 7) {
+                // 页数少时显示所有页码
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.textContent = i;
+                    if (i === currentPage) {
+                        pageButton.classList.add('active');
+                    }
+                    pageButton.addEventListener('click', () => {
+                        loadPage(i);
+                    });
+                    pagesContainer.appendChild(pageButton);
+                }
+            } else {
+                // 页数多时使用智能分页
+                // 总是显示第一页
+                const firstButton = document.createElement('button');
+                firstButton.textContent = 1;
+                if (1 === currentPage) {
+                    firstButton.classList.add('active');
+                }
+                firstButton.addEventListener('click', () => {
+                    loadPage(1);
+                });
+                pagesContainer.appendChild(firstButton);
+                
+                // 当前页靠近开头时
+                if (currentPage <= 3) {
+                    for (let i = 2; i <= 4; i++) {
+                        const pageButton = document.createElement('button');
+                        pageButton.textContent = i;
+                        if (i === currentPage) {
+                            pageButton.classList.add('active');
+                        }
+                        pageButton.addEventListener('click', () => {
+                            loadPage(i);
+                        });
+                        pagesContainer.appendChild(pageButton);
+                    }
+                    
+                    // 添加省略号
+                    const ellipsis = document.createElement('button');
+                    ellipsis.textContent = '...';
+                    ellipsis.classList.add('ellipsis');
+                    pagesContainer.appendChild(ellipsis);
+                    
+                    // 显示最后一页
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = totalPages;
+                    lastButton.addEventListener('click', () => {
+                        loadPage(totalPages);
+                    });
+                    pagesContainer.appendChild(lastButton);
+                } 
+                // 当前页靠近结尾时
+                else if (currentPage >= totalPages - 2) {
+                    // 添加省略号
+                    const ellipsis = document.createElement('button');
+                    ellipsis.textContent = '...';
+                    ellipsis.classList.add('ellipsis');
+                    pagesContainer.appendChild(ellipsis);
+                    
+                    for (let i = totalPages - 3; i <= totalPages - 1; i++) {
+                        const pageButton = document.createElement('button');
+                        pageButton.textContent = i;
+                        if (i === currentPage) {
+                            pageButton.classList.add('active');
+                        }
+                        pageButton.addEventListener('click', () => {
+                            loadPage(i);
+                        });
+                        pagesContainer.appendChild(pageButton);
+                    }
+                    
+                    // 显示最后一页
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = totalPages;
+                    if (totalPages === currentPage) {
+                        lastButton.classList.add('active');
+                    }
+                    lastButton.addEventListener('click', () => {
+                        loadPage(totalPages);
+                    });
+                    pagesContainer.appendChild(lastButton);
+                } 
+                // 当前页在中间时
+                else {
+                    // 添加省略号
+                    const ellipsis1 = document.createElement('button');
+                    ellipsis1.textContent = '...';
+                    ellipsis1.classList.add('ellipsis');
+                    pagesContainer.appendChild(ellipsis1);
+                    
+                    // 显示当前页及前后各一页
+                    for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                        const pageButton = document.createElement('button');
+                        pageButton.textContent = i;
+                        if (i === currentPage) {
+                            pageButton.classList.add('active');
+                        }
+                        pageButton.addEventListener('click', () => {
+                            loadPage(i);
+                        });
+                        pagesContainer.appendChild(pageButton);
+                    }
+                    
+                    // 添加省略号
+                    const ellipsis2 = document.createElement('button');
+                    ellipsis2.textContent = '...';
+                    ellipsis2.classList.add('ellipsis');
+                    pagesContainer.appendChild(ellipsis2);
+                    
+                    // 显示最后一页
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = totalPages;
+                    lastButton.addEventListener('click', () => {
+                        loadPage(totalPages);
+                    });
+                    pagesContainer.appendChild(lastButton);
+                }
+            }
+            
+            pagination.appendChild(pagesContainer);
+            
+            // 创建导航按钮区域
+            const navContainer = document.createElement('div');
+            navContainer.className = 'pagination-nav';
+            
+            // 上一页按钮
+            if (currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> 上一页';
+                prevButton.addEventListener('click', () => {
+                    loadPage(currentPage - 1);
+                });
+                navContainer.appendChild(prevButton);
+            }
+            
+            // 下一页按钮
+            if (currentPage < totalPages) {
+                const nextButton = document.createElement('button');
+                nextButton.innerHTML = '下一页 <i class="fas fa-chevron-right"></i>';
+                nextButton.addEventListener('click', () => {
+                    loadPage(currentPage + 1);
+                });
+                navContainer.appendChild(nextButton);
+            }
+            
+            pagination.appendChild(navContainer);
+        }
+
+        // 打开视频
+        function openVideo(path) {
+            const encodedPath = encodeURIComponent(path);
+            const url = `/openvideo?videoPath=${encodedPath}`;
+            window.open(url, '_blank');
+        }
+
+        // 加载页面
+        async function loadPage(page) {
+            // 显示加载状态
+            const videoGrid = document.getElementById('videoGrid');
+            videoGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>';
+            
+            try {
+                // 调用API获取数据
+                const data = await fetchVideos(page);
+                renderVideos(data.videos);
+                renderPagination(data.currentPage, data.totalPages);
+            } catch (error) {
+                console.error('加载视频失败:', error);
+                videoGrid.innerHTML = '<div class="loading">加载失败，请重试</div>';
+            }
+        }
+
+        // 初始化页面 - 自动加载第一页
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPage(1);
+        });
+    </script>
+</body>
+</html>
