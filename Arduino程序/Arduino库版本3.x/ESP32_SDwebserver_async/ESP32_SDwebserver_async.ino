@@ -6,9 +6,10 @@ SD卡代码参考 https://youtu.be/e1xOgZsnAuw
 网页响应代码参考 http://www.taichi-maker.com/homepage/esp8266-nodemcu-iot/iot-c/spiffs/spiffs-web-server/file-upload-server/
 文件上传代码参考 https://github.com/smford/esp32-asyncwebserver-fileupload-example
 flash播放器使用objecty
-视频播放器使用videoJS
+视频播放器使用videoJS、videojs-contrib-hls https://github.com/videojs/video.js https://github.com/videojs/videojs-contrib-hls
 网页配网代码参考 https://github.com/yuan910715/Esp8266_NTP_Clock_Weather 中的网页配网部分
 OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的 examples/SSD1306ClockDemo
+Font Awesome https://fontawesome.com/
 依赖：
 https://github.com/ESP32Async/ESPAsyncWebServer
 https://github.com/ESP32Async/AsyncTCP

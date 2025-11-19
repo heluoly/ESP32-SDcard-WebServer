@@ -131,7 +131,7 @@ SD卡代码参考 https://youtu.be/e1xOgZsnAuw
 
 flash播放器使用objecty
 
-视频播放器使用videoJS
+视频播放器使用videoJS、videojs-contrib-hls https://github.com/videojs/video.js https://github.com/videojs/videojs-contrib-hls
 
 网页配网代码参考 https://github.com/yuan910715/Esp8266_NTP_Clock_Weather 中的网页配网部分
 
