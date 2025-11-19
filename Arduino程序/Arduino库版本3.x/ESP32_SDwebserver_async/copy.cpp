@@ -45,7 +45,7 @@ void editTxt(AsyncWebServerRequest *request) {
 void clipBoard(AsyncWebServerRequest *request) {
   String content = "";
   content = readFile2(my_fs, "/copy.txt");  //读取copy.txt的内容
-  String message = htmlHeader + "<title>剪切板</title></head><body><h2>剪切板</h2><br><label style=\"display: block\"><textarea id=\"textArea\" rows=\"8\" style=\"width:100%;\">";
+  String message = htmlHeader + "<title>剪切板</title></head><body><h2>剪切板</h2><br><label style=\"display: block\"><textarea id=\"textArea\" rows=\"8\" style=\"width:100%;\" aria-label=\"剪切板内容\">";
   message += content;
   message += "</textarea></label><br><button type=\"button\" onclick=\"theCopy()\">复制</button> <button type=\"button\" onclick=\"theSave()\">保存</button></body><script>function theCopy() {var textArea = document.getElementById('textArea');console.log(textArea);textArea.select();document.execCommand('copy');alert('复制成功');}</script><script>function theSave() {var text=document.getElementById('textArea').value;var con=encodeURIComponent(text);var xmlhttp=new XMLHttpRequest();xmlhttp.open(\"GET\",\"/edittxt?txtpath=/copy.txt&con=\"+con,true);xmlhttp.send();xmlhttp.onload = function(e){alert(this.responseText);}}</script></html>";
 

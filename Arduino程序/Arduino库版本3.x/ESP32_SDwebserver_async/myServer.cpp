@@ -22,7 +22,7 @@ extern char autoconnect;
 extern String pressid;
 extern String prepassword;
 
-String htmlHeader = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes\">";
+String htmlHeader = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width\">";
 
 TaskHandle_t Task_Sntp;  //网络时间同步任务
 
@@ -286,14 +286,14 @@ void handleUserRequest(AsyncWebServerRequest *request) {
     path = "/index.html";    //则将访问地址修改为/index.html便于SPIFFS访问
     contentType = "text/html";
   } else if (path.endsWith(".html")) contentType = "text/html";
-  else if (path.endsWith(".ts")) contentType = "video/MP2T";
+  else if (path.endsWith(".ts")) contentType = "video/mp2t";
   else if (path.endsWith(".css")) contentType = "text/css";
   else if (path.endsWith(".js")) contentType = "application/javascript";
   else if (path.endsWith(".png")) contentType = "image/png";
   else if (path.endsWith(".gif")) contentType = "image/gif";
   else if (path.endsWith(".jpg")) contentType = "image/jpeg";
   else if (path.endsWith(".ico")) contentType = "image/x-icon";
-  else if (path.endsWith(".m3u8")) contentType = "application/x-mpegURL";
+  else if (path.endsWith(".m3u8")) contentType = "application/x-mpegurl";
   else contentType = "text/plain";
 
   if (my_fs.exists(path)) {  //如果访问的文件可以在SD卡中找到
@@ -305,7 +305,7 @@ void handleUserRequest(AsyncWebServerRequest *request) {
     fileReadOK = false;
   }
   
-  //检测SD卡以外弹出
+  //检测SD卡意外弹出
   // if (!fileReadOK) {
   //   my_fs.end();
   //   if (my_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, 10)) {  //SD卡初始化
