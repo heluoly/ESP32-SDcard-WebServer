@@ -16,7 +16,6 @@
 #define config_fs SPIFFS
 #endif
 
-
 //String indexOfFilename(String filename);
 String formatBytes(size_t bytes);
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels);

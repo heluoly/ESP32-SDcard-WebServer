@@ -130,11 +130,10 @@ void HandleWifi(AsyncWebServerRequest *request) {
 
   //尝试连接WIFI
   WiFi.begin((char*)wifis.c_str(), (char*)wifip.c_str());
-  for (int i = 0; i < 20; i++)  //超时判断
+  for (int i = 0; i < 9; i++)  //超时判断，Async TCP 5秒不喂狗会重启
   {
     if (WiFi.status() == WL_CONNECTED)  //如果检测到状态为成功连接WIFI
     {
-      vTaskDelay(2000 / portTICK_PERIOD_MS);
       // Serial.printf("SSID:%s\r\n", WiFi.SSID().c_str());
       // Serial.printf("PSW:%s\r\n", WiFi.psk().c_str());
       IPAD3 = WiFi.localIP().toString();
@@ -161,8 +160,8 @@ void HandleWifi(AsyncWebServerRequest *request) {
         configRewrite("dns", (char*)dns2.c_str(), (char*)filetxt);
         configWriteClose(config_fs, "/config.txt", (char*)filetxt);
       }
-      mode_switch = 0;  //函数跳出while循环，从而在loop函数中进入下一个模式
       request->send(200, "text/html", "连接成功 IP: " + IPAD3);   //发送连接的IP地址
+      mode_switch = 0;  //函数跳出while循环，从而在loop函数中进入下一个模式
       
       return;  //如果成功连接，则返回到主函数
 

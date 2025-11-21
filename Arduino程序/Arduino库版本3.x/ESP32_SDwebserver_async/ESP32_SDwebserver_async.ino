@@ -17,6 +17,7 @@ https://github.com/ESP32Async/AsyncTCP
 
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
+#include <AsyncTCP.h>
 #include "FS.h"
 #include "SD_MMC.h"
 #include "SPIFFS.h"
@@ -45,7 +46,7 @@ bool hasSD = false;         //是否有SD卡
 bool ONE_BIT_MODE = false;  //设置SD卡模式 1bit：true 4bit：false
 
 AsyncWebServer esp32_server(80);   //网页服务
-AsyncWebServer server(80);         //WIFI配网
+AsyncWebServer server(8080);         //WIFI配网
 
 bool mode_switch = 1;   //用于控制模式变换中的跳出while循环
 bool mode_switch2 = 1;  //用于跳过STA模式，转换到AP模式
@@ -93,11 +94,11 @@ const char *ntpServer2 = "ntp.aliyun.com";
 unsigned char oled_RAM[128][8];
 
 void setup() {
-  // Serial.begin(115200);  // 启动串口通讯
+  Serial.begin(115200);  // 启动串口通讯
   // Serial.println("");
 #if CONFIG_SD
   //SD卡初始化
-  /*
+  
   //ESP32-S3 SD卡引脚定义
   int clk = 6;
   int cmd = 7;
@@ -106,7 +107,7 @@ void setup() {
   int d2  = 16;
   int d3  = 15;
   SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
-  */
+  
   // Serial.println("SD");
   if (!config_fs.begin("/sdcard", ONE_BIT_MODE))  //SD卡初始化
   {
@@ -167,7 +168,7 @@ void task_server(void *pvParameters) {
   int d3 = 15;
   SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
 
-  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, 10))  //SD卡初始化，将MMC并发数修改为10
+  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 10))  //SD卡初始化，将MMC并发数修改为10，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
@@ -200,6 +201,30 @@ void task_server(void *pvParameters) {
   if (hasSD) {
     WiFiconfigRead();  //读取保存的AP名称和密码
   }
+  esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
+  esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
+  esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
+  esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
+  esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
+  esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
+  esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
+  esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
+  esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
+  esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
+  esp32_server.on("/edittxt", HTTP_GET, editTxt);                              //编辑txt文件
+  esp32_server.on("/clipboard", HTTP_GET, clipBoard);                          //剪切板
+  esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
+  esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
+
+  server.onNotFound(wifi_handleNotFound);                                //请求失败回调函数
+  server.on("/wificonnect", HTTP_GET, handleRoot);                       //发送配网页面
+  server.on("/HandleWifi", HTTP_GET, HandleWifi);                        //尝试连接网页发送的WIFI
+  server.on("/HandleScanWifi", HTTP_GET, HandleScanWifi);                //扫描附近WIFI并返回
+  server.on("/configAP", HTTP_GET, configAP);                            //配置热点
+  server.on("/pageConfigAP", HTTP_GET, pageConfigAP);                    //发送配置热点网页
+  server.on("/pageConfigAutoConnect", HTTP_GET, pageConfigAutoConnect);  //发送配置WiFi自动连接网页
+  server.on("/configAutoConnect", HTTP_GET, configAutoConnect);          //保存iFi自动连接配置
+  server.on("/", backToAP);                                              //返回AP模式
 
   if (autoconnect == 1) {
     server_presta();
