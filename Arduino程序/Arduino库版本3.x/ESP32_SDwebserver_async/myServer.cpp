@@ -3,7 +3,6 @@
 // extern TaskHandle_t Task_Server;
 
 extern AsyncWebServer esp32_server;  //网页服务
-extern AsyncWebServer server;        //WIFI配网
 
 extern bool hasSD;
 extern bool ONE_BIT_MODE;
@@ -11,6 +10,7 @@ extern bool ONE_BIT_MODE;
 extern bool mode_switch;
 extern bool mode_switch2;
 extern char mode_wifi;
+extern bool presta_flag;
 
 extern String mdnsName;
 extern String IPAD;
@@ -28,11 +28,8 @@ TaskHandle_t Task_Sntp;  //网络时间同步任务
 
 //模式转换
 void changemode(AsyncWebServerRequest *request) {
-  // String url = "http://" + IPAD + ":8080/wificonnect";
-  // request->redirect(url);
-  String header = "3; url=http://" + IPAD + ":8080/wificonnect";
   AsyncWebServerResponse *response = request->beginResponse(200, "text/html", htmlHeader + "</head><body><center><h2>请稍等</h2></center></body></html>");
-  response->addHeader("Refresh", header);  //等待3秒刷新
+  response->addHeader("Refresh", "1; url=/wificonnect");  //等待3秒刷新
   response->addHeader("Connection", "close");
   request->send(response);
   mode_switch = 0;  //使下面的函数跳出while循环，从而在loop函数中进入下一个模式
@@ -40,11 +37,8 @@ void changemode(AsyncWebServerRequest *request) {
 
 //返回AP模式
 void backToAP(AsyncWebServerRequest *request) {
-  // String url = "http://" + IPAD + ":80/";
-  // request->redirect(url);
-  String header = "3; url=http://" + IPAD + ":80/";
   AsyncWebServerResponse *response = request->beginResponse(200, "text/html", htmlHeader + "</head><body><center><h2>请稍等</h2></center></body></html>");
-  response->addHeader("Refresh", header);  //等待3秒刷新
+  response->addHeader("Refresh", "1; url=/");  //等待3秒刷新
   response->addHeader("Connection", "close");
   request->send(response);
   mode_switch2 = 0;  //跳过STA模式，直接进入AP模式
@@ -80,8 +74,9 @@ void server_ap() {
   mode_wifi = 1;
   // WiFi.setAutoReconnect(false);
   WiFi.disconnect(true, true);
+  // WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_AP);
-  //WiFi.softAPdisconnect(true);
+  
   IPAddress local_IP(192, 168, 1, 1);  //配置ESP32的IP地址
   IPAddress gateway(192, 168, 1, 1);   //配置ESP32的网关
   IPAddress subnet(255, 255, 255, 0);  //配置ESP32的子网
@@ -110,23 +105,26 @@ void server_ap() {
   //   // Serial.println("Error setting up MDNS responder!");
   // }
   // AsyncWebServer esp32_server(80);   //网页服务
-  // esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
-  // esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
-  // esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
-  // esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
-  // esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
-  // esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
-  // esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
-  // esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
-  // esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
-  // esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
-  // esp32_server.on("/edittxt", HTTP_GET, editTxt);                              //编辑txt文件
-  // esp32_server.on("/clipboard", HTTP_GET, clipBoard);                          //剪切板
-  // esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
-  // esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
-
-  esp32_server.begin();  //启动网站服务
-  // Serial.println("HTTP server started");
+  if (presta_flag) {
+    esp32_server.reset();
+  }
+  else {
+    esp32_server.begin();
+  }
+  esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
+  esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
+  esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
+  esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
+  esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
+  esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
+  esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
+  esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
+  esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
+  esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
+  esp32_server.on("/edittxt", HTTP_GET, editTxt);                              //编辑txt文件
+  esp32_server.on("/clipboard", HTTP_GET, clipBoard);                          //剪切板
+  esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
+  esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
 
   while (mode_switch)  //监听用户请求，直到模式转换
   {
@@ -134,13 +132,10 @@ void server_ap() {
     // Serial.printf("Task_Server istack = %d\n", istack);
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  // vTaskDelay(1000 / portTICK_PERIOD_MS);
 
   mode_switch = 1;
-  // MDNS.end();          //关闭mdns
-  // esp32_server.reset();
-  esp32_server.end();  //关闭网站服务
-  // vTaskDelay(2000 / portTICK_PERIOD_MS);
+
 }
 
 void server_ap_sta() {
@@ -150,27 +145,23 @@ void server_ap_sta() {
   // if (!MDNS.begin(mdnsName)) {
   //   // Serial.println("Error setting up MDNS responder!");
   // }
-  // AsyncWebServer server(8080);         //WIFI配网
-  // server.onNotFound(wifi_handleNotFound);                                //请求失败回调函数
-  // server.on("/wificonnect", HTTP_GET, handleRoot);                       //发送配网页面
-  // server.on("/HandleWifi", HTTP_GET, HandleWifi);                        //尝试连接网页发送的WIFI
-  // server.on("/HandleScanWifi", HTTP_GET, HandleScanWifi);                //扫描附近WIFI并返回
-  // server.on("/configAP", HTTP_GET, configAP);                            //配置热点
-  // server.on("/pageConfigAP", HTTP_GET, pageConfigAP);                    //发送配置热点网页
-  // server.on("/pageConfigAutoConnect", HTTP_GET, pageConfigAutoConnect);  //发送配置WiFi自动连接网页
-  // server.on("/configAutoConnect", HTTP_GET, configAutoConnect);          //保存iFi自动连接配置
-  // server.on("/", backToAP);                                              //返回AP模式
-  server.begin();                                                        //启动网站服务
+  esp32_server.reset();
+  esp32_server.onNotFound(wifi_handleNotFound);                                //请求失败回调函数
+  esp32_server.on("/wificonnect", HTTP_GET, handleRoot);                       //发送配网页面
+  esp32_server.on("/HandleWifi", HTTP_GET, HandleWifi);                        //尝试连接网页发送的WIFI
+  esp32_server.on("/HandleScanWifi", HTTP_GET, HandleScanWifi);                //扫描附近WIFI并返回
+  esp32_server.on("/configAP", HTTP_GET, configAP);                            //配置热点
+  esp32_server.on("/pageConfigAP", HTTP_GET, pageConfigAP);                    //发送配置热点网页
+  esp32_server.on("/pageConfigAutoConnect", HTTP_GET, pageConfigAutoConnect);  //发送配置WiFi自动连接网页
+  esp32_server.on("/configAutoConnect", HTTP_GET, configAutoConnect);          //保存iFi自动连接配置
+  esp32_server.on("/", backToAP);                                              //返回AP模式
 
   while (mode_switch) {
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
-  vTaskDelay(1000 / portTICK_PERIOD_MS);  //如果接收不到IP地址，增大该时延
+  // vTaskDelay(1000 / portTICK_PERIOD_MS);  //如果接收不到IP地址，增大该时延
   mode_switch = 1;
-  // MDNS.end();    //关闭mdns
-  // server.reset();
-  server.end();  //关闭网站服务
-  // vTaskDelay(2000 / portTICK_PERIOD_MS);
+
 }
 
 void server_sta() {
@@ -190,24 +181,21 @@ void server_sta() {
   // if (!MDNS.begin(mdnsName)) {
   //   // Serial.println("Error setting up MDNS responder!");
   // }
-  // AsyncWebServer esp32_server(80);   //网页服务
-  // esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
-  // esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
-  // esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
-  // esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
-  // esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
-  // esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
-  // esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
-  // esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
-  // esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
-  // esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
-  // esp32_server.on("/edittxt", HTTP_GET, editTxt);                              //编辑txt文件
-  // esp32_server.on("/clipboard", HTTP_GET, clipBoard);                          //剪切板
-  // esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
-  // esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
-
-  esp32_server.begin();  // 启动网站服务
-  // Serial.println("HTTP server started");
+  esp32_server.reset();
+  esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
+  esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
+  esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
+  esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
+  esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
+  esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
+  esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
+  esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
+  esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
+  esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
+  esp32_server.on("/edittxt", HTTP_GET, editTxt);                              //编辑txt文件
+  esp32_server.on("/clipboard", HTTP_GET, clipBoard);                          //剪切板
+  esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
+  esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
 
   // xTaskCreatePinnedToCore(task_sntp, "Task_Sntp", 2048, NULL, 5, &Task_Sntp, 0);  //创建网络时间同步任务
 
@@ -217,18 +205,14 @@ void server_sta() {
     // Serial.printf("Task_Server istack = %d\n", istack);
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  // vTaskDelay(1000 / portTICK_PERIOD_MS);
 
   mode_switch = 1;
-  // MDNS.end();          //关闭mdns
-  // esp32_server.reset();
-  esp32_server.end();  //关闭网站服务
-  // vTaskDelay(2000 / portTICK_PERIOD_MS);
 }
 
 void server_presta() {
   // UBaseType_t istack;
-  char flag_ok = 0;
+  // char flag_ok = 0;
   mode_wifi = 4;
   WiFi.mode(WIFI_STA);
 
@@ -238,14 +222,14 @@ void server_presta() {
   {
     if (WiFi.status() == WL_CONNECTED)  //如果检测到状态为成功连接WIFI
     {
-      flag_ok = 1;
+      presta_flag = 1;
       break;
     } else {
       vTaskDelay(500 / portTICK_PERIOD_MS);
     }
   }
 
-  if (flag_ok) {
+  if (presta_flag) {
     mode_wifi = 3;
     IPAD = WiFi.localIP().toString();
     //mdns服务
@@ -253,20 +237,20 @@ void server_presta() {
     //   // Serial.println("Error setting up MDNS responder!");
     // }
     // AsyncWebServer esp32_server(80);   //网页服务
-    // esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
-    // esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
-    // esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
-    // esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
-    // esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
-    // esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
-    // esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
-    // esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
-    // esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
-    // esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
-    // esp32_server.on("/edittxt", HTTP_GET, editTxt);                              //编辑txt文件
-    // esp32_server.on("/clipboard", HTTP_GET, clipBoard);                          //剪切板
-    // esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
-    // esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
+    esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
+    esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
+    esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
+    esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
+    esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
+    esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
+    esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
+    esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
+    esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
+    esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
+    esp32_server.on("/edittxt", HTTP_GET, editTxt);                              //编辑txt文件
+    esp32_server.on("/clipboard", HTTP_GET, clipBoard);                          //剪切板
+    esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
+    esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
 
     esp32_server.begin();  //启动网站服务
     // Serial.println("HTTP server started");
@@ -279,13 +263,11 @@ void server_presta() {
       // Serial.printf("Task_Server istack = %d\n", istack);
       vTaskDelay(100 / portTICK_PERIOD_MS);
     }
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    // vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     mode_switch = 1;
     // MDNS.end();          //关闭mdns
-    // esp32_server.reset();
-    esp32_server.end();  //关闭网站服务
-    // vTaskDelay(2000 / portTICK_PERIOD_MS);
+
   }
 }
 
