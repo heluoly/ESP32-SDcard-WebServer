@@ -10,9 +10,8 @@ extern bool ONE_BIT_MODE;
 extern bool mode_switch;
 extern bool mode_switch2;
 extern char mode_wifi;
-extern bool presta_flag;
+extern bool serverState;
 
-extern String mdnsName;
 extern String IPAD;
 extern String ssid;
 extern String password;
@@ -100,17 +99,12 @@ void server_ap() {
   // Serial.println(WiFi.softAPgetStationNum());
 
   IPAD = WiFi.softAPIP().toString();  //将当前IP地址存储起来
-  //mdns服务
-  // if (!MDNS.begin(mdnsName)) {
-  //   // Serial.println("Error setting up MDNS responder!");
-  // }
-  // AsyncWebServer esp32_server(80);   //网页服务
-  if (presta_flag) {
-    esp32_server.reset();
-  }
-  else {
+
+  if (!serverState) {          //当STA自动连接失败，网页服务器未开启
     esp32_server.begin();
+    serverState = 1;
   }
+  esp32_server.reset();
   esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
   esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
   esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
@@ -133,18 +127,13 @@ void server_ap() {
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
   // vTaskDelay(1000 / portTICK_PERIOD_MS);
-
   mode_switch = 1;
-
 }
 
 void server_ap_sta() {
   mode_wifi = 2;
   WiFi.mode(WIFI_AP_STA);
-  //mdns服务
-  // if (!MDNS.begin(mdnsName)) {
-  //   // Serial.println("Error setting up MDNS responder!");
-  // }
+
   esp32_server.reset();
   esp32_server.onNotFound(wifi_handleNotFound);                                //请求失败回调函数
   esp32_server.on("/wificonnect", HTTP_GET, handleRoot);                       //发送配网页面
@@ -161,7 +150,6 @@ void server_ap_sta() {
   }
   // vTaskDelay(1000 / portTICK_PERIOD_MS);  //如果接收不到IP地址，增大该时延
   mode_switch = 1;
-
 }
 
 void server_sta() {
@@ -177,10 +165,7 @@ void server_sta() {
   // Serial.println(WiFi.localIP());           // 通过串口监视器输出ESP32-NodeMCU的IP
 
   IPAD = WiFi.localIP().toString();
-  //mdns服务
-  // if (!MDNS.begin(mdnsName)) {
-  //   // Serial.println("Error setting up MDNS responder!");
-  // }
+
   esp32_server.reset();
   esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
   esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
@@ -206,13 +191,12 @@ void server_sta() {
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
   // vTaskDelay(1000 / portTICK_PERIOD_MS);
-
   mode_switch = 1;
 }
 
 void server_presta() {
   // UBaseType_t istack;
-  // char flag_ok = 0;
+  char flag_presta = 0;
   mode_wifi = 4;
   WiFi.mode(WIFI_STA);
 
@@ -222,21 +206,18 @@ void server_presta() {
   {
     if (WiFi.status() == WL_CONNECTED)  //如果检测到状态为成功连接WIFI
     {
-      presta_flag = 1;
+      flag_presta = 1;
+      serverState = 1;
       break;
     } else {
       vTaskDelay(500 / portTICK_PERIOD_MS);
     }
   }
 
-  if (presta_flag) {
+  if (flag_presta) {
     mode_wifi = 3;
     IPAD = WiFi.localIP().toString();
-    //mdns服务
-    // if (!MDNS.begin(mdnsName)) {
-    //   // Serial.println("Error setting up MDNS responder!");
-    // }
-    // AsyncWebServer esp32_server(80);   //网页服务
+
     esp32_server.onNotFound(handleUserRequest);                                  //fallback函数
     esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      //列出文件
     esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        //下载文件，断点续传
@@ -264,10 +245,7 @@ void server_presta() {
       vTaskDelay(100 / portTICK_PERIOD_MS);
     }
     // vTaskDelay(1000 / portTICK_PERIOD_MS);
-
     mode_switch = 1;
-    // MDNS.end();          //关闭mdns
-
   }
 }
 

@@ -23,7 +23,6 @@ https://github.com/ESP32Async/AsyncTCP
 #include "SPIFFS.h"
 #include "time.h"
 #include "esp_sntp.h"
-// #include <ESPmDNS.h>
 
 #include "common.h"
 #include "myServer.h"
@@ -46,15 +45,13 @@ bool hasSD = false;         //是否有SD卡
 bool ONE_BIT_MODE = false;  //设置SD卡模式 1bit：true 4bit：false
 
 AsyncWebServer esp32_server(80);   //网页服务
-// AsyncWebServer server(8080);         //WIFI配网
 
 bool mode_switch = 1;   //用于控制模式变换中的跳出while循环
 bool mode_switch2 = 1;  //用于跳过STA模式，转换到AP模式
 bool mode_switch3 = 0;  //用于关闭WIFI标志
 char mode_wifi = 0;     //用于显示当前WiFi模式
-bool presta_flag = 0;   //判断是否已经自动连接WiFi
+bool serverState = 0;   //网页服务器状态
 
-String mdnsName = "esp32";            //mdns名字
 String IPAD = "192.168.1.1";          //在AP和STA模式下存储ESP32的IP地址
 String ssid = "ESP32_WebServer";      //wifi名称
 String password = "123456789";        //wifi密码（注意WiFi密码位数不要小于8位）
@@ -99,7 +96,6 @@ void setup() {
   // Serial.println("");
 #if CONFIG_SD
   //SD卡初始化
-  
   //ESP32-S3 SD卡引脚定义
   int clk = 6;
   int cmd = 7;
@@ -227,10 +223,10 @@ void task_server(void *pvParameters) {
 void closeServer() {
   if (mode_switch3) {
     ssid_hidden = 0;
-    // MDNS.end();          //关闭mdns
+
     esp32_server.reset();
     esp32_server.end();  //关闭网站服务
-    presta_flag = 0;
+    serverState = 0;
 
     WiFi.mode(WIFI_OFF);     //关闭WIFI
     my_fs.end();             //关闭SD卡

@@ -9,7 +9,6 @@
 #include "copy.h"
 #include "wifiConnect.h"
 #include "oledClock.h"
-// #include <ESPmDNS.h>
 
 void changemode(AsyncWebServerRequest *request);
 void backToAP(AsyncWebServerRequest *request);
