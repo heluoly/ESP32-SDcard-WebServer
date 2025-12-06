@@ -114,6 +114,6 @@ void openVideo(AsyncWebServerRequest *request) {
   message += "/0.jpg\" data-setup=\"{}\"><source src=\"";
   message += videoPath;
   message += "/index.m3u8\" type=\"application/x-mpegURL\"></video></div></div></div><script src=\"/bin/videojs/7.5.5/video.min.js\"></script><script src=\"/bin/videojs/videojs-contrib-hls/videojs-contrib-hls.min.js\"></script><script>document.addEventListener('DOMContentLoaded', function() { var player = videojs('video_demo', { \"controls\": true, \"autoplay\": false, \"fluid\": true, \"responsive\": true }); player.ready(function() { console.log('视频播放器已初始化'); player.on('fullscreenchange', function() { if (player.isFullscreen()) { console.log('进入全屏模式'); } else { console.log('退出全屏模式'); } }); }); });</script></body></html>";
-
+ 
   request->send(200, "text/html", message);  //发送网页
 }

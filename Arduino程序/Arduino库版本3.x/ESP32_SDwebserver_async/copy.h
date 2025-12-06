@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-void editTxt(AsyncWebServerRequest *request);
-void clipBoard(AsyncWebServerRequest *request);
+void handleGetText(AsyncWebServerRequest *request);
+void handleSaveText(AsyncWebServerRequest *request);
 
 #endif

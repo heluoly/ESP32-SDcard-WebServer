@@ -115,8 +115,8 @@ void server_ap() {
   esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
   esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
   esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
-  esp32_server.on("/edittxt", HTTP_GET, editTxt);                              //编辑txt文件
-  esp32_server.on("/clipboard", HTTP_GET, clipBoard);                          //剪切板
+  esp32_server.on("/saveText", HTTP_POST, handleSaveText);                     //保存文本到txt文件
+  esp32_server.on("/getText", HTTP_GET, handleGetText);                        //读取文本到txt文件
   esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
   esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
 
@@ -177,8 +177,8 @@ void server_sta() {
   esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
   esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
   esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
-  esp32_server.on("/edittxt", HTTP_GET, editTxt);                              //编辑txt文件
-  esp32_server.on("/clipboard", HTTP_GET, clipBoard);                          //剪切板
+  esp32_server.on("/saveText", HTTP_POST, handleSaveText);                     //保存文本到txt文件
+  esp32_server.on("/getText", HTTP_GET, handleGetText);                        //读取文本到txt文件
   esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
   esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
 
@@ -228,8 +228,8 @@ void server_presta() {
     esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
     esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
     esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
-    esp32_server.on("/edittxt", HTTP_GET, editTxt);                              //编辑txt文件
-    esp32_server.on("/clipboard", HTTP_GET, clipBoard);                          //剪切板
+    esp32_server.on("/saveText", HTTP_POST, handleSaveText);                     //保存文本到txt文件
+    esp32_server.on("/getText", HTTP_GET, handleGetText);                        //读取文本到txt文件
     esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
     esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
 

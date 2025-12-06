@@ -92,7 +92,7 @@ const char *ntpServer2 = "ntp.aliyun.com";
 unsigned char oled_RAM[128][8];
 
 void setup() {
-  // Serial.begin(115200);  // 启动串口通讯
+  Serial.begin(115200);  // 启动串口通讯
   // Serial.println("");
 #if CONFIG_SD
   //SD卡初始化
