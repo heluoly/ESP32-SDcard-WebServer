@@ -59,11 +59,13 @@ void listvideo(AsyncWebServerRequest *request) {
     message += "{\"videos\": [ ";
     File file = root.openNextFile();
     while (file) {
-      if (file.isDirectory() && i > page1 && i < page2) {
+      if (!file.isDirectory()) {
+        // 文件夹不处理
+      } else if (i > page1 && i < page2) {
 
         filePath = String(file.path());
-        namePath = filePath + "/0.txt";               //视频标题路径
-        picPath = filePath + "/0.jpg";                //视频预览图路径
+        namePath = filePath + "/0.txt";                         //视频标题路径
+        picPath = filePath + "/0.jpg";                          //视频预览图路径
         videoName = readFile(my_fs, (char *)namePath.c_str());  //读取视频标题
 
         message += "{ \"title\": \"";
@@ -73,12 +75,13 @@ void listvideo(AsyncWebServerRequest *request) {
         message += "\", \"path\": \"";
         message += filePath;
         message += "\" },";
-
+        i++;
+      } else {
+        i++;
       }
       file = root.openNextFile();
-      i++;
     }
-    message.remove(message.length() - 1);   //删除最后的","
+    message.remove(message.length() - 1);  //删除最后的","
 
     pageTotal = (i + pageBreak - 2) / pageBreak;
     message += " ], \"currentPage\": ";
@@ -114,6 +117,6 @@ void openVideo(AsyncWebServerRequest *request) {
   message += "/0.jpg\" data-setup=\"{}\"><source src=\"";
   message += videoPath;
   message += "/index.m3u8\" type=\"application/x-mpegURL\"></video></div></div></div><script src=\"/bin/videojs/7.5.5/video.min.js\"></script><script src=\"/bin/videojs/videojs-contrib-hls/videojs-contrib-hls.min.js\"></script><script>document.addEventListener('DOMContentLoaded', function() { var player = videojs('video_demo', { \"controls\": true, \"autoplay\": false, \"fluid\": true, \"responsive\": true }); player.ready(function() { console.log('视频播放器已初始化'); player.on('fullscreenchange', function() { if (player.isFullscreen()) { console.log('进入全屏模式'); } else { console.log('退出全屏模式'); } }); }); });</script></body></html>";
- 
+
   request->send(200, "text/html", message);  //发送网页
 }

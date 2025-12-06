@@ -1,113 +1,60 @@
 #include "upload.h"
 
-//列出上传的文件
-String listUploadDir(fs::FS &fs, const char *dirname, uint8_t levels, String page) {
+void listUploadFile(AsyncWebServerRequest *request) {
+  String page = request->getParam("page")->value();  //获取页数
+  const char *dirname = "/upload";
   uint8_t i = 1;
-  char pageState = 0;
-  const char pageBreak = 20;  //设定分页区间，现在是每20个视频一页
+  const char pageBreak = 20;  //设定分页区间，每20个文件一页
   char page0 = String2Char((char *)page.c_str());
   char page1 = (page0 - 1) * pageBreak;
   char page2 = page0 * pageBreak + 1;
-
+  int pageTotal = 1;
   String filePath = "";
   String fileName = "";
-
   String message = "";
-  File root = fs.open(dirname);
+
+  File root = my_fs.open(dirname);
   if (!root) {
-    message += "Failed to open directory <br>";
-    return message;
+    request->send(404, "text/plain", "Not found");
   }
   if (!root.isDirectory()) {
-    message += "Not a directory <br>";
-    return message;
+    request->send(404, "text/plain", "Not found");
   }
-  message += "<table><tr><th align='left'>文件名</th><th align='left'>大小</th><th></th><th></th></tr>";
+
+  message += "{\"files\": [ ";
   File file = root.openNextFile();
   while (file) {
     if (file.isDirectory()) {
-      // message +="  DIR : ";
-      // message += String(file.path())+String("<br>");
-      // if(levels){
-      //     message += listUploadDir(fs, file.path(), levels -1);
-      // }
+      // 文件夹不处理
     } else if (i > page1 && i < page2) {
       filePath = String(file.path());
       fileName = String(file.name());
 
-      message += "<tr align='left'><td>" + fileName + "</td><td>" + formatBytes(file.size());
-      message += "</td><td><button onclick=\"downloadButton(\'" + filePath + "\',\'" + fileName + "\')\">下载</button></td>";
-      message += "<td><button onclick=\"deleteButton(\'" + filePath + "\')\">删除</button></tr>";
+      message += "{ \"name\": \"";
+      message += fileName;
+      message += "\", \"size\": \"";
+      message += file.size();
+      message += "\", \"path\": \"";
+      message += filePath;
+      message += "\" },";
+      i++;
+    } else {
+      i++;
+      // 非分页范围忽略，最后统计总文件数量
     }
     file = root.openNextFile();
-    i++;
   }
-  message += "</table>";
+  message.remove(message.length() - 1);  //删除最后的","
 
-  page1 = (i + pageBreak - 2) / pageBreak;
-  message += "<br>页数: ";
-  for (i = 1; i <= page1; i++) {
-    message += "<button onclick=\"listFilesPage(\'";
-    message += i;
-    message += "\')\">";
-    message += i;
-    message += "</button>  ";
-  }
-  message += "<br>当前页: ";
+  pageTotal = (i + pageBreak - 2) / pageBreak;
+  message += " ], \"currentPage\": ";
   message += page;
-
-  //判断当前页位置
-  if (page1 == 1) {
-    pageState = 0;  //不要上一页 不要下一页
-  } else if (page0 == 1) {
-    pageState = 1;  //不要上一页
-  } else if (page0 == page1) {
-    pageState = 2;  //不要下一页
-  } else {
-    pageState = 3;  //正常
-  }
-
-  switch (pageState) {
-    case 0:
-      {
-        break;
-      }
-    case 1:
-      {
-        message += " <button onclick=\"listFilesPage(\'";
-        message += page0 + 1;
-        message += "\')\">下一页</button>";
-        break;
-      }
-    case 2:
-      {
-        message += " <button onclick=\"listFilesPage(\'";
-        message += page0 - 1;
-        message += "\')\">上一页</button>";
-        break;
-      }
-    case 3:
-      {
-        message += " <button onclick=\"listFilesPage(\'";
-        message += page0 - 1;
-        message += "\')\">上一页</button> <button onclick=\"listFilesPage(\'";
-        message += page0 + 1;
-        message += "\')\">下一页</button>";
-        break;
-      }
-    default:
-      {
-        break;
-      }
-  }
-  return message;
+  message += " , \"totalPages\": ";
+  message += pageTotal;
+  message += "}";
+  request->send(200, "application/json", message);
 }
 
-void listUploadFile(AsyncWebServerRequest *request) {
-  String page = request->getParam("page")->value();  //获取页数
-  String message = listUploadDir(my_fs, "/upload", 1, page);
-  request->send(200, "text/plain", message);
-}
 
 void uploadFileRespond(AsyncWebServerRequest *request) {
   request->send(200);
