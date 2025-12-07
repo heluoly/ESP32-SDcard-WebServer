@@ -76,7 +76,7 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 
 请将swf文件复制到内存卡中的/webgame/oldGame内。
 
-（注：flash浏览器推荐使用CefFlashBrowser，https://github.com/Mzying2001/CefFlashBrowser/releases）
+（注：flash浏览器推荐使用CefFlashBrowser，https://github.com/Mzying2001/CefFlashBrowser/releases ）
 
 2、网页视频配置
 
