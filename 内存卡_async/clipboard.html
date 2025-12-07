@@ -130,17 +130,6 @@
             min-width: 180px;
         }
         
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
-        }
-        
         .btn-secondary {
             background-color: #e9ecef;
             color: var(--dark-color);
@@ -288,9 +277,6 @@
                 </div>
                 
                 <div class="buttons-container">
-                    <button class="btn btn-primary" id="pasteBtn">
-                        <i class="fas fa-paste"></i> 粘贴文字
-                    </button>
                     <button class="btn btn-secondary" id="saveBtn">
                         <i class="fas fa-save"></i> 保存到云端
                     </button>
@@ -347,7 +333,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             // 获取DOM元素
             const textInput = document.getElementById('textInput');
-            const pasteBtn = document.getElementById('pasteBtn');
             const saveBtn = document.getElementById('saveBtn');
             const copyBtn = document.getElementById('copyBtn');
             const charCount = document.getElementById('charCount');
@@ -363,19 +348,6 @@
             
             // 加载之前保存的数据
             loadSavedText();
-            
-            // 粘贴按钮事件
-            pasteBtn.addEventListener('click', async () => {
-                try {
-                    const text = await navigator.clipboard.readText();
-                    textInput.value = text;
-                    updateCharCount();
-                    showToast('已从剪贴板粘贴文字', 'success');
-                } catch (err) {
-                    console.error('粘贴失败:', err);
-                    showToast('无法访问剪贴板，请手动粘贴', 'error');
-                }
-            });
             
             // 保存按钮事件
             saveBtn.addEventListener('click', async () => {
