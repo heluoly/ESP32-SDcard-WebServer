@@ -76,6 +76,8 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 
 请将swf文件复制到内存卡中的/webgame/oldGame内。
 
+（注：flash浏览器推荐使用CefFlashBrowser，https://github.com/Mzying2001/CefFlashBrowser/releases）
+
 2、网页视频配置
 
 请先新建一个文件夹（文件夹名称不能带有中文），使用mp4转m3u8软件将视频转换为m3u8的格式并存放在刚刚新建的文件夹中，m3u8文件命名为index.m3u8，将切片好的视频文件连同文件夹一同复制到/video/shortvideo或/video/movie内。
