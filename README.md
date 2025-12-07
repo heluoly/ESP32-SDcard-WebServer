@@ -112,7 +112,11 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 
 3、使用该版本需要额外安装如下依赖库：
 
+ESPAsyncWebServer
+
 https://github.com/ESP32Async/ESPAsyncWebServer
+
+AsyncTCP
 
 https://github.com/ESP32Async/AsyncTCP
 
