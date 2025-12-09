@@ -9,6 +9,7 @@ void listUploadFile(AsyncWebServerRequest *request) {
   char page1 = (page0 - 1) * pageBreak;
   char page2 = page0 * pageBreak + 1;
   int pageTotal = 1;
+  bool first = true;
   String filePath = "";
   String fileName = "";
   String message = "";
@@ -30,13 +31,18 @@ void listUploadFile(AsyncWebServerRequest *request) {
       filePath = String(file.path());
       fileName = String(file.name());
 
+      if (!first) {
+        message += ",";
+      }
+      first = false;
+
       message += "{ \"name\": \"";
       message += fileName;
       message += "\", \"size\": \"";
       message += file.size();
       message += "\", \"path\": \"";
       message += filePath;
-      message += "\" },";
+      message += "\" }";
       i++;
     } else {
       i++;
@@ -44,7 +50,7 @@ void listUploadFile(AsyncWebServerRequest *request) {
     }
     file = root.openNextFile();
   }
-  message.remove(message.length() - 1);  //删除最后的","
+  // message.remove(message.length() - 1);  //删除最后的","
 
   pageTotal = (i + pageBreak - 2) / pageBreak;
   message += " ], \"currentPage\": ";
@@ -91,101 +97,6 @@ void deleteUploadFile(AsyncWebServerRequest *request) {
   }
 }
 
-// void downloadUploadFile(AsyncWebServerRequest *request) {
-//   String attname = request->getParam("attname")->value();
-//   String downloadPath = request->getParam("downloadPath")->value();
-//   String attachment = "";
-//   attachment += "attachment; filename=" + attname;
-//   // Serial.println(downloadPath);
-//   if (my_fs.exists(downloadPath)) {
-//     AsyncWebServerResponse *response = request->beginResponse(my_fs, downloadPath, "application/octet-stream");
-//     response->addHeader("Content-Disposition", attachment);
-//     request->send(response);
-//   } else {
-//     request->send(404, "text/plain", "Not found");
-//   }
-// }
-
-
-//--------------------------------------------------------------
-
-// void downloadUploadFile(AsyncWebServerRequest *request) {
-//   String attname = request->getParam("attname")->value();
-//   String downloadPath = request->getParam("downloadPath")->value();
-
-//   // Serial.println(downloadPath);
-//   if (!my_fs.exists(downloadPath)) {
-//     request->send(404, "text/plain", "Not found");
-//     return;
-//   }
-
-//   File file = my_fs.open(downloadPath, FILE_READ);
-//   if (!file) {
-//     request->send(500, "text/plain", "Failed to open file");
-//     return;
-//   }
-
-//   size_t fileSize = file.size();
-//   size_t startByte = 0;
-//   size_t endByte = fileSize - 1;
-
-//   // 检查Range头部，支持断点续传
-//   if (request->hasHeader("Range")) {
-//     String rangeHeader = request->getHeader("Range")->value();
-//     Serial.println("Range Header: " + rangeHeader);
-
-//     // 解析Range头部，格式: bytes=start-end
-//     if (rangeHeader.startsWith("bytes=")) {
-//       String rangeValue = rangeHeader.substring(6);
-//       int dashIndex = rangeValue.indexOf('-');
-
-//       if (dashIndex != -1) {
-//         String startStr = rangeValue.substring(0, dashIndex);
-//         String endStr = rangeValue.substring(dashIndex + 1);
-
-//         startByte = startStr.toInt();
-//         if (endStr.length() > 0) {
-//           endByte = endStr.toInt();
-//         }
-
-//         // 边界检查
-//         if (endByte >= fileSize) {
-//           endByte = fileSize - 1;
-//         }
-
-//         if (startByte > endByte || startByte >= fileSize) {
-//           request->send(416, "text/plain", "The requested scope is invalid");
-//           file.close();
-//           return;
-//         }
-//       }
-//     }
-//   }
-
-//   size_t contentLength = endByte - startByte + 1;
-
-//   // 设置响应头
-//   AsyncWebServerResponse *response = request->beginResponse(file, downloadPath, "application/octet-stream", false);
-
-//   // 如果是部分内容请求，发送206状态码
-//   if (startByte > 0 || endByte < fileSize - 1) {
-//     response->setCode(206);
-//     String contentRange = "bytes " + String(startByte) + "-" + String(endByte) + "/" + String(fileSize);
-//     response->addHeader("Content-Range", contentRange);
-//     file.seek(startByte);   // 如果请求指定了起始位置，跳转到该位置
-//     // Serial.println("Partial content: " + contentRange);
-//   }
-
-//   response->addHeader("Content-Length", String(contentLength));
-//   response->addHeader("Accept-Ranges", "bytes");
-//   response->addHeader("Content-Disposition", "attachment; filename=\"" + attname + "\"");
-//   response->addHeader("Connection", "close");   // 主动关闭当前连接
-
-//   request->send(response);
-
-// }
-
-//--------------------------------------------------------------
 //https://forum.arduino.cc/t/esp32-espasyncwebserver-library-beginchunkedresponse-usage/1403445/15
 
 void downloadUploadFile(AsyncWebServerRequest *request) {

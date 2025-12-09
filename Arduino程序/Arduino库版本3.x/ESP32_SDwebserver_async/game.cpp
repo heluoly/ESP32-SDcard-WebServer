@@ -4,14 +4,15 @@
 void listGame(AsyncWebServerRequest *request) {
   String folder = request->getParam("folder")->value();  //获取游戏文件夹路径
   String page = request->getParam("page")->value();      //获取页数
-  String filePath = "";
-  String fileName = "";
   uint8_t i = 1;
   const char pageBreak = 20;  //设定分页区间，每20个一页
   char page0 = String2Char((char *)page.c_str());
   char page1 = (page0 - 1) * 20;  //设定分页区间，每20个一页
   char page2 = page0 * 20 + 1;
   int pageTotal = 1;
+  bool first = true;
+  String filePath = "";
+  String fileName = "";
   String message = "";
 
   File root = my_fs.open((char *)folder.c_str());
@@ -29,13 +30,18 @@ void listGame(AsyncWebServerRequest *request) {
         filePath = String(file.path());
         fileName = String(file.name());
 
+        if (!first) {
+          message += ",";
+        }
+        first = false;
+
         message += "{ \"fileName\": \"";
         message += fileName;
         message += "\", \"size\": \"";
         message += formatBytes(file.size());
         message += "\", \"path\": \"";
         message += filePath;
-        message += "\" },";
+        message += "\" }";
         i++;
       } else {
         i++;
@@ -43,7 +49,7 @@ void listGame(AsyncWebServerRequest *request) {
       }
       file = root.openNextFile();
     }
-    message.remove(message.length() - 1);  //删除最后的","
+    // message.remove(message.length() - 1);  //删除最后的","
 
     pageTotal = (i + pageBreak - 2) / pageBreak;
     message += " ], \"currentPage\": ";

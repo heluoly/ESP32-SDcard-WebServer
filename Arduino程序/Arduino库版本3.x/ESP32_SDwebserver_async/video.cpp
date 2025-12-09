@@ -34,16 +34,17 @@ String readFile(fs::FS &fs, const char *path) {
 void listvideo(AsyncWebServerRequest *request) {
   String videoTape = request->getParam("videoTape")->value();  //获取视频分区路径
   String page = request->getParam("page")->value();            //获取页数
-  String filePath = "";
-  String namePath = "";
-  String picPath = "";
-  String videoName = "";
   uint8_t i = 1;
   const char pageBreak = 20;  //设定分页区间，现在是每20个视频一页
   char page0 = String2Char((char *)page.c_str());
   char page1 = (page0 - 1) * pageBreak;
   char page2 = page0 * pageBreak + 1;
   int pageTotal = 1;
+  bool first = true;
+  String filePath = "";
+  String namePath = "";
+  String picPath = "";
+  String videoName = "";
   String message = "";
 
   File root = my_fs.open((char *)videoTape.c_str());
@@ -68,20 +69,25 @@ void listvideo(AsyncWebServerRequest *request) {
         picPath = filePath + "/0.jpg";                          //视频预览图路径
         videoName = readFile(my_fs, (char *)namePath.c_str());  //读取视频标题
 
+        if (!first) {
+          message += ",";
+        }
+        first = false;
+
         message += "{ \"title\": \"";
         message += videoName;
         message += "\", \"cover\": \"";
         message += picPath;
         message += "\", \"path\": \"";
         message += filePath;
-        message += "\" },";
+        message += "\" }";
         i++;
       } else {
         i++;
       }
       file = root.openNextFile();
     }
-    message.remove(message.length() - 1);  //删除最后的","
+    // message.remove(message.length() - 1);  //删除最后的","
 
     pageTotal = (i + pageBreak - 2) / pageBreak;
     message += " ], \"currentPage\": ";
