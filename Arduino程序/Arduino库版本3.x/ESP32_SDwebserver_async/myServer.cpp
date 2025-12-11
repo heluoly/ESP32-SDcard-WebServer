@@ -46,23 +46,23 @@ void backToAP(AsyncWebServerRequest *request) {
 
 //读取SD卡中保存的热点名称和密码
 void WiFiconfigRead() {
-  char buff[configMaximumLength];
-  if (configRead(config_fs, "ssid", "/config.txt", buff)) {
+  char buff[CONFIG_MAX_LENGTH];
+  if (configRead(config_fs, "ssid", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     ssid = buff;
   }
-  if (configRead(config_fs, "password", "/config.txt", buff)) {
+  if (configRead(config_fs, "password", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     password = buff;
   }
-  if (configRead(config_fs, "channel", "/config.txt", buff)) {
+  if (configRead(config_fs, "channel", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     channel = String2Char((char *)buff);
   }
-  if (configRead(config_fs, "autoconnect", "/config.txt", buff)) {
+  if (configRead(config_fs, "autoconnect", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     autoconnect = String2Char((char *)buff);
   }
-  if (configRead(config_fs, "pressid", "/config.txt", buff)) {
+  if (configRead(config_fs, "pressid", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     pressid = buff;
   }
-  if (configRead(config_fs, "prepassword", "/config.txt", buff)) {
+  if (configRead(config_fs, "prepassword", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     prepassword = buff;
   }
 }

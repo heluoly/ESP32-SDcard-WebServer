@@ -46,21 +46,21 @@ struct struct_ipaddr {
 
 //发送配网页面
 void handleRoot(AsyncWebServerRequest *request) {
-  char buff[configMaximumLength];
+  char buff[CONFIG_MAX_LENGTH];
   String staticIP1 = "";
   String gateway1 = "";
   String subnet1 = "";
   String dns1 = "";
-  if (configRead(config_fs, "staticIP", "/config.txt", buff)) {
+  if (configRead(config_fs, "staticIP", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     staticIP1 = buff;
   }
-  if (configRead(config_fs, "gateway", "/config.txt", buff)) {
+  if (configRead(config_fs, "gateway", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     gateway1 = buff;
   }
-  if (configRead(config_fs, "subnet", "/config.txt", buff)) {
+  if (configRead(config_fs, "subnet", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     subnet1 = buff;
   }
-  if (configRead(config_fs, "dns", "/config.txt", buff)) {
+  if (configRead(config_fs, "dns", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     dns1 = buff;
   }
   String message = htmlWIFIConnect1 + staticIP1 + htmlWIFIConnect2 + gateway1 + htmlWIFIConnect3 + subnet1 + htmlWIFIConnect4 + dns1 + htmlWIFIConnect5;
@@ -141,11 +141,13 @@ void HandleWifi(AsyncWebServerRequest *request) {
       //写入配置文件当前连接的WiFi
       // configWrite(config_fs, "pressid", (char*)wifis.c_str(), "/config.txt");
       // configWrite(config_fs, "prepassword", (char*)wifip.c_str(), "/config.txt");
-      char filetxt[configMaximumLength] = { 0 };
+      char filetxt[CONFIG_FILE_MAX_LENGTH] = { 0 };
       configWriteOpen(config_fs, "/config.txt", (char*)filetxt);
       configRewrite("pressid", (char*)wifis.c_str(), (char*)filetxt);
       configRewrite("prepassword", (char*)wifip.c_str(), (char*)filetxt);
       configWriteClose(config_fs, "/config.txt", (char*)filetxt);
+      pressid = wifis;
+      prepassword = wifip;
       if (ip2 == "1")  //保存静态IP
       {
         // configWrite(config_fs, "staticIP", (char*)staticIP2.c_str(), "/config.txt");
@@ -232,7 +234,7 @@ void configAP(AsyncWebServerRequest *request) {
   String channel2 = request->getParam("channel")->value();           //获取AP信道
   String hidden2 = request->getParam("hidden")->value();             //获取wifi隐身配置
   String str = "";
-  char filetxt[configMaximumLength] = { 0 };
+  char filetxt[CONFIG_FILE_MAX_LENGTH] = { 0 };
   char flag = 0;
   // flag = flag + configWrite(config_fs, "ssid", (char*)ssid2.c_str(), "/config.txt");
   // flag = flag + configWrite(config_fs, "password", (char*)password2.c_str(), "/config.txt");
@@ -278,7 +280,7 @@ void configAutoConnect(AsyncWebServerRequest *request) {
   String pressid2 = request->getParam("pressid")->value();          //获取WiFi名称
   String prepassword2 = request->getParam("prepassword")->value();  //获取WiFi密码
   String str = "";
-  char filetxt[configMaximumLength] = { 0 };
+  char filetxt[CONFIG_FILE_MAX_LENGTH] = { 0 };
   char flag = 0;
   // flag = flag + configWrite(config_fs, "autoconnect", (char*)autoconnect2.c_str(), "/config.txt");
   // flag = flag + configWrite(config_fs, "pressid", (char*)pressid2.c_str(), "/config.txt");

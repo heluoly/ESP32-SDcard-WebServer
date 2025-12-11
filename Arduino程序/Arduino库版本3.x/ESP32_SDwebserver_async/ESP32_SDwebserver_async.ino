@@ -20,7 +20,7 @@ https://github.com/ESP32Async/AsyncTCP
 #include <AsyncTCP.h>
 #include "FS.h"
 #include "SD_MMC.h"
-#include "SPIFFS.h"
+#include "FFat.h"
 #include "time.h"
 #include "esp_sntp.h"
 
@@ -39,7 +39,7 @@ https://github.com/ESP32Async/AsyncTCP
 // #define LED_OFF LOW
 #define SWITCH_ON LOW
 #define SWITCH_OFF HIGH
-#define FORMAT_SPIFFS_IF_FAILED false  //如出现SPIFFS初始化失败，将该参数改true格式化SPIFFS
+#define FORMAT_FFAT_IF_FAILED true  //如出现FFAT初始化失败，将该参数改true格式化SPIFFS
 
 bool hasSD = false;         //是否有SD卡
 bool ONE_BIT_MODE = false;  //设置SD卡模式 1bit：true 4bit：false
@@ -116,14 +116,14 @@ void setup() {
     hasSD = true;
   }
 #else
-  // Serial.println("SPIFFS");
-  //SPIFFS初始化
-  if (!config_fs.begin(FORMAT_SPIFFS_IF_FAILED)) {
-    // Serial.println("SPIFFS Mount Failed");
+  // Serial.println("FFAT");
+  //FFAT初始化
+  if (!config_fs.begin(FORMAT_FFAT_IF_FAILED)) {
+    // Serial.println("FFAT Mount Failed");
     hasSD = false;
     return;
   } else {
-    // Serial.println("SPIFFS Ready!");
+    // Serial.println("FFAT Ready!");
     hasSD = true;
   }
 #endif
