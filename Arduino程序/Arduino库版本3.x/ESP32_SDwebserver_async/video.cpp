@@ -35,7 +35,7 @@ void listvideo(AsyncWebServerRequest *request) {
   String videoTape = request->getParam("videoTape")->value();  //获取视频分区路径
   String page = request->getParam("page")->value();            //获取页数
   uint8_t i = 1;
-  const char pageBreak = 20;  //设定分页区间，现在是每20个视频一页
+  const char pageBreak = 20;  //设定分页区间，每20个视频一页
   char page0 = String2Char((char *)page.c_str());
   char page1 = (page0 - 1) * pageBreak;
   char page2 = page0 * pageBreak + 1;

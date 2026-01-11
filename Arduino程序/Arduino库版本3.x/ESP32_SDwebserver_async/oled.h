@@ -6,8 +6,8 @@
 #define OLED_CMD  0  //写命令
 #define OLED_DATA 1 //写数据
 
-#define oled_sda 21  //oled屏接口定义
-#define oled_scl 22  //oled屏接口定义
+#define oled_sda 15  //oled屏接口定义
+#define oled_scl 16  //oled屏接口定义
 
 void OLED_ColorTurn(unsigned char i);
 void OLED_DisplayTurn(unsigned char i);
@@ -21,7 +21,7 @@ uint32_t oled_pow(unsigned char m,unsigned char n);
 void OLED_ShowNum(unsigned char x,unsigned char y,uint32_t num,unsigned char len,unsigned char sizey);
 void OLED_ShowString(unsigned char x,unsigned char y,const char *chr,unsigned char sizey);
 //void OLED_ShowChinese(unsigned char x,unsigned char y,const unsigned char no,unsigned char sizey);
-//void OLED_DrawBMP(unsigned char x,unsigned char y,unsigned char sizex, unsigned char sizey,const unsigned char BMP[]);
+// void OLED_DrawBMP(unsigned char x,unsigned char y,unsigned char sizex, unsigned char sizey,const unsigned char BMP[]);
 void OLED_Init(void);
 
 void OLED_Display(void);

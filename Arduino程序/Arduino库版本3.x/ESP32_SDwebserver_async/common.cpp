@@ -192,7 +192,7 @@ bool configRead(fs::FS &fs, const char *key, const char *filename, char *buf, in
   
   File file = fs.open(filename, FILE_READ);
   if (!file) {
-    Serial.printf("Failed to open file for reading: %s\n", filename);
+    // Serial.printf("Failed to open file for reading: %s\n", filename);
     return false;
   }
   
@@ -203,7 +203,7 @@ bool configRead(fs::FS &fs, const char *key, const char *filename, char *buf, in
     int lineEndType = readConfigLine(file, lineBuffer, sizeof(lineBuffer));
     
     if (lineEndType < 0) {
-      Serial.println("Line too long or buffer overflow");
+      // Serial.println("Line too long or buffer overflow");
       break;
     }
     
@@ -231,14 +231,14 @@ bool configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
   // 先读取整个文件到内存（配置文件通常不大）
   File file = fs.open(filename, FILE_READ);
   if (!file) {
-    Serial.printf("Failed to open file for reading: %s\n", filename);
+    // Serial.printf("Failed to open file for reading: %s\n", filename);
     return false;
   }
   
   // 计算文件大小
   size_t fileSize = file.size();
   if (fileSize > 4096) { // 限制配置文件大小
-    Serial.println("Config file too large");
+    // Serial.println("Config file too large");
     file.close();
     return false;
   }
@@ -246,7 +246,7 @@ bool configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
   // 分配内存存储文件内容
   char *fileContent = new char[fileSize + 1];
   if (!fileContent) {
-    Serial.println("Memory allocation failed");
+    // Serial.println("Memory allocation failed");
     file.close();
     return false;
   }
@@ -319,7 +319,7 @@ bool configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
   // 写入文件
   file = fs.open(filename, FILE_WRITE);
   if (!file) {
-    Serial.printf("Failed to open file for writing: %s\n", filename);
+    // Serial.printf("Failed to open file for writing: %s\n", filename);
     return false;
   }
   
@@ -341,7 +341,7 @@ bool configAdd(fs::FS &fs, const char *key, const char *val, const char *filenam
   // 追加到文件末尾
   File file = fs.open(filename, FILE_APPEND);
   if (!file) {
-    Serial.printf("Failed to open file for appending: %s\n", filename);
+    // Serial.printf("Failed to open file for appending: %s\n", filename);
     return false;
   }
   
@@ -357,20 +357,20 @@ bool configDelete(fs::FS &fs, const char *key, const char *filename) {
   // 类似于configWrite，但跳过要删除的行
   File file = fs.open(filename, FILE_READ);
   if (!file) {
-    Serial.printf("Failed to open file for reading: %s\n", filename);
+    // Serial.printf("Failed to open file for reading: %s\n", filename);
     return false;
   }
   
   size_t fileSize = file.size();
   if (fileSize > CONFIG_FILE_MAX_LENGTH) {
-    Serial.println("Config file too large");
+    // Serial.println("Config file too large");
     file.close();
     return false;
   }
   
   char *fileContent = new char[fileSize + 1];
   if (!fileContent) {
-    Serial.println("Memory allocation failed");
+    // Serial.println("Memory allocation failed");
     file.close();
     return false;
   }
@@ -428,7 +428,7 @@ bool configDelete(fs::FS &fs, const char *key, const char *filename) {
   // 写入文件
   file = fs.open(filename, FILE_WRITE);
   if (!file) {
-    Serial.printf("Failed to open file for writing: %s\n", filename);
+    // Serial.printf("Failed to open file for writing: %s\n", filename);
     return false;
   }
   

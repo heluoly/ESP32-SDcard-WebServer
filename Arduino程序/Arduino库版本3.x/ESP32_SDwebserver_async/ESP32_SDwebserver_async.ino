@@ -34,17 +34,18 @@ https://github.com/ESP32Async/AsyncTCP
 #include "Wire.h"
 #include "oled.h"
 #include "oledfont.h"
+#include "battery.h"
 
 // #define LED_ON HIGH
 // #define LED_OFF LOW
 #define SWITCH_ON LOW
 #define SWITCH_OFF HIGH
-#define FORMAT_FFAT_IF_FAILED true  //如出现FFAT初始化失败，将该参数改true格式化SPIFFS
+#define FORMAT_FFAT_IF_FAILED true  //如出现FFAT初始化失败，将该参数改true格式化FFAT
 
 bool hasSD = false;         //是否有SD卡
 bool ONE_BIT_MODE = false;  //设置SD卡模式 1bit：true 4bit：false
 
-AsyncWebServer esp32_server(80);   //网页服务
+AsyncWebServer esp32_server(80);  //网页服务
 
 bool mode_switch = 1;   //用于控制模式变换中的跳出while循环
 bool mode_switch2 = 1;  //用于跳过STA模式，转换到AP模式
@@ -61,13 +62,11 @@ char autoconnect = 0;                 //开机自动连接上次成功连接WiFi
 String pressid = "yourwifi";          //上次成功连接wifi名称
 String prepassword = "yourpassword";  //上次成功连接wifi密码（注意WiFi密码位数不要小于8位）
 
-TaskHandle_t Task_Server;  //第1核心任务
+TaskHandle_t Task_Server;   //第1核心任务
 TaskHandle_t Task_Display;  //第2核心任务
 hw_timer_t *tim1 = NULL;    // 定时器1，用于定时息屏
 hw_timer_t *tim2 = NULL;    // 定时器2，用于时钟计数
 
-const char switchInput = 0;  //IO0作为按键
-// const char led = 33;         //IO33作为led指示灯
 //状态标志
 char switchState;       //按键状态
 char LEDState;          //led灯状态
@@ -97,16 +96,15 @@ void setup() {
 #if CONFIG_SD
   //SD卡初始化
   //ESP32-S3 SD卡引脚定义
-  int clk = 6;
-  int cmd = 7;
-  int d0  = 5;
-  int d1  = 4;
-  int d2  = 16;
-  int d3  = 15;
+  int clk = 11;
+  int cmd = 12;
+  int d0 = 10;
+  int d1 = 9;
+  int d2 = 14;
+  int d3 = 13;
   SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
-  
-  // Serial.println("SD");
-  if (!config_fs.begin("/sdcard", ONE_BIT_MODE))  //SD卡初始化
+
+  if (!config_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 12))  //SD卡初始化，将MMC并发数修改为12，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
@@ -142,8 +140,9 @@ void setup() {
 
 void loop() {
   xTaskCreatePinnedToCore(task_server, "Task_Server", 5120, NULL, 1, &Task_Server, 1);     //创建第1核心服务器任务
-  // xTaskCreatePinnedToCore(task_display, "Task_Display", 4096, NULL, 1, &Task_Display, 0);   //创建第2核心显示任务
+  xTaskCreatePinnedToCore(task_display, "Task_Display", 2560, NULL, 1, &Task_Display, 0);  //创建第2核心显示任务
   vTaskDelete(NULL);
+  vTaskDelay(10000 / portTICK_PERIOD_MS);
 }
 
 
@@ -157,15 +156,15 @@ void task_server(void *pvParameters) {
   //  24, 12          <<< For 24MHz XTAL
 
   //ESP32-S3 SD卡引脚定义
-  int clk = 6;
-  int cmd = 7;
-  int d0 = 5;
-  int d1 = 4;
-  int d2 = 16;
-  int d3 = 15;
+  int clk = 11;
+  int cmd = 12;
+  int d0 = 10;
+  int d1 = 9;
+  int d2 = 14;
+  int d3 = 13;
   SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
 
-  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 10))  //SD卡初始化，将MMC并发数修改为10，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M
+  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 12))  //SD卡初始化，将MMC并发数修改为12，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
@@ -243,12 +242,26 @@ void task_display(void *pvParameters) {
   uint8_t wifiState = 254;     //WiFi状态 0:WL_IDLE_STATUS, 1:WL_NO_SSID_AVAIL, 3:WL_CONNECTED, 4:WL_CONNECT_FAILED, 6:WL_DISCONNECTED. 254:WL_STOPPED
   uint8_t flag_wifiState = 0;  //判断WiFi是否掉线
   uint8_t RSSI_value = 0;      //WiFi信号强度
+  int batteryVoltage = 0;      //电池电压
+  int batteryPercent = 0;      //电池电量百分比
+  oledState = 0;
+
+  // UBaseType_t istack;
 
   OLED_Init();  //oled初始化
-  // OLED_ColorTurn(0);//0正常显示 1反色显示
-  // OLED_DisplayTurn(0);//0正常显示 1翻转180度显示
-  pinMode(switchInput, INPUT);  //按键初始化
-  // pinMode(led, OUTPUT);         //led灯初始化
+  // OLED_ColorTurn(0);             //0正常显示 1反色显示
+  // OLED_DisplayTurn(0);           //0正常显示 1翻转180度显示
+  pinMode(BTN_BOOT_PIN, INPUT);  //按键初始化
+  // pinMode(LED, OUTPUT);         //led灯初始化
+  pinMode(BAT_EN_PIN, OUTPUT);   //电池电压检测初始化
+  pinMode(BAT_ADC_PIN, ANALOG);  //电池电压检测初始化
+  // analogSetAttenuation(ADC_11db);  //设置ADC衰减
+  /*
+  ADC_0db : 0 mV ~ 950 mV
+  ADC_2_5db : 0 mV ~ 1250 mV
+  ADC_6db : 0 mV ~ 1750 mV
+  ADC_11db : 0 mV ~ 3100 mV
+  */
 
   //计算息屏时间
   tim1 = timerBegin(1000000);             //定时器频率用于计算分频
@@ -261,18 +274,15 @@ void task_display(void *pvParameters) {
   timerAlarm(tim2, 1000000, true, 0);     //定时器地址指针，定时时长，数值是否重载，重载数值
   // timerStart(tim2);                       //使能定时器2
 
-  oledState = 0;
-  // UBaseType_t istack;
-
   while (1) {
-    switchState = digitalRead(switchInput);  //按键检测
+    switchState = digitalRead(BTN_BOOT_PIN);  //按键检测
     if (switchState == SWITCH_ON) {
       OLED_Display_On();  //开启OLED
 
       //长按检测
-      switchState = digitalRead(switchInput);
+      switchState = digitalRead(BTN_BOOT_PIN);
       while (switchState == SWITCH_ON) {
-        switchState = digitalRead(switchInput);
+        switchState = digitalRead(BTN_BOOT_PIN);
         vTaskDelay(10 / portTICK_PERIOD_MS);
         if ((oledFrame == 1) && (oledState == 1))  //在第一页，而且是屏幕亮起的状态下长按
         {
@@ -317,7 +327,12 @@ void task_display(void *pvParameters) {
       }
       //第一页显示服务器信息
       if (oledFrame == 1) {
-        OLED_ShowString(0, 0, "ESP32 WebServer", 16);
+        // OLED_ShowString(0, 0, "ESP32 WebServer", 16);
+        batteryVoltage = readBatteryVoltage();              //获取电池电压
+        batteryPercent = voltageToPercent(batteryVoltage);  //电池电压转换为百分比
+        OLED_ShowString(0, 0, "Battery:    %", 16);
+        // OLED_ShowNum(72, 0, batteryVoltage, 4, 16);
+        OLED_ShowNum(72, 0, batteryPercent, 3, 16);
         if (mode_switch3) {
           OLED_ShowString(0, 2, "WLAN OFF    ", 16);
           OLED_ShowString(0, 4, "                ", 16);
@@ -385,9 +400,9 @@ void task_display(void *pvParameters) {
       }
 
       //松手检测
-      switchState = digitalRead(switchInput);
+      switchState = digitalRead(BTN_BOOT_PIN);
       while (switchState == SWITCH_ON) {
-        switchState = digitalRead(switchInput);
+        switchState = digitalRead(BTN_BOOT_PIN);
         vTaskDelay(10 / portTICK_PERIOD_MS);
       }
 

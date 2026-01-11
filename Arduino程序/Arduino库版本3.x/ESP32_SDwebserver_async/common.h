@@ -17,9 +17,12 @@
 #define config_fs FFat
 #endif
 
+#define BTN_BOOT_PIN 0  //IO0作为按键
+// #define LED 33         //IO33作为led指示灯
+
 //String indexOfFilename(String filename);
 String formatBytes(size_t bytes);
-void listDir(fs::FS &fs, const char *dirname, uint8_t levels);
+// void listDir(fs::FS &fs, const char *dirname, uint8_t levels);
 char deleteFile(fs::FS &fs, const char *path);
 char writeFile(fs::FS &fs, const char *path, const char *message);
 void downloadFile(AsyncWebServerRequest *request);
@@ -27,8 +30,8 @@ char String2Char(char *str);
 
 bool configRead(fs::FS &fs, const char *key, const char *filename, char *buf, int bufSize);
 bool configWrite(fs::FS &fs, const char *key, const char *val, const char *filename);
-bool configAdd(fs::FS &fs, const char *key, const char *val, const char *filename);
-bool configDelete(fs::FS &fs, const char *key, const char *filename);
+// bool configAdd(fs::FS &fs, const char *key, const char *val, const char *filename);
+// bool configDelete(fs::FS &fs, const char *key, const char *filename);
 //一次写入配置文件多个参数
 char configWriteOpen(fs::FS &fs, const char *filename, char *filetxt);
 char configRewrite(const char *key, const char *val, char *filetxt);

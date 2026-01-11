@@ -16,8 +16,10 @@ extern char flag_timeSet;
 extern const char* ntpServer1;
 extern const char* ntpServer2;
 
+// extern TaskHandle_t Task_Sntp;  //网络时间同步任务
+
 //网页获取当前时间
-void setTime(AsyncWebServerRequest *request) {
+void setTime(AsyncWebServerRequest* request) {
   String hour_str = request->getParam("hour")->value();
   String minute_str = request->getParam("minute")->value();
   String second_str = request->getParam("minute")->value();
@@ -69,6 +71,9 @@ void task_sntp(void* pvParameters) {
     }
     flag_timeSet = 1;  //修改定时器
   }
+  // UBaseType_t istack;
+  // istack = uxTaskGetStackHighWaterMark(Task_Sntp);
+  // printf("Task_Sntp istack = %d\n", istack);
   vTaskDelete(NULL);  //删除任务
 }
 

@@ -182,7 +182,7 @@ void server_sta() {
   esp32_server.on("/wificonnect", HTTP_GET, changemode);                       //模式转换
   esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
 
-  // xTaskCreatePinnedToCore(task_sntp, "Task_Sntp", 2048, NULL, 5, &Task_Sntp, 0);  //创建网络时间同步任务
+  xTaskCreatePinnedToCore(task_sntp, "Task_Sntp", 1536, NULL, 5, &Task_Sntp, 0);  //创建网络时间同步任务
 
   while (mode_switch)  //监听用户请求，直到模式转换
   {
@@ -236,7 +236,7 @@ void server_presta() {
     esp32_server.begin();  //启动网站服务
     // Serial.println("HTTP server started");
 
-    // xTaskCreatePinnedToCore(task_sntp, "Task_Sntp", 2048, NULL, 5, &Task_Sntp, 0);  //创建网络时间同步任务
+    xTaskCreatePinnedToCore(task_sntp, "Task_Sntp", 1536, NULL, 5, &Task_Sntp, 0);  //创建网络时间同步任务
 
     while (mode_switch)  //监听用户请求，直到模式转换
     {
@@ -252,7 +252,7 @@ void server_presta() {
 
 void handleUserRequest(AsyncWebServerRequest *request) {
   String path = request->url();
-  bool fileReadOK = false;
+  // bool fileReadOK = false;
   String contentType = "";
 
   if (path.endsWith("/")) {  //如果访问地址以"/"为结尾
@@ -272,10 +272,10 @@ void handleUserRequest(AsyncWebServerRequest *request) {
   if (my_fs.exists(path)) {  //如果访问的文件可以在SD卡中找到
     AsyncWebServerResponse *response = request->beginResponse(my_fs, path, contentType);
     request->send(response);
-    fileReadOK = true;
+    // fileReadOK = true;
   } else {
     request->send(404, "text/plain", "Not found");
-    fileReadOK = false;
+    // fileReadOK = false;
   }
   
   //检测SD卡意外弹出
