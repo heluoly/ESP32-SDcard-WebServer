@@ -8,5 +8,7 @@
 
 int readBatteryVoltage();
 int voltageToPercent(int voltage_mv);
+void task_bat(void* pvParameters);
+bool createBatTaskOnce();
 
 #endif

@@ -86,6 +86,10 @@ char second2;
 //网络时间同步服务器地址
 const char *ntpServer1 = "pool.ntp.org";
 const char *ntpServer2 = "ntp.aliyun.com";
+//电池检测
+int batteryPercent = 100;                 //电池电量百分比
+TaskHandle_t Task_Bat = NULL;             //电池检测任务
+SemaphoreHandle_t batTaskDoneSem = NULL;  //电池检测任务单一执行判断
 
 //oled显存
 unsigned char oled_RAM[128][8];
@@ -141,8 +145,8 @@ void setup() {
 void loop() {
   xTaskCreatePinnedToCore(task_server, "Task_Server", 5120, NULL, 1, &Task_Server, 1);     //创建第1核心服务器任务
   xTaskCreatePinnedToCore(task_display, "Task_Display", 2560, NULL, 1, &Task_Display, 0);  //创建第2核心显示任务
-  vTaskDelete(NULL);
   vTaskDelay(10000 / portTICK_PERIOD_MS);
+  vTaskDelete(NULL);
 }
 
 
@@ -242,8 +246,7 @@ void task_display(void *pvParameters) {
   uint8_t wifiState = 254;     //WiFi状态 0:WL_IDLE_STATUS, 1:WL_NO_SSID_AVAIL, 3:WL_CONNECTED, 4:WL_CONNECT_FAILED, 6:WL_DISCONNECTED. 254:WL_STOPPED
   uint8_t flag_wifiState = 0;  //判断WiFi是否掉线
   uint8_t RSSI_value = 0;      //WiFi信号强度
-  int batteryVoltage = 0;      //电池电压
-  int batteryPercent = 0;      //电池电量百分比
+
   oledState = 0;
 
   // UBaseType_t istack;
@@ -262,6 +265,7 @@ void task_display(void *pvParameters) {
   ADC_6db : 0 mV ~ 1750 mV
   ADC_11db : 0 mV ~ 3100 mV
   */
+  createBatTaskOnce();  //创建更新电池电量任务
 
   //计算息屏时间
   tim1 = timerBegin(1000000);             //定时器频率用于计算分频
@@ -328,11 +332,11 @@ void task_display(void *pvParameters) {
       //第一页显示服务器信息
       if (oledFrame == 1) {
         // OLED_ShowString(0, 0, "ESP32 WebServer", 16);
-        batteryVoltage = readBatteryVoltage();              //获取电池电压
-        batteryPercent = voltageToPercent(batteryVoltage);  //电池电压转换为百分比
         OLED_ShowString(0, 0, "Battery:    %", 16);
         // OLED_ShowNum(72, 0, batteryVoltage, 4, 16);
         OLED_ShowNum(72, 0, batteryPercent, 3, 16);
+        createBatTaskOnce();  //创建更新电池电量任务
+
         if (mode_switch3) {
           OLED_ShowString(0, 2, "WLAN OFF    ", 16);
           OLED_ShowString(0, 4, "                ", 16);
@@ -440,7 +444,7 @@ void task_display(void *pvParameters) {
       }
     }
 
-    vTaskDelay(2 / portTICK_PERIOD_MS);
+    vTaskDelay(20 / portTICK_PERIOD_MS);
   }
 }
 

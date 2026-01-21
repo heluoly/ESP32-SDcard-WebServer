@@ -21,7 +21,7 @@ extern char autoconnect;
 extern String pressid;
 extern String prepassword;
 
-String htmlHeader = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width\">";
+const String htmlHeader = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width\">";
 
 TaskHandle_t Task_Sntp;  //网络时间同步任务
 

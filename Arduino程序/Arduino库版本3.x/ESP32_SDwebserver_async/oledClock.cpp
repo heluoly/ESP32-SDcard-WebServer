@@ -1,4 +1,5 @@
 #include "oledClock.h"
+#include "battery.h"
 
 //时间
 extern char hour;
@@ -122,6 +123,7 @@ void clockRun() {
   if (second > 59) {
     second = 0;
     minute++;
+    createBatTaskOnce();  //创建更新电池电量任务
     if (minute > 59) {
       minute = 0;
       hour++;

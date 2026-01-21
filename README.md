@@ -108,7 +108,7 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 
 # 关于使用异步库版本的说明
 
-1、这是一个采用webserver异步库的版本，程序在"ESP32-SDcard-WebServer/Arduino程序\Arduino库版本3.x/ESP32_SDwebserver_async"文件夹下，使用异步库可以并发处理任务。
+1、这是一个采用webserver异步库的版本，程序在"ESP32-SDcard-WebServer/Arduino程序/Arduino库版本3.x/ESP32_SDwebserver_async"文件夹下，使用异步库可以并发处理任务。
 
 2、目前测试该版本只适用于ESP32-S3，且使用ESP32-S3运行能大幅提高视频播放的流畅性，而普通的ESP32运行起来会卡死。
 
