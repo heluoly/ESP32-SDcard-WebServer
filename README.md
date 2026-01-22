@@ -130,6 +130,8 @@ https://github.com/ESP32Async/AsyncTCP
 
 7、电池电压检测引脚在battery.h中修改
 
+8、OLED显示屏的I2C引脚在oled.h中修改
+
 
 # 参考项目
 
