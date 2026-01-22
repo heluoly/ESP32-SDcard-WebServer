@@ -1,8 +1,8 @@
 #ifndef __WIFICONNECT_H
 #define __WIFICONNECT_H
 
-#include <WiFi.h>
 #include "common.h"
+#include <WiFi.h>
 
 void handleRoot(AsyncWebServerRequest *request);
 void HandleScanWifi(AsyncWebServerRequest *request);

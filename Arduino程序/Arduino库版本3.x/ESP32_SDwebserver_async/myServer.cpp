@@ -281,7 +281,7 @@ void handleUserRequest(AsyncWebServerRequest *request) {
   //检测SD卡意外弹出
   // if (!fileReadOK) {
   //   my_fs.end();
-  //   if (my_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, 10)) {  //SD卡初始化
+  //   if (my_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, 8)) {  //SD卡初始化
   //     if (!hasSD) {
   //       request->send(404, "text/plain", "Card Mount Succeed");  //如果在SD卡初始化成功，则回复Card Mount Succeed
   //       hasSD = true;

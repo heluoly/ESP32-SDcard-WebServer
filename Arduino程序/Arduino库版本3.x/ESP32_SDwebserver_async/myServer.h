@@ -1,8 +1,8 @@
 #ifndef __MYSERVER_H
 #define __MYSERVER_H
 
-#include <WiFi.h>
 #include "common.h"
+#include <WiFi.h>
 #include "game.h"
 #include "upload.h"
 #include "video.h"

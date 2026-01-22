@@ -14,7 +14,6 @@ Font Awesome https://fontawesome.com/
 https://github.com/ESP32Async/ESPAsyncWebServer
 https://github.com/ESP32Async/AsyncTCP
 */
-
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncTCP.h>
@@ -100,15 +99,16 @@ void setup() {
 #if CONFIG_SD
   //SD卡初始化
   //ESP32-S3 SD卡引脚定义
-  int clk = 11;
-  int cmd = 12;
-  int d0 = 10;
-  int d1 = 9;
-  int d2 = 14;
-  int d3 = 13;
-  SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
+  // int clk = 11;
+  // int cmd = 12;
+  // int d0 = 10;
+  // int d1 = 9;
+  // int d2 = 14;
+  // int d3 = 13;
+  // SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
+  SD_MMC.setPins(11, 12, 10, 9, 14, 13);
 
-  if (!config_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 12))  //SD卡初始化，将MMC并发数修改为12，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M
+  if (!config_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 8))  //SD卡初始化，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M，将MMC并发数修改为8
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
@@ -145,7 +145,7 @@ void setup() {
 void loop() {
   xTaskCreatePinnedToCore(task_server, "Task_Server", 5120, NULL, 1, &Task_Server, 1);     //创建第1核心服务器任务
   xTaskCreatePinnedToCore(task_display, "Task_Display", 2560, NULL, 1, &Task_Display, 0);  //创建第2核心显示任务
-  vTaskDelay(10000 / portTICK_PERIOD_MS);
+  // vTaskDelay(10000 / portTICK_PERIOD_MS);
   vTaskDelete(NULL);
 }
 
@@ -160,15 +160,16 @@ void task_server(void *pvParameters) {
   //  24, 12          <<< For 24MHz XTAL
 
   //ESP32-S3 SD卡引脚定义
-  int clk = 11;
-  int cmd = 12;
-  int d0 = 10;
-  int d1 = 9;
-  int d2 = 14;
-  int d3 = 13;
-  SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
+  // int clk = 11;
+  // int cmd = 12;
+  // int d0 = 10;
+  // int d1 = 9;
+  // int d2 = 14;
+  // int d3 = 13;
+  // SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
+  SD_MMC.setPins(11, 12, 10, 9, 14, 13);
 
-  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 12))  //SD卡初始化，将MMC并发数修改为12，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M
+  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 8))  //SD卡初始化，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M，将MMC并发数修改为8
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
