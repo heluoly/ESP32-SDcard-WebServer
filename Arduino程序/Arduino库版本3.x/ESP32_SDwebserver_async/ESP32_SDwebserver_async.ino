@@ -14,6 +14,7 @@ Font Awesome https://fontawesome.com/
 https://github.com/ESP32Async/ESPAsyncWebServer
 https://github.com/ESP32Async/AsyncTCP
 */
+
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncTCP.h>
@@ -108,7 +109,7 @@ void setup() {
   // SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
   SD_MMC.setPins(11, 12, 10, 9, 14, 13);
 
-  if (!config_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 6))  //SD卡初始化，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M，将MMC并发数修改为6
+  if (!config_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, 6))  //SD卡初始化，BOARD_MAX_SDMMC_FREQ：40M，将MMC并发数修改为6
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
@@ -169,7 +170,7 @@ void task_server(void *pvParameters) {
   // SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
   SD_MMC.setPins(11, 12, 10, 9, 14, 13);
 
-  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 6))  //SD卡初始化，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M，将MMC并发数修改为6
+  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, 6))  //SD卡初始化，BOARD_MAX_SDMMC_FREQ：40000kHz，将MMC并发数修改为6
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
@@ -271,7 +272,7 @@ void task_display(void *pvParameters) {
   //计算息屏时间
   tim1 = timerBegin(1000000);             //定时器频率用于计算分频
   timerAttachInterrupt(tim1, &onTimer1);  //定时器地址指针，中断处理函数
-  timerAlarm(tim1, 10000000, false, 0);   //定时器地址指针，定时时长，数值是否重载，重载数值
+  timerAlarm(tim1, 30000000, false, 0);   //定时器地址指针，定时时长，数值是否重载，重载数值
   timerStop(tim1);
   //时钟计数
   tim2 = timerBegin(1000000);             //定时器频率用于计算分频
@@ -462,7 +463,6 @@ void ARDUINO_ISR_ATTR onTimer2() {
     hour = hour2;
     minute = minute2;
     second = second2;
-    clockRun();  //时钟进位
   }
   clockRun();  //时钟进位
 }
