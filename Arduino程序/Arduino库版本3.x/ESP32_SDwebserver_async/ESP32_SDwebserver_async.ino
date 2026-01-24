@@ -108,7 +108,7 @@ void setup() {
   // SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
   SD_MMC.setPins(11, 12, 10, 9, 14, 13);
 
-  if (!config_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 8))  //SD卡初始化，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M，将MMC并发数修改为8
+  if (!config_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 6))  //SD卡初始化，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M，将MMC并发数修改为6
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
@@ -169,7 +169,7 @@ void task_server(void *pvParameters) {
   // SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
   SD_MMC.setPins(11, 12, 10, 9, 14, 13);
 
-  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 8))  //SD卡初始化，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M，将MMC并发数修改为8
+  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, SDMMC_FREQ_52M, 6))  //SD卡初始化，SDMMC_FREQ_52M：52M，BOARD_MAX_SDMMC_FREQ：40M，将MMC并发数修改为6
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
@@ -445,7 +445,7 @@ void task_display(void *pvParameters) {
       }
     }
 
-    vTaskDelay(20 / portTICK_PERIOD_MS);
+    vTaskDelay(50 / portTICK_PERIOD_MS);
   }
 }
 
@@ -462,6 +462,7 @@ void ARDUINO_ISR_ATTR onTimer2() {
     hour = hour2;
     minute = minute2;
     second = second2;
+    clockRun();  //时钟进位
   }
   clockRun();  //时钟进位
 }

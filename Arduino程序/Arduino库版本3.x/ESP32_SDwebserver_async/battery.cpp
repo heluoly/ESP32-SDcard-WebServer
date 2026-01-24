@@ -22,21 +22,34 @@ int readBatteryVoltage() {
 
 //电池电压转换为百分比
 int voltageToPercent(int voltage_mv) {
-  if (voltage_mv >= 4200)
+  if (voltage_mv >= 4100)
     return 100;
-  else if (voltage_mv >= 4000)
-    return 80 + (voltage_mv - 4000) * 10 / 100;
   else if (voltage_mv >= 3700)
-    return 20 + (voltage_mv - 3700) * 20 / 100;
-  else if (voltage_mv >= 3600)
-    return 10 + (voltage_mv - 3600) * 10 / 100;
+    return 50 + (voltage_mv - 3700) * 50 / 400;
   else if (voltage_mv >= 3500)
-    return 5 + (voltage_mv - 3500) * 5 / 100;
+    return 20 + (voltage_mv - 3500) * 30 / 200;
   else if (voltage_mv >= 3300)
-    return (voltage_mv - 3300) * 5 / 200;
+    return (voltage_mv - 3300) * 20 / 200;
   else
     return 0;
 }
+//电池电压转换为百分比
+// int voltageToPercent(int voltage_mv) {
+//   if (voltage_mv >= 4200)
+//     return 100;
+//   else if (voltage_mv >= 4000)
+//     return 80 + (voltage_mv - 4000) * 10 / 100;
+//   else if (voltage_mv >= 3700)
+//     return 20 + (voltage_mv - 3700) * 20 / 100;
+//   else if (voltage_mv >= 3600)
+//     return 10 + (voltage_mv - 3600) * 10 / 100;
+//   else if (voltage_mv >= 3500)
+//     return 5 + (voltage_mv - 3500) * 5 / 100;
+//   else if (voltage_mv >= 3300)
+//     return (voltage_mv - 3300) * 5 / 200;
+//   else
+//     return 0;
+// }
 
 //更新电池电量
 void task_bat(void* pvParameters) {

@@ -23,7 +23,7 @@ extern const char* ntpServer2;
 void setTime(AsyncWebServerRequest* request) {
   String hour_str = request->getParam("hour")->value();
   String minute_str = request->getParam("minute")->value();
-  String second_str = request->getParam("minute")->value();
+  String second_str = request->getParam("second")->value();
 
   hour2 = String2Char((char*)hour_str.c_str());
   minute2 = String2Char((char*)minute_str.c_str());
