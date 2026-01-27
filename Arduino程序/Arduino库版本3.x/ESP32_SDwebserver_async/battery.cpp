@@ -8,7 +8,7 @@ extern SemaphoreHandle_t batTaskDoneSem;
 int readBatteryVoltage() {
   int analogVolts = 0;
   digitalWrite(BAT_EN_PIN, HIGH);
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  vTaskDelay(1500 / portTICK_PERIOD_MS);
   for (char i = 0; i < 4; i++) {
     analogVolts += analogReadMilliVolts(BAT_ADC_PIN);
   }
@@ -16,7 +16,7 @@ int readBatteryVoltage() {
   analogVolts = analogVolts * 2;  //分压系数
   // Serial.printf("ADC millivolts value = %d\n", analogVolts);
   digitalWrite(BAT_EN_PIN, LOW);
-  vTaskDelay(500 / portTICK_PERIOD_MS);
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
   return analogVolts;
 }
 
@@ -36,10 +36,10 @@ int readBatteryVoltage() {
 
 //电池电压转换为百分比（亿纬INR18650/35V）
 int voltageToPercent(int voltage_mv) {
-  if (voltage_mv >= 4100)
+  if (voltage_mv >= 4150)
     return 100;
   else if (voltage_mv >= 4050)
-    return 75 + (voltage_mv - 4050) * 25 / 50;
+    return 75 + (voltage_mv - 4050) * 25 / 100;
   else if (voltage_mv >= 3450)
     return 3 + (voltage_mv - 3450) * 72 / 600;
   else if (voltage_mv >= 3300)

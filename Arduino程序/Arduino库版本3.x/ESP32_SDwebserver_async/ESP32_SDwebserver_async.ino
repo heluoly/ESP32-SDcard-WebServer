@@ -93,6 +93,8 @@ SemaphoreHandle_t batTaskDoneSem = NULL;  //电池检测任务单一执行判断
 //oled显存
 unsigned char oled_RAM[8][128];
 
+void serverInfo_Display();
+
 void setup() {
   // Serial.begin(115200);  // 启动串口通讯
   // Serial.println("");
@@ -244,9 +246,6 @@ void closeServer() {
 void task_display(void *pvParameters) {
   uint16_t pressTime = 0;      //长按时间计时
   uint8_t flag_press = 0;      //长按标志
-  uint8_t wifiState = 254;     //WiFi状态 0:WL_IDLE_STATUS, 1:WL_NO_SSID_AVAIL, 3:WL_CONNECTED, 4:WL_CONNECT_FAILED, 6:WL_DISCONNECTED. 254:WL_STOPPED
-  uint8_t flag_wifiState = 0;  //判断WiFi是否掉线
-  uint8_t RSSI_value = 0;      //WiFi信号强度
 
   oledState = 0;
 
@@ -288,11 +287,11 @@ void task_display(void *pvParameters) {
       switchState = digitalRead(BTN_BOOT_PIN);
       while (switchState == SWITCH_ON) {
         switchState = digitalRead(BTN_BOOT_PIN);
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
         if ((oledFrame == 1) && (oledState == 1))  //在第一页，而且是屏幕亮起的状态下长按
         {
           pressTime++;
-          if (pressTime > 300)  //长按时间大于3秒，跳出循环，并设置长按标志
+          if (pressTime > 60)  //长按时间大于3秒，跳出循环，并设置长按标志
           {
             flag_press = 1;
             oledFrame = 1;
@@ -330,79 +329,10 @@ void task_display(void *pvParameters) {
           OLED_Clear();
         }
       }
-      //第一页显示服务器信息
-      if (oledFrame == 1) {
-        memset(oled_RAM, 0, 128 * 8 * sizeof(unsigned char));
-        // OLED_ShowString_RAM(0, 0, "ESP32 WebServer", 16);
-        OLED_ShowString_RAM(0, 0, "Battery:    %", 16);
-        // OLED_ShowNum_RAM(72, 0, batteryVoltage, 4, 16);
-        OLED_ShowNum_RAM(72, 0, batteryPercent, 3, 16);
-        createBatTaskOnce();  //创建更新电池电量任务
 
-        if (mode_switch3) {
-          OLED_ShowString_RAM(0, 2, "WLAN OFF    ", 16);
-          OLED_ShowString_RAM(0, 4, "                ", 16);
-          OLED_ShowString_RAM(0, 6, "                ", 16);
-        } else {
-          if (mode_wifi == 1) {
-            OLED_ShowString_RAM(0, 2, "Mode: AP    ", 16);
-            OLED_ShowString_RAM(0, 4, "Channel: ", 16);
-            OLED_ShowNum_RAM(72, 4, channel, 2, 16);
-            if (ssid_hidden) {
-              OLED_ShowString_RAM(96, 4, "*", 16);
-            }
-            OLED_ShowString_RAM(0, 6, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
-          } else if (mode_wifi == 2) {
-            OLED_ShowString_RAM(0, 2, "Mode: AP+STA", 16);
-            OLED_ShowString_RAM(0, 4, "Channel: ", 16);
-            OLED_ShowNum_RAM(72, 4, channel, 2, 16);
-            if (ssid_hidden) {
-              OLED_ShowString_RAM(96, 4, "*", 16);
-            }
-            OLED_ShowString_RAM(0, 6, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
-          } else if (mode_wifi == 3) {
-            wifiState = WiFi.status();  //读取WiFi状态
-            OLED_ShowString_RAM(0, 2, "Mode: STA   ", 16);
-            if (wifiState == WL_CONNECTED) {
-              if (flag_wifiState == 1) {
-                IPAD = WiFi.localIP().toString();  //刷新IP地址
-                flag_wifiState = 0;
-              }
-              OLED_ShowString_RAM(0, 4, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
-              OLED_ShowString_RAM(0, 6, "RSSI: -", 16);
-              RSSI_value = -WiFi.RSSI();
-              OLED_ShowNum_RAM(56, 6, RSSI_value, 2, 16);
-              // Serial.println(WiFi.RSSI());
-            } else if (wifiState == WL_IDLE_STATUS) {
-              OLED_ShowString_RAM(0, 4, "Reconnecting", 16);
-              flag_wifiState = 1;
-            } else if (wifiState == WL_NO_SSID_AVAIL) {
-              OLED_ShowString_RAM(0, 4, "No SSID Avail", 16);
-              flag_wifiState = 1;
-            } else if (wifiState == WL_CONNECT_FAILED) {
-              OLED_ShowString_RAM(0, 4, "Connect Failed", 16);
-              WiFi.reconnect();  //尝试重新连接WiFi
-              flag_wifiState = 1;
-            } else if (wifiState == WL_CONNECTION_LOST) {
-              OLED_ShowString_RAM(0, 4, "Connect Lost", 16);
-              flag_wifiState = 1;
-            } else if (wifiState == WL_DISCONNECTED) {
-              OLED_ShowString_RAM(0, 4, "Disconnected", 16);
-              flag_wifiState = 1;
-            } else {
-              OLED_ShowString_RAM(0, 4, "Failed", 16);
-              flag_wifiState = 1;
-            }
-            // Serial.printf("WL: %d\n", wifiState);
-
-          } else {
-            OLED_ShowString_RAM(0, 2, "Mode: STA   ", 16);
-            OLED_ShowString_RAM(0, 4, "Connecting", 16);
-          }
-        }
-        OLED_Display();   //全局刷新显示
-      } else  //第二页，时钟
-      {
+      if (oledFrame == 1) {  //第一页显示服务器信息
+        serverInfo_Display();
+      } else {                //第二页显示时钟
         oledClock_Display();  //显示表盘和指针
       }
 
@@ -410,7 +340,7 @@ void task_display(void *pvParameters) {
       switchState = digitalRead(BTN_BOOT_PIN);
       while (switchState == SWITCH_ON) {
         switchState = digitalRead(BTN_BOOT_PIN);
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
       }
 
       //更新息屏倒计时
@@ -431,24 +361,102 @@ void task_display(void *pvParameters) {
       // printf("Task_Display istack = %d\n", istack);
 
     } else {
-      //息屏
-      if (flag_tim1) {
-        OLED_Clear();
-        OLED_Display_Off();
-        flag_tim1 = 0;
-        oledState = 0;
-        timerStop(tim1);
-      }
 
-      //第二页，亮屏时刷新时钟
-      if (oledState && (oledFrame == 2) && flag_tim2) {
-        flag_tim2 = 0;
-        oledClock_Display();  //显示表盘和指针
+      if (oledState) {    //显示屏处于点亮状态
+        if (flag_tim1) {  //息屏
+          OLED_Clear();
+          OLED_Display_Off();
+          flag_tim1 = 0;
+          oledState = 0;
+          timerStop(tim1);
+        } else if (flag_tim2) {    //时钟触发刷新，1秒间隔
+          if (oledFrame == 1) {    //第一页，亮屏时刷新服务器信息
+            serverInfo_Display();  //显示服务器信息
+          } else {                 //第二页，亮屏时刷新时钟
+            oledClock_Display();   //显示表盘和指针
+          }
+          flag_tim2 = 0;
+        }
       }
     }
 
-    vTaskDelay(50 / portTICK_PERIOD_MS);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
   }
+}
+
+//服务器信息显示
+void serverInfo_Display() {
+  uint8_t wifiState = 254;     //WiFi状态 0:WL_IDLE_STATUS, 1:WL_NO_SSID_AVAIL, 3:WL_CONNECTED, 4:WL_CONNECT_FAILED, 6:WL_DISCONNECTED. 254:WL_STOPPED
+  uint8_t flag_wifiState = 0;  //判断WiFi是否掉线
+  uint8_t RSSI_value = 0;      //WiFi信号强度
+
+  memset(oled_RAM, 0, 128 * 8 * sizeof(unsigned char));
+  // OLED_ShowString_RAM(0, 0, "ESP32 WebServer", 16);
+  OLED_ShowString_RAM(0, 0, "Battery:    %", 16);
+  OLED_ShowNum_RAM(72, 0, batteryPercent, 3, 16);
+  createBatTaskOnce();  //创建更新电池电量任务
+  if (mode_switch3) {
+    OLED_ShowString_RAM(0, 2, "WLAN OFF    ", 16);
+    OLED_ShowString_RAM(0, 4, "                ", 16);
+    OLED_ShowString_RAM(0, 6, "                ", 16);
+  } else {
+    if (mode_wifi == 1) {
+      OLED_ShowString_RAM(0, 2, "Mode: AP    ", 16);
+      OLED_ShowString_RAM(0, 4, "Channel: ", 16);
+      OLED_ShowNum_RAM(72, 4, channel, 2, 16);
+      if (ssid_hidden) {
+        OLED_ShowString_RAM(96, 4, "*", 16);
+      }
+      OLED_ShowString_RAM(0, 6, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
+    } else if (mode_wifi == 2) {
+      OLED_ShowString_RAM(0, 2, "Mode: AP+STA", 16);
+      OLED_ShowString_RAM(0, 4, "Channel: ", 16);
+      OLED_ShowNum_RAM(72, 4, channel, 2, 16);
+      if (ssid_hidden) {
+        OLED_ShowString_RAM(96, 4, "*", 16);
+      }
+      OLED_ShowString_RAM(0, 6, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
+    } else if (mode_wifi == 3) {
+      wifiState = WiFi.status();  //读取WiFi状态
+      OLED_ShowString_RAM(0, 2, "Mode: STA   ", 16);
+      if (wifiState == WL_CONNECTED) {
+        if (flag_wifiState == 1) {
+          IPAD = WiFi.localIP().toString();  //刷新IP地址
+          flag_wifiState = 0;
+        }
+        OLED_ShowString_RAM(0, 4, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
+        OLED_ShowString_RAM(0, 6, "RSSI: -", 16);
+        RSSI_value = -WiFi.RSSI();
+        OLED_ShowNum_RAM(56, 6, RSSI_value, 2, 16);
+        // Serial.println(WiFi.RSSI());
+      } else if (wifiState == WL_IDLE_STATUS) {
+        OLED_ShowString_RAM(0, 4, "Reconnecting", 16);
+        flag_wifiState = 1;
+      } else if (wifiState == WL_NO_SSID_AVAIL) {
+        OLED_ShowString_RAM(0, 4, "No SSID Avail", 16);
+        flag_wifiState = 1;
+      } else if (wifiState == WL_CONNECT_FAILED) {
+        OLED_ShowString_RAM(0, 4, "Connect Failed", 16);
+        WiFi.reconnect();  //尝试重新连接WiFi
+        flag_wifiState = 1;
+      } else if (wifiState == WL_CONNECTION_LOST) {
+        OLED_ShowString_RAM(0, 4, "Connect Lost", 16);
+        flag_wifiState = 1;
+      } else if (wifiState == WL_DISCONNECTED) {
+        OLED_ShowString_RAM(0, 4, "Disconnected", 16);
+        flag_wifiState = 1;
+      } else {
+        OLED_ShowString_RAM(0, 4, "Failed", 16);
+        flag_wifiState = 1;
+      }
+      // Serial.printf("WL: %d\n", wifiState);
+
+    } else {
+      OLED_ShowString_RAM(0, 2, "Mode: STA   ", 16);
+      OLED_ShowString_RAM(0, 4, "Connecting", 16);
+    }
+  }
+  OLED_Display();  //全局刷新显示
 }
 
 //定时器1中断
