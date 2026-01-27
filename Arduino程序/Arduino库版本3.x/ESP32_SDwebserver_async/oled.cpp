@@ -13,7 +13,40 @@
 
 #include "oled.h"
 
-extern unsigned char oled_RAM[128][8];
+static i2c_master_bus_handle_t i2c_bus;
+static i2c_master_dev_handle_t oled_dev;
+
+extern unsigned char oled_RAM[8][128];
+
+void i2c_dma_init() {
+  i2c_master_bus_config_t bus_cfg = { 0 };
+  bus_cfg.i2c_port = I2C_PORT_NUM;
+  bus_cfg.sda_io_num = GPIO_NUM_15;  //OLED显示屏sda管脚
+  bus_cfg.scl_io_num = GPIO_NUM_16;  //OLED显示屏scl管脚
+  bus_cfg.clk_source = I2C_CLK_SRC_DEFAULT;
+  bus_cfg.glitch_ignore_cnt = 7;
+  bus_cfg.flags.enable_internal_pullup = true;
+
+  i2c_new_master_bus(&bus_cfg, &i2c_bus);
+
+  i2c_device_config_t dev_cfg = {
+    .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+    .device_address = OLED_ADDR,
+    .scl_speed_hz = OLED_I2C_FREQ,
+  };
+
+  i2c_master_bus_add_device(i2c_bus, &dev_cfg, &oled_dev);
+}
+
+//发送一个字节
+//向SSD1306写入一个字节。
+//mode:数据/命令标志 0,表示命令;1,表示数据;
+void OLED_WR_Byte(uint8_t dat, uint8_t mode) {
+  uint8_t buf[2];
+  buf[0] = mode ? 0x40 : 0x00;
+  buf[1] = dat;
+  i2c_master_transmit(oled_dev, buf, sizeof(buf), -1);
+}
 
 //反显函数
 void OLED_ColorTurn(unsigned char i) {
@@ -32,22 +65,7 @@ void OLED_DisplayTurn(unsigned char i) {
   }
 }
 
-//发送一个字节
-//向SSD1306写入一个字节。
-//mode:数据/命令标志 0,表示命令;1,表示数据;
-void OLED_WR_Byte(unsigned char dat, unsigned char mode) {
-  Wire.beginTransmission(0x3c);
-  if (mode) {
-    Wire.write(0x40);
-  } else {
-    Wire.write(0x00);
-  }
-  Wire.write(dat);         // sends one byte
-  Wire.endTransmission();  // stop transmitting
-}
-
 //坐标设置
-
 void OLED_Set_Pos(unsigned char x, unsigned char y) {
   OLED_WR_Byte(0xb0 + y, OLED_CMD);
   OLED_WR_Byte(((x & 0xf0) >> 4) | 0x10, OLED_CMD);
@@ -65,26 +83,26 @@ void OLED_Display_Off(void) {
   OLED_WR_Byte(0X10, OLED_CMD);  //DCDC OFF
   OLED_WR_Byte(0XAE, OLED_CMD);  //DISPLAY OFF
 }
+
 //清屏函数,清完屏,整个屏幕是黑色的!和没点亮一样!!!
 void OLED_Clear(void) {
-  unsigned char i, n;
-  for (i = 0; i < 8; i++) {
-    OLED_WR_Byte(0xb0 + i, OLED_CMD);  //设置页地址（0~7）
-    OLED_WR_Byte(0x00, OLED_CMD);      //设置显示位置—列低地址
-    OLED_WR_Byte(0x10, OLED_CMD);      //设置显示位置—列高地址
-    for (n = 0; n < 128; n++) {
-      OLED_WR_Byte(0, OLED_DATA);
-      oled_RAM[n][i] = 0;
-    }
-  }  //更新显示
-}
+  memset(oled_RAM, 0, 128 * 8 * sizeof(unsigned char));
+  for (uint8_t page = 0; page < 8; page++) {
+    //设置页地址
+    OLED_WR_Byte(0xB0 + page, OLED_CMD);
+    OLED_WR_Byte(0x00, OLED_CMD);  // 列低地址
+    OLED_WR_Byte(0x10, OLED_CMD);  // 列高地址
 
+    //发送整页数据
+    OLED_WR_Page_DMA(&oled_RAM[page][0], 128);
+  }
+}
 
 //在指定位置显示一个字符
 //x:0~127
 //y:0~63
 //sizey:选择字体 6x8  8x16
-void OLED_ShowChar(unsigned char x, unsigned char y, const unsigned char chr, unsigned char sizey) {
+void OLED_ShowChar(unsigned char x, unsigned char y, unsigned char chr, unsigned char sizey) {
   unsigned char c = 0, sizex = sizey / 2, temp;
   uint16_t i = 0, size1;
   if (sizey == 8) size1 = 6;
@@ -102,6 +120,31 @@ void OLED_ShowChar(unsigned char x, unsigned char y, const unsigned char chr, un
     } else return;
   }
 }
+void OLED_ShowChar_RAM(unsigned char x, unsigned char y, unsigned char chr, unsigned char sizey) {
+  uint8_t c = chr - ' ';
+  uint8_t sizex = sizey / 2;
+  uint16_t i;
+  uint8_t temp;
+  if (sizey == 8) {
+    // ===== 6x8 字符，占 1 page =====
+    for (i = 0; i < 6; i++) {
+      temp = pgm_read_byte(&asc2_0806[c][i]);
+      oled_RAM[y][x + i] = temp;
+    }
+  } else if (sizey == 16) {
+    // ===== 8x16 字符，占 2 page =====
+    for (i = 0; i < 8; i++) {
+      // 上半部分
+      temp = pgm_read_byte(&asc2_1608[c][i]);
+      oled_RAM[y][x + i] = temp;
+      // 下半部分
+      temp = pgm_read_byte(&asc2_1608[c][i + 8]);
+      oled_RAM[y + 1][x + i] = temp;
+    }
+  }
+}
+
+
 //m^n函数
 uint32_t oled_pow(unsigned char m, unsigned char n) {
   uint32_t result = 1;
@@ -128,11 +171,35 @@ void OLED_ShowNum(unsigned char x, unsigned char y, uint32_t num, unsigned char 
     OLED_ShowChar(x + (sizey / 2 + m) * t, y, temp + '0', sizey);
   }
 }
+void OLED_ShowNum_RAM(unsigned char x, unsigned char y, uint32_t num, unsigned char len, unsigned char sizey) {
+  unsigned char t, temp, m = 0;
+  unsigned char enshow = 0;
+  if (sizey == 8) m = 2;
+  for (t = 0; t < len; t++) {
+    temp = (num / oled_pow(10, len - t - 1)) % 10;
+    if (enshow == 0 && t < (len - 1)) {
+      if (temp == 0) {
+        OLED_ShowChar_RAM(x + (sizey / 2 + m) * t, y, ' ', sizey);
+        continue;
+      } else enshow = 1;
+    }
+    OLED_ShowChar_RAM(x + (sizey / 2 + m) * t, y, temp + '0', sizey);
+  }
+}
+
 //显示一个字符号串
 void OLED_ShowString(unsigned char x, unsigned char y, const char *chr, unsigned char sizey) {
   unsigned char j = 0;
   while (chr[j] != '\0') {
     OLED_ShowChar(x, y, chr[j++], sizey);
+    if (sizey == 8) x += 6;
+    else x += sizey / 2;
+  }
+}
+void OLED_ShowString_RAM(unsigned char x, unsigned char y, const char *chr, unsigned char sizey) {
+  unsigned char j = 0;
+  while (chr[j] != '\0') {
+    OLED_ShowChar_RAM(x, y, chr[j++], sizey);
     if (sizey == 8) x += 6;
     else x += sizey / 2;
   }
@@ -179,12 +246,8 @@ void OLED_DrawBMP(unsigned char x,unsigned char y,unsigned char sizex, unsigned 
 */
 //OLED的初始化
 void OLED_Init(void) {
-  //pinMode(res,OUTPUT);//RES
-  Wire.begin(oled_sda, oled_scl, 400000);  // join i2c bus (address optional for master)
-  // Wire.begin(21,22);
-  //OLED_RES_Clr();
-  delay(200);
-  //OLED_RES_Set();
+  i2c_dma_init();
+  vTaskDelay(200 / portTICK_PERIOD_MS);
 
   OLED_WR_Byte(0xAE, OLED_CMD);  //--turn off oled panel
   OLED_WR_Byte(0x00, OLED_CMD);  //---set low column address
@@ -217,31 +280,22 @@ void OLED_Init(void) {
   OLED_WR_Byte(0xAF, OLED_CMD); /*display ON*/
 }
 
-
-// //局部刷新
-// void OLED_Display2(void){
-// 	unsigned char i,n;
-// 	for(i=0;i<8;i++)
-// 	{
-// 		OLED_WR_Byte (0xb0+i,OLED_CMD);
-// 		OLED_WR_Byte (0x00,OLED_CMD);
-// 		OLED_WR_Byte (0x10,OLED_CMD);
-// 		for(n=32;n<94;n++){
-// 			OLED_WR_Byte(oled_RAM[n][i],OLED_DATA);
-// 		}
-// 	}
-// }
+//发送整页数据
+void OLED_WR_Page_DMA(uint8_t *data, size_t len) {
+  static uint8_t dma_buf[129];
+  dma_buf[0] = 0x40;  // 数据模式
+  memcpy(&dma_buf[1], data, len);
+  i2c_master_transmit(oled_dev, dma_buf, sizeof(dma_buf), -1);
+}
 
 //全局刷新
 void OLED_Display(void) {
-  unsigned char i, n;
-  for (i = 0; i < 8; i++) {
-    OLED_WR_Byte(0xb0 + i, OLED_CMD);
-    OLED_WR_Byte(0x00, OLED_CMD);
-    OLED_WR_Byte(0x10, OLED_CMD);
-    for (n = 0; n < 128; n++) {
-      OLED_WR_Byte(oled_RAM[n][i], OLED_DATA);
-    }
+  for (uint8_t page = 0; page < 8; page++) {
+    //设置页地址
+    OLED_WR_Byte(0xB0 + page, OLED_CMD);
+    OLED_WR_Byte(0x00, OLED_CMD);  // 列低地址
+    OLED_WR_Byte(0x10, OLED_CMD);  // 列高地址
+    OLED_WR_Page_DMA(&oled_RAM[page][0], 128);
   }
 }
 
@@ -252,9 +306,9 @@ void OLED_DrawPoint(unsigned char x, unsigned char y, unsigned char c) {
   unsigned char page = y / 8;  //0~7
   y = y % 8;
   if (c) {
-    oled_RAM[x][page] |= 1 << y;
+    oled_RAM[page][x] |= 1 << y;
   } else {
-    oled_RAM[x][page] &= ~(1 << y);
+    oled_RAM[page][x] &= ~(1 << y);
   }
 }
 
