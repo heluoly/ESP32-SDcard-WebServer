@@ -117,7 +117,7 @@ https://github.com/ESP32Async/AsyncTCP
 
 3、服务器配置
 
-服务器配置存放位置通过common.h中的CONFIG_SD设置，0为SPIFFS，1为SD_MMC，默认存放在SPIFFS中，文件名为config.txt，其中存放WiFi名称密码等信息。
+服务器配置存放位置通过common.h中的CONFIG_SD设置，0为FATFS，1为SD_MMC，默认存放在FATFS中，文件名为config.txt，其中存放WiFi名称密码等信息。
 
 
 # 使用说明
