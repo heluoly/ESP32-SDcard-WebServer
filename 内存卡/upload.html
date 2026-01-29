@@ -1,120 +1,1027 @@
-<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes">
   <title>文件管理</title>
+  <link rel="stylesheet" href="/bin/font-awesome/6.7.2/css/all.min.css">
   <style>
-  .container {
-    width: 800px;
-    margin: 0 auto;
-  }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    }
+    
+    body {
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      overflow: hidden;
+      padding: 30px;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eaeaea;
+    }
+    
+    h1 {
+      color: #333;
+      font-size: 2.2em;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    
+    .subtitle {
+      color: #777;
+      font-size: 1em;
+    }
+    
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn-primary {
+      background: #1890ff;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #40a9ff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
+    }
+    
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+      border: 1px solid #d9d9d9;
+    }
+    
+    .btn-secondary:hover {
+      background: #e8e8e8;
+      transform: translateY(-1px);
+    }
+    
+    .btn-icon {
+      font-size: 16px;
+    }
+    
+    .status-card {
+      background: #e6f7ff;
+      color: #1890ff;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      border-left: 4px solid #1890ff;
+      display: none;
+    }
+    
+    .status-card.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .section-title {
+      color: #333;
+      margin: 25px 0 15px 0;
+      font-size: 1.3em;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eaeaea;
+      font-weight: 600;
+    }
+    
+    /* 文件卡片样式 */
+    .files-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .file-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+      border: 1px solid #f0f0f0;
+    }
+    
+    .file-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      border-color: #e0e0e0;
+    }
+    
+    .file-card-header {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+      border-bottom: 1px solid #eaeaea;
+    }
+    
+    .file-icon-lg {
+      font-size: 40px;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    
+    .file-card-info {
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    .file-name {
+      font-weight: 600;
+      color: #333;
+      font-size: 16px;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .file-size {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .file-card-body {
+      padding: 20px;
+    }
+    
+    .file-card-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .file-action-btn {
+      flex: 1;
+      padding: 10px 0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    
+    .download-action {
+      background: #f0f8ff;
+      color: #1890ff;
+      border: 1px solid #d1e9ff;
+    }
+    
+    .download-action:hover {
+      background: #e6f4ff;
+    }
+    
+    .delete-action {
+      background: #fff2f0;
+      color: #ff4d4f;
+      border: 1px solid #ffccc7;
+    }
+    
+    .delete-action:hover {
+      background: #fff1f0;
+    }
+    
+    /* 分页样式 - 修改后的布局 */
+    .pagination {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eaeaea;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .pagination-pages {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    
+    .pagination-pages button {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #d9d9d9;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #333;
+      font-weight: 500;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .pagination-pages button:hover:not(.active):not(.ellipsis) {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+    
+    .pagination-pages button.active {
+      background: #1890ff;
+      color: white;
+      border-color: #1890ff;
+    }
+    
+    .pagination-pages button.ellipsis {
+      background: transparent;
+      border: none;
+      cursor: default;
+      color: #999;
+      font-size: 18px;
+    }
+    
+    .pagination-nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+    }
+    
+    .pagination-nav button {
+      padding: 8px 20px;
+      border: 1px solid #d9d9d9;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #333;
+      font-weight: 500;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .pagination-nav button:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+    
+    .pagination-nav button i {
+      font-size: 12px;
+    }
+    
+    .upload-container {
+      background: #fafafa;
+      padding: 25px;
+      border-radius: 8px;
+      border: 1px dashed #d9d9d9;
+      text-align: center;
+      margin-top: 15px;
+    }
+    
+    .upload-area {
+      margin: 15px 0;
+    }
+    
+    .file-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px dashed #1890ff;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .file-input:hover {
+      border-color: #40a9ff;
+      background: #fafafa;
+    }
+    
+    .progress-container {
+      margin-top: 15px;
+      display: none;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: #1890ff;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      color: #666;
+      font-size: 13px;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #1890ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+    
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+    
+    .empty-text {
+      font-size: 16px;
+      margin-top: 10px;
+      color: #666;
+    }
+    
+    .loading-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px 15px;
+      }
+      
+      .toolbar {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .files-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .pagination-pages {
+        gap: 5px;
+      }
+      
+      .pagination-pages button {
+        width: 36px;
+        height: 36px;
+        font-size: 13px;
+      }
+      
+      .pagination-nav button {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>文件管理</h2>
-    <p>
-    <button onclick="listFilesButton()">文件列表</button>
-    <button onclick="showUploadButtonFancy()">文件上传</button>
-    </p>
-    <p class="text" id="status"></p>
-    <p class="text" id="detailsheader"></p>
-    <p class="text" id="details"></p>
+    <header>
+      <h1>文件管理系统</h1>
+    </header>
+    
+    <div class="toolbar">
+      <button class="btn btn-primary" onclick="listFiles(1)">
+        <span class="btn-icon">📋</span>
+        文件列表
+      </button>
+      <button class="btn btn-secondary" onclick="showUploadForm()">
+        <span class="btn-icon">⬆️</span>
+        文件上传
+      </button>
+    </div>
+    
+    <div id="status" class="status-card"></div>
+    
+    <div id="content">
+      <h2 class="section-title">文件列表</h2>
+      <div id="files-container">
+        <!-- 文件列表将通过JavaScript动态生成 -->
+      </div>
+      <div id="pagination" class="pagination"></div>
+    </div>
   </div>
-</body>
 
 <script>
-function listFilesButton() {
-  xmlhttp=new XMLHttpRequest();
-  xmlhttp.open("GET", "/filelist?page=1", false);
-  xmlhttp.send();
-  document.getElementById("detailsheader").innerHTML = "<h3>文件列表<h3>";
-  document.getElementById("details").innerHTML = xmlhttp.responseText;
-}
-function listFilesPage(page) {
-  xmlhttp=new XMLHttpRequest();
-  var urlPage="/filelist?page=" + page;
-  xmlhttp.open("GET", urlPage, false);
-  xmlhttp.send();
-  document.getElementById("detailsheader").innerHTML = "<h3>文件列表<h3>";
-  document.getElementById("details").innerHTML = xmlhttp.responseText;
-}
-function deleteButton(filepath) {
-	var urltocall = "/deleteUploadFile?deletePath=" + filepath;
-	if (confirm("确认删除")) {
-		xmlhttp=new XMLHttpRequest();  
-		xmlhttp.open("GET", urltocall, false);
-		xmlhttp.send();
-		document.getElementById("status").innerHTML = xmlhttp.responseText;
-		xmlhttp.open("GET", "/filelist?page=1", false);
-		xmlhttp.send();
-		document.getElementById("details").innerHTML = xmlhttp.responseText;
-		
-	} else {
+let currentPage = 1;
+let totalPages = 1;
 
-	}
-}
-function downloadButton(filepath,filename) {
-  var filepath2=encodeURIComponent(filepath);
-  var filename2=encodeURIComponent(filename);
-  var urltocall = "/downloadUploadFile?attname=" + filename2 + "&downloadPath=" + filepath2;
-  document.getElementById("status").innerHTML = "";
-  window.open(urltocall , '_blank');
-}
-function showUploadButtonFancy() {
-  document.getElementById("detailsheader").innerHTML = "<h3>文件上传<h3>"
-  document.getElementById("status").innerHTML = "";
-  var uploadform =
-  "<form action = \"/upload\" id=\"upload_form\" enctype=\"multipart/form-data\" method=\"post\">" +
-  "<input type=\"file\" name=\"file1\" id=\"file1\" onchange=\"uploadFile()\"><br>" +
-  "<progress id=\"progressBar\" value=\"0\" max=\"100\" style=\"width:300px;\"></progress>" +
-  "<h3 id=\"status\"></h3>" +
-  "<p id=\"loaded_n_total\"></p>" +
-  "</form>";
-  document.getElementById("details").innerHTML = uploadform;
-}
-function _(el) {
-  return document.getElementById(el);
-}
-function uploadFile() {
-  var file = _("file1").files[0];
-  // alert(file.name+" | "+file.size+" | "+file.type);
-  var formdata = new FormData();
-  formdata.append("file1", file);
-  var ajax = new XMLHttpRequest();
-  ajax.upload.addEventListener("progress", progressHandler, false);
-  ajax.addEventListener("load", completeHandler, false); // doesnt appear to ever get called even upon success
-  ajax.addEventListener("error", errorHandler, false);
-  ajax.addEventListener("abort", abortHandler, false);
-  ajax.open("POST", "/upload");
-  ajax.send(formdata);
-}
-function progressHandler(event) {
-  //_("loaded_n_total").innerHTML = "Uploaded " + event.loaded + " bytes of " + event.total; // event.total doesnt show accurate total file size
-  _("loaded_n_total").innerHTML = "已上传 " + event.loaded + " bytes";
-  var percent = (event.loaded / event.total) * 100;
-  _("progressBar").value = Math.round(percent);
-  _("status").innerHTML = Math.round(percent) + "% 上传中... 请稍等";
-  if (percent >= 100) {
-    _("status").innerHTML = "请等待, 正在写入文件";
+// 页面加载完成后自动获取第一页数据
+document.addEventListener('DOMContentLoaded', function() {
+  listFiles(1);
+});
+
+// 显示状态消息
+function showStatus(message, type = 'info') {
+  const statusEl = document.getElementById('status');
+  statusEl.innerHTML = message;
+  statusEl.className = 'status-card';
+  
+  switch(type) {
+    case 'success':
+      statusEl.style.background = '#f6ffed';
+      statusEl.style.color = '#52c41a';
+      statusEl.style.borderLeftColor = '#52c41a';
+      break;
+    case 'error':
+      statusEl.style.background = '#fff2f0';
+      statusEl.style.color = '#ff4d4f';
+      statusEl.style.borderLeftColor = '#ff4d4f';
+      break;
+    case 'warning':
+      statusEl.style.background = '#fffbe6';
+      statusEl.style.color = '#faad14';
+      statusEl.style.borderLeftColor = '#faad14';
+      break;
+    default:
+      statusEl.style.background = '#e6f7ff';
+      statusEl.style.color = '#1890ff';
+      statusEl.style.borderLeftColor = '#1890ff';
   }
+  
+  statusEl.classList.add('show');
+  setTimeout(() => statusEl.classList.remove('show'), 3000);
 }
-function completeHandler(event) {
-  _("status").innerHTML = "上传完成";
-  _("progressBar").value = 0;
-  xmlhttp=new XMLHttpRequest();
-  xmlhttp.open("GET", "/filelist?page=1", false);
-  xmlhttp.send();
-  document.getElementById("status").innerHTML = "上传成功";
-  document.getElementById("detailsheader").innerHTML = "<h3>文件列表<h3>";
-  document.getElementById("details").innerHTML = xmlhttp.responseText;
+
+// 获取文件图标
+function getFileIcon(filename) {
+  const ext = filename.split('.').pop().toLowerCase();
+  const icons = {
+    'pdf': '📄',
+    'doc': '📝',
+    'docx': '📝',
+    'txt': '📝',
+    'jpg': '🖼️',
+    'jpeg': '🖼️',
+    'png': '🖼️',
+    'gif': '🖼️',
+    'mp4': '🎬',
+    'mp3': '🎵',
+    'zip': '📦',
+    'rar': '📦',
+    '7z': '📦',
+    'exe': '⚙️',
+    'apk': '📱',
+    'xls': '📊',
+    'xlsx': '📊',
+    'ppt': '📊',
+    'pptx': '📊'
+  };
+  return icons[ext] || '📄';
 }
-function errorHandler(event) {
-  _("status").innerHTML = "上传失败";
+
+// 获取文件类型颜色
+function getFileColor(filename) {
+  const ext = filename.split('.').pop().toLowerCase();
+  const colors = {
+    'pdf': '#ff6b6b',
+    'doc': '#4dabf7',
+    'docx': '#4dabf7',
+    'txt': '#adb5bd',
+    'jpg': '#ff922b',
+    'jpeg': '#ff922b',
+    'png': '#ff922b',
+    'gif': '#ff922b',
+    'mp4': '#ff6b6b',
+    'mp3': '#40c057',
+    'zip': '#7950f2',
+    'rar': '#7950f2',
+    '7z': '#7950f2',
+    'exe': '#868e96',
+    'apk': '#40c057',
+    'xls': '#40c057',
+    'xlsx': '#40c057',
+    'ppt': '#ff922b',
+    'pptx': '#ff922b'
+  };
+  return colors[ext] || '#1890ff';
 }
-function abortHandler(event) {
-  _("status").innerHTML = "上传中断";
+
+// 格式化文件大小
+function formatFileSize(bytes) {
+  if (bytes === 0 || !bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// 加载文件列表
+function listFiles(page = 1) {
+  currentPage = page;
+  
+  // 显示加载状态
+  document.getElementById('files-container').innerHTML = `
+    <div class="loading-state">
+      <div class="loading" style="margin: 0 auto 20px;"></div>
+      <p>正在加载文件列表...</p>
+    </div>
+  `;
+  
+  // 隐藏分页
+  document.getElementById('pagination').innerHTML = '';
+  
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', `/filelist?page=${page}`, true);
+  xhr.setRequestHeader('Accept', 'application/json');
+  
+  xhr.onload = function() {
+    try {
+      if (xhr.status === 200) {
+        const data = JSON.parse(xhr.responseText);
+        renderFileList(data);
+        showStatus(`已加载第 ${page} 页文件列表`, 'success');
+      }
+    } catch (error) {
+      console.log('JSON解析失败:', error.message);
+    }
+  };
+  
+  xhr.onerror = function() {
+    showStatus('网络错误，请检查连接', 'error');
+    renderEmptyState();
+  };
+  
+  xhr.send();
+}
+
+// 渲染文件列表
+function renderFileList(data) {
+  const container = document.getElementById('files-container');
+  
+  if (!data.files || data.files.length === 0) {
+    renderEmptyState();
+    return;
+  }
+  
+  currentPage = data.currentPage || 1;
+  totalPages = data.totalPages || 1;
+  
+  // 创建文件卡片网格
+  let filesHTML = '<div class="files-grid">';
+  
+  data.files.forEach(file => {
+    const fileIcon = getFileIcon(file.name);
+    const fileColor = getFileColor(file.name);
+    const fileSize = formatFileSize(file.size);
+    const filePath = file.path || `/upload/${file.name}`;
+    
+    filesHTML += `
+      <div class="file-card">
+        <div class="file-card-header">
+          <div class="file-icon-lg" style="color: ${fileColor};">${fileIcon}</div>
+          <div class="file-card-info">
+            <div class="file-name" title="${file.name}">${file.name}</div>
+            <div class="file-size">${fileSize}</div>
+          </div>
+        </div>
+        <div class="file-card-body">
+          <div class="file-card-actions">
+            <button class="file-action-btn download-action" onclick="downloadFile('${filePath}', '${file.name}')">
+              <i class="fas fa-download"></i> 下载
+            </button>
+            <button class="file-action-btn delete-action" onclick="deleteFile('${filePath}')">
+              <i class="fas fa-trash-alt"></i> 删除
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  filesHTML += '</div>';
+  container.innerHTML = filesHTML;
+  
+  // 渲染分页
+  renderPagination(currentPage, totalPages);
+}
+
+// 渲染分页
+function renderPagination(currentPage, totalPages) {
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
+    
+    // 如果没有数据，不显示分页
+    if (totalPages <= 0) return;
+    
+    // 创建页码区域
+    const pagesContainer = document.createElement('div');
+    pagesContainer.className = 'pagination-pages';
+    
+    // 如果页数较多，使用智能分页显示
+    if (totalPages <= 7) {
+        // 页数少时显示所有页码
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageButton.addEventListener('click', () => {
+                listFiles(i);
+            });
+            pagesContainer.appendChild(pageButton);
+        }
+    } else {
+        // 页数多时使用智能分页
+        // 总是显示第一页
+        const firstButton = document.createElement('button');
+        firstButton.textContent = 1;
+        if (1 === currentPage) {
+            firstButton.classList.add('active');
+        }
+        firstButton.addEventListener('click', () => {
+            listFiles(1);
+        });
+        pagesContainer.appendChild(firstButton);
+        
+        // 当前页靠近开头时
+        if (currentPage <= 3) {
+            for (let i = 2; i <= 4; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.addEventListener('click', () => {
+                    listFiles(i);
+                });
+                pagesContainer.appendChild(pageButton);
+            }
+            
+            // 添加省略号
+            const ellipsis = document.createElement('button');
+            ellipsis.textContent = '...';
+            ellipsis.classList.add('ellipsis');
+            pagesContainer.appendChild(ellipsis);
+            
+            // 显示最后一页
+            const lastButton = document.createElement('button');
+            lastButton.textContent = totalPages;
+            lastButton.addEventListener('click', () => {
+                listFiles(totalPages);
+            });
+            pagesContainer.appendChild(lastButton);
+        } 
+        // 当前页靠近结尾时
+        else if (currentPage >= totalPages - 2) {
+            // 添加省略号
+            const ellipsis = document.createElement('button');
+            ellipsis.textContent = '...';
+            ellipsis.classList.add('ellipsis');
+            pagesContainer.appendChild(ellipsis);
+            
+            for (let i = totalPages - 3; i <= totalPages - 1; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.addEventListener('click', () => {
+                    listFiles(i);
+                });
+                pagesContainer.appendChild(pageButton);
+            }
+            
+            // 显示最后一页
+            const lastButton = document.createElement('button');
+            lastButton.textContent = totalPages;
+            if (totalPages === currentPage) {
+                lastButton.classList.add('active');
+            }
+            lastButton.addEventListener('click', () => {
+                listFiles(totalPages);
+            });
+            pagesContainer.appendChild(lastButton);
+        } 
+        // 当前页在中间时
+        else {
+            // 添加省略号
+            const ellipsis1 = document.createElement('button');
+            ellipsis1.textContent = '...';
+            ellipsis1.classList.add('ellipsis');
+            pagesContainer.appendChild(ellipsis1);
+            
+            // 显示当前页及前后各一页
+            for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.addEventListener('click', () => {
+                    listFiles(i);
+                });
+                pagesContainer.appendChild(pageButton);
+            }
+            
+            // 添加省略号
+            const ellipsis2 = document.createElement('button');
+            ellipsis2.textContent = '...';
+            ellipsis2.classList.add('ellipsis');
+            pagesContainer.appendChild(ellipsis2);
+            
+            // 显示最后一页
+            const lastButton = document.createElement('button');
+            lastButton.textContent = totalPages;
+            lastButton.addEventListener('click', () => {
+                listFiles(totalPages);
+            });
+            pagesContainer.appendChild(lastButton);
+        }
+    }
+    
+    pagination.appendChild(pagesContainer);
+    
+    // 创建导航按钮区域
+    const navContainer = document.createElement('div');
+    navContainer.className = 'pagination-nav';
+    
+    // 上一页按钮
+    if (currentPage > 1) {
+        const prevButton = document.createElement('button');
+        prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> 上一页';
+        prevButton.addEventListener('click', () => {
+            listFiles(currentPage - 1);
+        });
+        navContainer.appendChild(prevButton);
+    }
+    
+    // 下一页按钮
+    if (currentPage < totalPages) {
+        const nextButton = document.createElement('button');
+        nextButton.innerHTML = '下一页 <i class="fas fa-chevron-right"></i>';
+        nextButton.addEventListener('click', () => {
+            listFiles(currentPage + 1);
+        });
+        navContainer.appendChild(nextButton);
+    }
+    
+    pagination.appendChild(navContainer);
+}
+
+// 渲染空状态
+function renderEmptyState() {
+  const container = document.getElementById('files-container');
+  container.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">📁</div>
+      <p class="empty-text">当前目录为空</p>
+      <p class="empty-text" style="font-size: 14px;">点击"文件上传"按钮添加文件</p>
+    </div>
+  `;
+  
+  // 隐藏分页
+  document.getElementById('pagination').innerHTML = '';
+}
+
+// 下载文件
+function downloadFile(filepath, filename) {
+  const filepathEncoded = encodeURIComponent(filepath);
+  const filenameEncoded = encodeURIComponent(filename);
+  const url = `/downloadUploadFile?attname=${filenameEncoded}&downloadPath=${filepathEncoded}`;
+  
+  showStatus(`开始下载: ${filename}`, 'info');
+  window.open(url, '_blank');
+}
+
+// 删除文件
+function deleteFile(filepath) {
+  const filename = filepath.split('/').pop();
+  if (!confirm(`确认删除文件 "${filename}"？`)) {
+    return;
+  }
+  
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', `/deleteUploadFile?deletePath=${encodeURIComponent(filepath)}`, true);
+  
+  xhr.onload = function() {
+    const message = xhr.responseText || '删除成功';
+    showStatus(message, xhr.status === 200 ? 'success' : 'error');
+    
+    // 重新加载当前页的文件列表
+    listFiles(currentPage);
+  };
+  
+  xhr.onerror = function() {
+    showStatus('删除失败: 网络错误', 'error');
+  };
+  
+  xhr.send();
+}
+
+// 显示上传表单
+function showUploadForm() {
+  const container = document.getElementById('files-container');
+  container.innerHTML = `
+    <div class="upload-container">
+      <h2 style="color: #333; margin-bottom: 15px; font-size: 1.2em;">文件上传</h2>
+      <p style="color: #666; margin-bottom: 15px; font-size: 14px;">选择文件并上传到服务器</p>
+      
+      <form id="upload-form" enctype="multipart/form-data">
+        <div class="upload-area">
+          <input type="file" name="file1" id="file1" class="file-input" onchange="handleFileSelect()">
+        </div>
+        
+        <div id="file-info" style="display: none; margin: 15px 0; text-align: left; background: white; padding: 12px; border-radius: 6px; border: 1px solid #eaeaea;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <span id="file-icon" style="font-size: 28px;">📄</span>
+            <div style="flex: 1;">
+              <div id="file-name" style="font-weight: 500; color: #333; font-size: 14px;"></div>
+              <div id="file-size" style="font-size: 13px; color: #666; margin-top: 4px;"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="progress-container" class="progress-container">
+          <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <div class="progress-text">
+            <span id="progress-percent">0%</span>
+            <span id="progress-status">等待上传...</span>
+          </div>
+        </div>
+        
+        <div style="margin-top: 15px;">
+          <button type="button" class="btn btn-primary" onclick="uploadFile()" id="upload-btn" style="display: none;">
+            <span class="btn-icon">⬆️</span>
+            开始上传
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+  
+  // 隐藏分页
+  document.getElementById('pagination').innerHTML = '';
+  
+  document.querySelector('.section-title').textContent = '文件上传';
+}
+
+// 处理文件选择
+function handleFileSelect() {
+  const fileInput = document.getElementById('file1');
+  const file = fileInput.files[0];
+  
+  if (!file) return;
+  
+  const fileInfo = document.getElementById('file-info');
+  const fileName = document.getElementById('file-name');
+  const fileSize = document.getElementById('file-size');
+  const fileIcon = document.getElementById('file-icon');
+  const uploadBtn = document.getElementById('upload-btn');
+  
+  fileIcon.textContent = getFileIcon(file.name);
+  fileName.textContent = file.name;
+  fileSize.textContent = `大小: ${formatFileSize(file.size)}`;
+  
+  fileInfo.style.display = 'block';
+  uploadBtn.style.display = 'inline-flex';
+}
+
+// 上传文件
+function uploadFile() {
+  const fileInput = document.getElementById('file1');
+  const file = fileInput.files[0];
+  
+  if (!file) {
+    showStatus('请先选择文件', 'warning');
+    return;
+  }
+  
+  const progressContainer = document.getElementById('progress-container');
+  const progressFill = document.getElementById('progress-fill');
+  const progressPercent = document.getElementById('progress-percent');
+  const progressStatus = document.getElementById('progress-status');
+  const uploadBtn = document.getElementById('upload-btn');
+  
+  // 显示进度条
+  progressContainer.style.display = 'block';
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = '<span class="loading" style="width: 16px; height: 16px; border-width: 2px;"></span> 上传中...';
+  
+  const formData = new FormData();
+  formData.append('file1', file);
+  
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/upload', true);
+  
+  // 上传进度事件
+  xhr.upload.addEventListener('progress', function(e) {
+    if (e.lengthComputable) {
+      const percent = Math.round((e.loaded / e.total) * 100);
+      progressFill.style.width = percent + '%';
+      progressPercent.textContent = percent + '%';
+      progressStatus.textContent = `已上传 ${formatFileSize(e.loaded)} / ${formatFileSize(e.total)}`;
+    }
+  });
+  
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      progressFill.style.width = '100%';
+      progressPercent.textContent = '100%';
+      progressStatus.textContent = '上传完成，正在处理...';
+      
+      setTimeout(() => {
+        showStatus('文件上传成功', 'success');
+        
+        // 重置表单
+        document.getElementById('upload-form').reset();
+        document.getElementById('file-info').style.display = 'none';
+        progressContainer.style.display = 'none';
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
+        uploadBtn.style.display = 'none';
+        
+        // 返回文件列表
+        listFiles(1);
+      }, 1000);
+    } else {
+      showStatus(`上传失败: ${xhr.responseText || '服务器错误'}`, 'error');
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
+    }
+  };
+  
+  xhr.onerror = function() {
+    showStatus('上传失败: 网络错误', 'error');
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
+  };
+  
+  xhr.send(formData);
 }
 </script>
+</body>
 </html>

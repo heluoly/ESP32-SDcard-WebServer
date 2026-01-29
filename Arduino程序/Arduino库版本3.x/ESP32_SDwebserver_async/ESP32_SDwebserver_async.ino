@@ -244,9 +244,8 @@ void closeServer() {
 
 //第2核心任务
 void task_display(void *pvParameters) {
-  uint16_t pressTime = 0;      //长按时间计时
-  uint8_t flag_press = 0;      //长按标志
-
+  uint16_t pressTime = 0;  //长按时间计时
+  uint8_t flag_press = 0;  //长按标志
   oledState = 0;
 
   // UBaseType_t istack;
@@ -386,9 +385,9 @@ void task_display(void *pvParameters) {
 
 //服务器信息显示
 void serverInfo_Display() {
-  uint8_t wifiState = 254;     //WiFi状态 0:WL_IDLE_STATUS, 1:WL_NO_SSID_AVAIL, 3:WL_CONNECTED, 4:WL_CONNECT_FAILED, 6:WL_DISCONNECTED. 254:WL_STOPPED
-  uint8_t flag_wifiState = 0;  //判断WiFi是否掉线
-  uint8_t RSSI_value = 0;      //WiFi信号强度
+  static uint8_t wifiState = 254;     //WiFi状态 0:WL_IDLE_STATUS, 1:WL_NO_SSID_AVAIL, 3:WL_CONNECTED, 4:WL_CONNECT_FAILED, 6:WL_DISCONNECTED. 254:WL_STOPPED
+  static uint8_t flag_wifiState = 0;  //判断WiFi是否掉线
+  static uint8_t RSSI_value = 0;      //WiFi信号强度
 
   memset(oled_RAM, 0, 128 * 8 * sizeof(unsigned char));
   // OLED_ShowString_RAM(0, 0, "ESP32 WebServer", 16);

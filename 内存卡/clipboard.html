@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剪贴板</title>
+    <link rel="stylesheet" href="/bin/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #4cc9f0;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --border-radius: 12px;
+            --shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--dark-color);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .editor-section {
+            margin-bottom: 30px;
+        }
+        
+        .text-area-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 400px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: var(--transition);
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .char-counter {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 0.85rem;
+            color: var(--gray-color);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+        
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+            flex: 1;
+            min-width: 180px;
+        }
+        
+        .btn-secondary {
+            background-color: #e9ecef;
+            color: var(--dark-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #dee2e6;
+            transform: translateY(-3px);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #3aa8c9;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn i {
+            font-size: 1.1rem;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--dark-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast i {
+            font-size: 1.2rem;
+        }
+        
+        .toast-success {
+            background-color: #2ecc71;
+        }
+        
+        .toast-error {
+            background-color: #e74c3c;
+        }
+        
+        .toast-info {
+            background-color: var(--primary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .buttons-container {
+                flex-direction: column;
+            }
+            
+            .btn {
+                min-width: 100%;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .toast {
+                left: 20px;
+                right: 20px;
+                bottom: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 20px;
+            }
+            
+            header h1 {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* 加载动画 */
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-color);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-clipboard"></i> 剪贴板</h1>
+        </header>
+        
+        <div class="main-content">
+            <div class="editor-section">
+                <div class="text-area-container">
+                    <textarea id="textInput" placeholder="在这里粘贴或输入您要保存的文字..."></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span> 字符
+                    </div>
+                </div>
+                
+                <div class="buttons-container">
+                    <button class="btn btn-secondary" id="saveBtn">
+                        <i class="fas fa-save"></i> 保存到云端
+                    </button>
+                    <button class="btn btn-success" id="copyBtn">
+                        <i class="fas fa-copy"></i> 复制到剪贴板
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+        
+    </div>
+    
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+        class ClipboardServer {
+            // 从服务器获取数据
+            async getData() {
+                try {
+                    const response = await fetch('/getText');
+                    const data = await response.text();
+                    return data;
+                } catch (error) {
+                    console.error('错误:', error);
+                    throw error;
+                }
+            }
+            
+            // 保存数据到服务器
+            async saveData(text) {
+                const response = await fetch('/saveText', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'text=' + encodeURIComponent(text)
+                });
+
+                const data = await response.text();
+                if (data === "OK") {
+                    return data;
+                } else {
+                    console.error('错误:', data);
+                    throw data;
+                }
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 获取DOM元素
+            const textInput = document.getElementById('textInput');
+            const saveBtn = document.getElementById('saveBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const charCount = document.getElementById('charCount');
+            const lastSavedInfo = document.getElementById('lastSavedInfo');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            // 创建服务器实例
+            const server = new ClipboardServer();
+            
+            // 初始化字符计数
+            updateCharCount();
+            
+            // 加载之前保存的数据
+            loadSavedText();
+            
+            // 保存按钮事件
+            saveBtn.addEventListener('click', async () => {
+                const text = textInput.value.trim();
+                
+                if (!text) {
+                    showToast('请输入或粘贴一些文字后再保存', 'error');
+                    return;
+                }
+                
+                // 显示保存中状态
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<div class="loader"></div> 保存中...';
+                saveBtn.disabled = true;
+                
+                try {
+                    const result = await server.saveData(text);
+                    showToast('内容已保存到云端', 'success');
+                } catch (err) {
+                    console.error('保存失败:', err);
+                    showToast('保存失败，请重试', 'error');
+                } finally {
+                    // 恢复按钮状态
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
+                }
+            });
+            
+            // 复制按钮事件
+            copyBtn.addEventListener('click', async () => {
+                const text = textInput.value.trim();
+                
+                if (!text) {
+                    showToast('没有内容可复制', 'error');
+                    return;
+                }
+                
+                try {
+                    await navigator.clipboard.writeText(text);
+                    showToast('内容已复制到剪贴板', 'success');
+                } catch (err) {
+                    console.error('复制失败:', err);
+                    // 降级方案：使用execCommand
+                    textInput.select();
+                    document.execCommand('copy');
+                    showToast('内容已复制到剪贴板', 'success');
+                }
+            });
+            
+            // 文本输入事件 - 更新字符计数
+            textInput.addEventListener('input', updateCharCount);
+            
+            // 更新字符计数
+            function updateCharCount() {
+                const count = textInput.value.length;
+                charCount.textContent = count;
+                
+                // 根据字符数改变颜色
+                if (count > 1000) {
+                    charCount.style.color = '#e74c3c';
+                } else if (count > 500) {
+                    charCount.style.color = '#f39c12';
+                } else {
+                    charCount.style.color = '';
+                }
+            }
+            
+            // 加载保存的文本
+            async function loadSavedText() {
+                // 显示加载中状态
+                textInput.placeholder = "正在从云端加载...";
+                
+                try {
+                    const data = await server.getData();
+                    
+                    if (data) {
+                        textInput.value = data;
+                        showToast('已加载之前保存的内容', 'info');
+                    } else {
+                        showToast('云端暂无保存的内容', 'info');
+                    }
+                } catch (err) {
+                    console.error('加载失败:', err);
+                    showToast('加载云端数据失败', 'error');
+                } finally {
+                    textInput.placeholder = "在这里粘贴或输入您要保存的文字...";
+                    updateCharCount();
+                }
+            }
+            
+            // 显示提示消息
+            function showToast(message, type = 'info') {
+                // 设置消息和类型
+                toastMessage.textContent = message;
+                
+                // 移除之前的类型类
+                toast.classList.remove('toast-success', 'toast-error', 'toast-info');
+                
+                // 添加新类型类
+                if (type === 'success') {
+                    toast.classList.add('toast-success');
+                    toast.querySelector('i').className = 'fas fa-check-circle';
+                } else if (type === 'error') {
+                    toast.classList.add('toast-error');
+                    toast.querySelector('i').className = 'fas fa-exclamation-circle';
+                } else {
+                    toast.classList.add('toast-info');
+                    toast.querySelector('i').className = 'fas fa-info-circle';
+                }
+                
+                // 显示toast
+                toast.classList.add('show');
+                
+                // 3秒后隐藏
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+            
+            // 自动保存功能（每隔10分钟自动保存）
+            let autoSaveInterval;
+            function startAutoSave() {
+                autoSaveInterval = setInterval(async () => {
+                    const text = textInput.value.trim();
+                    if (text) {
+                        try {
+                            await server.saveData(text);
+                            console.log('自动保存完成');
+                        } catch (err) {
+                            console.error('自动保存失败:', err);
+                        }
+                    }
+                }, 600000); // 10分钟
+            }
+            
+            // 开始自动保存
+            startAutoSave();
+            
+            // 页面可见性变化时处理
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    // 页面隐藏时清除自动保存
+                    clearInterval(autoSaveInterval);
+                } else {
+                    // 页面显示时重新开始自动保存
+                    startAutoSave();
+                }
+            });
+            
+            // 粘贴快捷键 (Ctrl+V 或 Cmd+V)
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                    // 焦点在文本区域时不处理
+                    if (document.activeElement !== textInput) {
+                        pasteBtn.click();
+                    }
+                }
+                
+                // 保存快捷键 (Ctrl+S 或 Cmd+S)
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault(); // 阻止浏览器默认保存行为
+                    saveBtn.click();
+                }
+            });
+            
+            // 页面关闭前提示保存
+            window.addEventListener('beforeunload', (e) => {
+                const text = textInput.value.trim();
+                if (text) {
+                    // 在真实应用中，这里可以执行最后一次保存
+                    // 为演示目的，我们只是提示用户
+                    // e.preventDefault();
+                    // e.returnValue = '您有未保存的内容，确定要离开吗？';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

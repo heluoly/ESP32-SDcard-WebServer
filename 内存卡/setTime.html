@@ -45,8 +45,7 @@
         var xmlhttp=new XMLHttpRequest();
         xmlhttp.open("GET","/setTime?hour="+hour+"&minute="+minute+"&second="+second,true);
         xmlhttp.send();
-        var time = hour+":"+minute+":"+second;
-        alert("配置成功！当前时间："+time);
+        xmlhttp.onload = function(e){alert(this.responseText);}
         }
     </script>
     <style type="text/css">

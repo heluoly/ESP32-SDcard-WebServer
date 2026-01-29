@@ -12,7 +12,7 @@
 ![image](/image/image2.jpg)
 
 
-# 演示视频：
+# 服务器演示：
 
 1、https://www.bilibili.com/video/BV1pu4m1A7bo
 
@@ -22,6 +22,7 @@
 
 PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 
+新UI效果图：https://www.bilibili.com/opus/1143729492954447892
 
 # 功能
 
@@ -54,18 +55,46 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 8、服务器低功耗模式。
 
 
+# 关于使用异步库版本的说明
+
+1、这是一个采用webserver异步库的版本，程序在"ESP32-SDcard-WebServer/Arduino程序/Arduino库版本3.x/ESP32_SDwebserver_async"文件夹下，使用异步库可以并发处理任务。
+
+2、目前测试该版本只适用于ESP32-S3，且使用ESP32-S3运行能大幅提高视频播放的流畅性，而普通的ESP32运行起来会卡死。
+
+3、使用该版本需要额外安装如下依赖库：
+
+ESPAsyncWebServer
+
+https://github.com/ESP32Async/ESPAsyncWebServer
+
+AsyncTCP
+
+https://github.com/ESP32Async/AsyncTCP
+
+4、该版本程序需要搭配"内存卡_async"内的文件，目前对在线影院的界面进行了美化，采用了动态加载的方式。
+
+5、该版本文件管理中支持了断点下载和多线程下载，最高支持4线程下载。
+
+6、烧录程序时需要修改分区表，改成“FATFS”格式
+
+7、电池电压检测引脚在battery.h中修改
+
+8、OLED显示屏的I2C引脚在oled.cpp中修改
+
+
 # 开始前准备
 
 1、选择你的内存卡连接方式，参照"image/连接图"上的方式连接，目前只支持MMC_4bit和MMC_1bit连接，如需SPI连接请自行修改程序；ESP32-S3可用SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);函数自由设置SD卡管脚；OLED屏幕使用I2C驱动，sda：21，scl：22。
 
-2、使用arduino将程序编译烧录进入ESP32，arduino-esp32库版本为2.0.14+或3.3.4(需选择对应版本程序)，根据你内存卡的连接方式修改程序中"ONE_BIT_MODE"参数，默认为MMC_4bit，注意，烧录时需要将内存卡从卡槽中取出，同时确保IO12管脚悬空。
+2、使用arduino将程序编译烧录进入ESP32，arduino-esp32库版本为2.0.14+或3.3.4+(需选择对应版本程序)，根据你内存卡的连接方式修改程序中"ONE_BIT_MODE"参数，默认为MMC_4bit，注意，烧录时需要将内存卡从卡槽中取出，同时确保IO12管脚悬空。
+
+3、其中"Arduino库版本3.x"烧录程序时需要修改分区表，在下拉菜单Partition Scheme选择包含“FATFS”格式的分区表
 
 3、准备一张32G以下大小的内存卡，将“内存卡”文件夹中的所有文件复制进入内存卡根目录，同时参照下一节存入你的swf游戏文件或m3u8视频文件。
 
 4、将内存卡插入内存卡插槽，参照"image/连接图"上的方式连接。
 
 5、接上电源开机。
-
 
 
 # 内存卡中网页视频与flash游戏的配置，以及服务器配置
@@ -105,32 +134,6 @@ PCB工程：https://oshwhub.com/heluoly/esp32-fu-wu-qi_copy_copy_copy_copy
 
 服务器上电默认处于AP模式，使用手机或者电脑，找到ESP32_webserver这个WIFI进行连接，密码是123456789，连接成功后，用浏览器访问192.168.1.1即可进入服务器主页。
 
-
-# 关于使用异步库版本的说明
-
-1、这是一个采用webserver异步库的版本，程序在"ESP32-SDcard-WebServer/Arduino程序/Arduino库版本3.x/ESP32_SDwebserver_async"文件夹下，使用异步库可以并发处理任务。
-
-2、目前测试该版本只适用于ESP32-S3，且使用ESP32-S3运行能大幅提高视频播放的流畅性，而普通的ESP32运行起来会卡死。
-
-3、使用该版本需要额外安装如下依赖库：
-
-ESPAsyncWebServer
-
-https://github.com/ESP32Async/ESPAsyncWebServer
-
-AsyncTCP
-
-https://github.com/ESP32Async/AsyncTCP
-
-4、该版本程序需要搭配"内存卡_async"内的文件，目前对在线影院的界面进行了美化，采用了动态加载的方式。
-
-5、该版本文件管理中支持了断点下载和多线程下载，最高支持4线程下载。
-
-6、烧录程序时需要修改分区表，改成“FATFS”格式
-
-7、电池电压检测引脚在battery.h中修改
-
-8、OLED显示屏的I2C引脚在oled.cpp中修改
 
 
 # 参考项目

@@ -67,10 +67,6 @@ void uploadFileRespond(AsyncWebServerRequest *request) {
 }
 
 void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-
-  if (my_fs.exists(filename.c_str())) {
-    my_fs.remove(filename.c_str());
-  }
   if (!index) {
     request->_tempFile = my_fs.open("/upload/" + filename, FILE_WRITE);
     if (!request->_tempFile) {

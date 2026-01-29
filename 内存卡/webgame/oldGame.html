@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash游戏</title>
+    <link rel="stylesheet" href="/bin/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4a6cf7, #6a8cff);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #4a6cf7, #6a8cff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .games-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .game-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: rgba(74, 108, 247, 0.3);
+        }
+        
+        .game-header {
+            padding: 18px 18px 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(74, 108, 247, 0.03);
+        }
+        
+        .game-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .game-filename {
+            font-size: 0.85rem;
+            color: #777;
+            font-family: monospace;
+        }
+        
+        .game-details {
+            padding: 18px;
+            flex-grow: 1;
+        }
+        
+        .game-size {
+            display: flex;
+            align-items: center;
+            color: #666;
+        }
+        
+        .game-size i {
+            margin-right: 8px;
+            color: #4a6cf7;
+        }
+        
+        .game-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 18px;
+            background: rgba(74, 108, 247, 0.03);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .play-button {
+            background: linear-gradient(to right, #4a6cf7, #6a8cff);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(74, 108, 247, 0.2);
+        }
+        
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(74, 108, 247, 0.3);
+        }
+        
+        .play-button i {
+            margin-right: 8px;
+        }
+        
+        .pagination {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            gap: 15px;
+        }
+        
+        .pagination-pages {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .pagination-pages button {
+            background: rgba(0, 0, 0, 0.05);
+            color: #555;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pagination-pages button:hover:not(.ellipsis) {
+            background: rgba(74, 108, 247, 0.1);
+            color: #4a6cf7;
+        }
+        
+        .pagination-pages button.active {
+            background: linear-gradient(to right, #4a6cf7, #6a8cff);
+            color: white;
+        }
+        
+        .pagination-pages button.ellipsis {
+            background: transparent;
+            cursor: default;
+            width: 30px;
+        }
+        
+        .pagination-pages button.ellipsis:hover {
+            background: transparent;
+        }
+        
+        .pagination-nav {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .pagination-nav button {
+            background: rgba(74, 108, 247, 0.1);
+            color: #4a6cf7;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .pagination-nav button:hover {
+            background: rgba(74, 108, 247, 0.2);
+        }
+        
+        .pagination-nav button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-nav button:disabled:hover {
+            background: rgba(74, 108, 247, 0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #777;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #4a6cf7;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #f44336;
+            background: rgba(244, 67, 54, 0.05);
+            border-radius: 16px;
+            margin: 20px 0;
+            border: 1px solid rgba(244, 67, 54, 0.1);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #777;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #aaa;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .file-name-display {
+            background: rgba(74, 108, 247, 0.05);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            border-left: 3px solid #4a6cf7;
+        }
+        
+        @media (max-width: 768px) {
+            .games-container {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .pagination-pages button {
+                width: 36px;
+                height: 36px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .games-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.6rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .pagination-pages {
+                gap: 5px;
+            }
+            
+            .pagination-pages button {
+                width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+            
+            .pagination-nav button {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Flash游戏</h1>
+        </div>
+        
+        <div id="game-list" class="games-container">
+            <!-- 游戏列表将通过JavaScript动态加载 -->
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>正在加载游戏列表...</p>
+            </div>
+        </div>
+        
+        <div id="pagination" class="pagination">
+            <!-- 分页将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="footer">
+            <p style="font-size:0.8rem; margin-top:5px;">注意：需要Flash Player支持才能运行这些游戏</p>
+        </div>
+    </div>
+
+    <script>
+        // 页面元素
+        const gameListElement = document.getElementById('game-list');
+        const paginationElement = document.getElementById('pagination');
+        
+        // API基础URL
+        const API_BASE_URL = '/gamelist';
+        const FOLDER_PATH = '/webgame/oldGame';
+        
+        // 当前页数据
+        let currentPage = 1;
+        let totalPages = 1;
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPage(currentPage);
+        });
+
+        // 加载指定页面的数据
+        async function loadPage(pageNumber) {
+            // 显示加载状态
+            gameListElement.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>正在加载第 ${pageNumber} 页游戏列表...</p>
+                </div>
+            `;
+            
+            try {
+                // 构建API请求URL
+                const apiUrl = `${API_BASE_URL}?folder=${encodeURIComponent(FOLDER_PATH)}&page=${pageNumber}`;
+                
+                // 发送API请求获取游戏数据
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态码: ${response.status}`);
+                }
+                
+                const pageData = await response.json();
+                
+                if (!pageData) {
+                    throw new Error("API返回数据为空");
+                }
+                
+                // 更新当前页和总页数
+                currentPage = pageNumber;
+                totalPages = pageData.totalPages || 1;
+                
+                // 渲染游戏列表
+                renderGameList(pageData.games || []);
+                
+                // 渲染分页
+                renderPagination(currentPage, totalPages);
+                
+            } catch (error) {
+                console.error('加载游戏数据时出错:', error);
+                showError(`无法加载游戏数据: ${error.message}`);
+                
+                // 渲染空分页
+                renderPagination(1, 1);
+            }
+        }
+
+        // 渲染分页
+        function renderPagination(currentPage, totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            // 如果没有数据，不显示分页
+            if (totalPages <= 0) return;
+            
+            // 创建页码区域
+            const pagesContainer = document.createElement('div');
+            pagesContainer.className = 'pagination-pages';
+            
+            // 如果页数较少，显示所有页码
+            if (totalPages <= 7) {
+                // 页数少时显示所有页码
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.textContent = i;
+                    if (i === currentPage) {
+                        pageButton.classList.add('active');
+                    }
+                    pageButton.addEventListener('click', () => {
+                        loadPage(i);
+                    });
+                    pagesContainer.appendChild(pageButton);
+                }
+            } else {
+                // 页数多时使用智能分页
+                // 总是显示第一页
+                const firstButton = document.createElement('button');
+                firstButton.textContent = 1;
+                if (1 === currentPage) {
+                    firstButton.classList.add('active');
+                }
+                firstButton.addEventListener('click', () => {
+                    loadPage(1);
+                });
+                pagesContainer.appendChild(firstButton);
+                
+                // 当前页靠近开头时
+                if (currentPage <= 3) {
+                    for (let i = 2; i <= 4; i++) {
+                        const pageButton = document.createElement('button');
+                        pageButton.textContent = i;
+                        if (i === currentPage) {
+                            pageButton.classList.add('active');
+                        }
+                        pageButton.addEventListener('click', () => {
+                            loadPage(i);
+                        });
+                        pagesContainer.appendChild(pageButton);
+                    }
+                    
+                    // 添加省略号
+                    const ellipsis = document.createElement('button');
+                    ellipsis.textContent = '...';
+                    ellipsis.classList.add('ellipsis');
+                    pagesContainer.appendChild(ellipsis);
+                    
+                    // 显示最后一页
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = totalPages;
+                    lastButton.addEventListener('click', () => {
+                        loadPage(totalPages);
+                    });
+                    pagesContainer.appendChild(lastButton);
+                } 
+                // 当前页靠近结尾时
+                else if (currentPage >= totalPages - 2) {
+                    // 添加省略号
+                    const ellipsis = document.createElement('button');
+                    ellipsis.textContent = '...';
+                    ellipsis.classList.add('ellipsis');
+                    pagesContainer.appendChild(ellipsis);
+                    
+                    for (let i = totalPages - 3; i <= totalPages - 1; i++) {
+                        const pageButton = document.createElement('button');
+                        pageButton.textContent = i;
+                        if (i === currentPage) {
+                            pageButton.classList.add('active');
+                        }
+                        pageButton.addEventListener('click', () => {
+                            loadPage(i);
+                        });
+                        pagesContainer.appendChild(pageButton);
+                    }
+                    
+                    // 显示最后一页
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = totalPages;
+                    if (totalPages === currentPage) {
+                        lastButton.classList.add('active');
+                    }
+                    lastButton.addEventListener('click', () => {
+                        loadPage(totalPages);
+                    });
+                    pagesContainer.appendChild(lastButton);
+                } 
+                // 当前页在中间时
+                else {
+                    // 添加省略号
+                    const ellipsis1 = document.createElement('button');
+                    ellipsis1.textContent = '...';
+                    ellipsis1.classList.add('ellipsis');
+                    pagesContainer.appendChild(ellipsis1);
+                    
+                    // 显示当前页及前后各一页
+                    for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                        const pageButton = document.createElement('button');
+                        pageButton.textContent = i;
+                        if (i === currentPage) {
+                            pageButton.classList.add('active');
+                        }
+                        pageButton.addEventListener('click', () => {
+                            loadPage(i);
+                        });
+                        pagesContainer.appendChild(pageButton);
+                    }
+                    
+                    // 添加省略号
+                    const ellipsis2 = document.createElement('button');
+                    ellipsis2.textContent = '...';
+                    ellipsis2.classList.add('ellipsis');
+                    pagesContainer.appendChild(ellipsis2);
+                    
+                    // 显示最后一页
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = totalPages;
+                    lastButton.addEventListener('click', () => {
+                        loadPage(totalPages);
+                    });
+                    pagesContainer.appendChild(lastButton);
+                }
+            }
+            
+            pagination.appendChild(pagesContainer);
+            
+            // 创建导航按钮区域
+            const navContainer = document.createElement('div');
+            navContainer.className = 'pagination-nav';
+            
+            // 上一页按钮
+            if (currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> 上一页';
+                prevButton.addEventListener('click', () => {
+                    loadPage(currentPage - 1);
+                });
+                navContainer.appendChild(prevButton);
+            }
+            
+            // 下一页按钮
+            if (currentPage < totalPages) {
+                const nextButton = document.createElement('button');
+                nextButton.innerHTML = '下一页 <i class="fas fa-chevron-right"></i>';
+                nextButton.addEventListener('click', () => {
+                    loadPage(currentPage + 1);
+                });
+                navContainer.appendChild(nextButton);
+            }
+            
+            pagination.appendChild(navContainer);
+        }
+
+        // 从文件名中提取游戏名称（移除扩展名）
+        function getGameNameFromFileName(fileName) {
+            // 移除.swf扩展名
+            let name = fileName.replace('.swf', '');
+            
+            // 将下划线替换为空格
+            name = name.replace(/_/g, ' ');
+            
+            // 将短横线替换为空格
+            name = name.replace(/-/g, ' ');
+            
+            // 将数字和字母分开
+            name = name.replace(/([a-zA-Z])(\d)/g, '$1 $2');
+            
+            // 将连续大写字母分开
+            name = name.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2');
+            
+            // 首字母大写
+            return name.split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        // 渲染游戏列表
+        function renderGameList(games) {
+            if (!games || games.length === 0) {
+                gameListElement.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-gamepad"></i>
+                        <h3>暂无游戏数据</h3>
+                        <p>当前没有找到游戏</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let gamesHTML = '';
+            
+            games.forEach((game) => {
+                // 检查游戏对象是否包含必要的字段
+                if (!game.fileName || !game.size || !game.path) {
+                    console.warn('游戏数据不完整:', game);
+                    return;
+                }
+                
+                const gameName = getGameNameFromFileName(game.fileName);
+                
+                gamesHTML += `
+                    <div class="game-card">
+                        <div class="game-header">
+                            <h3 class="game-title">${gameName}</h3>
+                            <div class="file-name-display">${game.fileName}</div>
+                        </div>
+                        <div class="game-details">
+                            <div class="game-size">
+                                <i class="fas fa-hdd"></i>
+                                <span>文件大小: ${game.size}</span>
+                            </div>
+                        </div>
+                        <div class="game-actions">
+                            <button class="play-button" onclick="openGame('${game.path}')">
+                                <i class="fas fa-play"></i> 开始游戏
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            gameListElement.innerHTML = gamesHTML;
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            gameListElement.innerHTML = `
+                <div class="error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>加载失败</h3>
+                    <p>${message}</p>
+                    <button onclick="loadPage(currentPage)" style="margin-top:15px; padding:8px 20px; background:#4a6cf7; color:white; border:none; border-radius:4px; cursor:pointer;">
+                        重试
+                    </button>
+                </div>
+            `;
+        }
+
+        // 打开游戏
+        function openGame(filepath) {
+            var filepath2 = encodeURIComponent(filepath);
+            var urltocall = "/opengame?gamePath=" + filepath2;
+            window.open(urltocall);
+        }
+
+        // 为全局函数提供访问权限
+        window.openGame = openGame;
+        window.loadPage = loadPage;
+    </script>
+</body>
+</html>
