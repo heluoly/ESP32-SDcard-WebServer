@@ -81,6 +81,8 @@ https://github.com/ESP32Async/AsyncTCP
 
 8、OLED显示屏的I2C引脚在oled.cpp中修改
 
+9、该版本可推流mp4格式视频，并可以对视频进度拖拽，配置方式参考"内存卡_async"内的"README.txt"
+
 
 # 开始前准备
 

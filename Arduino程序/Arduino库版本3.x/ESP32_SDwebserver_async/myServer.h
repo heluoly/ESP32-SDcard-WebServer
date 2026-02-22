@@ -6,6 +6,7 @@
 #include "game.h"
 #include "upload.h"
 #include "video.h"
+#include "video_mp4.h"
 #include "copy.h"
 #include "wifiConnect.h"
 #include "oledClock.h"

@@ -28,6 +28,7 @@ https://github.com/ESP32Async/AsyncTCP
 #include "myServer.h"
 #include "upload.h"
 #include "video.h"
+#include "video_mp4.h"
 #include "game.h"
 #include "copy.h"
 

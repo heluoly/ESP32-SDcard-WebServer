@@ -1,7 +1,7 @@
-#include "video.h"
+#include "video_mp4.h"
 
 //读取txt文件
-String readFile(fs::FS &fs, const char *path) {
+String readTxtFile(fs::FS &fs, const char *path) {
   int i = 0;
   const int maximumLength = 256;
   char readbuff[maximumLength];
@@ -14,7 +14,7 @@ String readFile(fs::FS &fs, const char *path) {
   }
 
   while (file.available()) {
-    if (i < maximumLength - 2) {
+    if (i < maximumLength - 1) {
       readbuff[i] = file.read();
       i++;
     } else {
@@ -28,7 +28,7 @@ String readFile(fs::FS &fs, const char *path) {
 }
 
 //列出内存卡中的视频
-void listvideo(AsyncWebServerRequest *request) {
+void listVideo_mp4(AsyncWebServerRequest *request) {
   String videoTape = request->getParam("videoTape")->value();  //获取视频分区路径
   String page = request->getParam("page")->value();            //获取页数
   uint8_t i = 1;
@@ -64,7 +64,7 @@ void listvideo(AsyncWebServerRequest *request) {
         filePath = String(file.path());
         namePath = filePath + "/0.txt";                         //视频标题路径
         picPath = filePath + "/0.jpg";                          //视频预览图路径
-        videoName = readFile(my_fs, (char *)namePath.c_str());  //读取视频标题
+        videoName = readTxtFile(my_fs, (char *)namePath.c_str());  //读取视频标题
 
         if (!first) {
           message += ",";
@@ -97,19 +97,11 @@ void listvideo(AsyncWebServerRequest *request) {
 }
 
 //打开视频
-void openVideo(AsyncWebServerRequest *request) {
+void openVideo_mp4(AsyncWebServerRequest *request) {
   String videoPath = request->getParam("videoPath")->value();  //获取视频路径
   String namePath = videoPath;
   namePath += "/0.txt";
-  String videoName = readFile(my_fs, (char *)namePath.c_str());  //读取视频标题
-
-  //得到回车字符串
-  // char enter[3];
-  // String enter2 = "";
-  // enter[0] = '\r';
-  // enter[1] = '\n';
-  // enter[2] = '\0';
-  // enter2 = enter;
+  String videoName = readTxtFile(my_fs, (char *)namePath.c_str());  //读取视频标题
 
   String message = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>";
   message += videoName;
@@ -119,7 +111,7 @@ void openVideo(AsyncWebServerRequest *request) {
   message += videoPath;
   message += "/0.jpg\" data-setup=\"{}\"><source src=\"";
   message += videoPath;
-  message += "/index.m3u8\" type=\"application/x-mpegURL\"></video></div></div></div><script src=\"/bin/videojs/8.23.4/video.min.js\"></script><script src=\"/bin/videojs/videojs-contrib-hls/videojs-contrib-hls.min.js\"></script></body></html>";
+  message += "/video.mp4\" type=\"video/mp4\"></video></div></div></div><script src=\"/bin/videojs/8.23.4/video.min.js\"></script></body></html>";
   
   request->send(200, "text/html", message);  //发送网页
 }
