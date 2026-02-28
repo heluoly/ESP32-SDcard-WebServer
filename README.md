@@ -85,6 +85,8 @@ https://github.com/ESP32Async/AsyncTCP
 
 10、该版本增加AP+STA的服务器模式，ESP32相当一个路由器，可以同时从上级路由以及ESP32热点访问ESP32，并且ESP32会上级路由数据进行NAT转发，连接ESP32热点时也能访问互联网
 
+11、AP模式下主页IP地址修改为192.168.4.1
+
 
 # 开始前准备
 
