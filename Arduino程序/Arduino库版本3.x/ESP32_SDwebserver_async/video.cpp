@@ -3,7 +3,8 @@
 //读取txt文件
 String readFile(fs::FS &fs, const char *path) {
   int i = 0;
-  const int maximumLength = 256;
+  // const int maximumLength = 256;
+  #define maximumLength 256
   char readbuff[maximumLength];
   String message = "";
 

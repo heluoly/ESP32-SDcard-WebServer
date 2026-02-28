@@ -23,6 +23,8 @@ https://github.com/ESP32Async/AsyncTCP
 #include "FFat.h"
 #include "time.h"
 #include "esp_sntp.h"
+#include "lwip/lwip_napt.h"
+#include <lwip/tcpip.h>
 
 #include "common.h"
 #include "myServer.h"
@@ -47,18 +49,24 @@ bool ONE_BIT_MODE = false;  //设置SD卡模式 1bit：true 4bit：false
 
 AsyncWebServer esp32_server(80);  //网页服务
 
-bool mode_switch = 1;   //用于控制模式变换中的跳出while循环
-bool mode_switch2 = 1;  //用于跳过STA模式，转换到AP模式
-bool mode_switch3 = 0;  //用于关闭WIFI标志
-char mode_wifi = 0;     //用于显示当前WiFi模式
-bool serverState = 0;   //网页服务器状态
+bool mode_switch = 1;          //用于控制模式变换中的跳出while循环
+bool isWifiOff = 0;            //用于关闭WIFI标志
+bool isServerInitialized = 0;  //网页服务器是否开启
+//服务器状态机
+// ap:1 sta:2 ap+sta:3 wificonnect:4 serverconfig:5
+char previousServerState = MY_SERVER_STATE_AP;
+char currentServerState = MY_SERVER_STATE_AP;
+char nextServerState = MY_SERVER_STATE_AP;
 
-String IPAD = "192.168.1.1";          //在AP和STA模式下存储ESP32的IP地址
-String ssid = "ESP32_WebServer";      //wifi名称
-String password = "123456789";        //wifi密码（注意WiFi密码位数不要小于8位）
-char channel = 1;                     //wifi信道
-char ssid_hidden = 0;                 //WiFi隐身
-char autoconnect = 0;                 //开机自动连接上次成功连接WiFi
+char serverDisplayState = MY_SERVER_DP_STATE_ERROR;  //用于显示当前WiFi模式
+
+String APIPAD = "192.168.4.1";        //存储ESP32在AP模式下的IP地址
+String STAIPAD = "192.168.4.1";       //存储ESP32在STA模式下的IP地址
+String ssid = "ESP32_WebServer";      //热点wifi名称
+String password = "123456789";        //热点wifi密码（注意WiFi密码位数不要小于8位）
+char channel = 1;                     //热点wifi信道
+char ssid_hidden = 0;                 //热点WiFi隐身
+char startupMode = 0;                 //开机默认模式
 String pressid = "yourwifi";          //上次成功连接wifi名称
 String prepassword = "yourpassword";  //上次成功连接wifi密码（注意WiFi密码位数不要小于8位）
 
@@ -140,7 +148,7 @@ void setup() {
       // Serial.println("failed to open file for writing");
       return;
     }
-    configFile.print("ssid=" + ssid + "\r\npassword=" + password + "\r\nchannel=1\r\nautoconnect=1\r\npressid=" + pressid + "\r\nprepassword=" + prepassword + "\r\nstaticIP=192.168.1.80\r\ngateway=192.168.1.1\r\nsubnet=255.255.255.0\r\ndns=223.5.5.5\r\n\0");
+    configFile.print("ssid=" + ssid + "\r\npassword=" + password + "\r\nchannel=1\r\nstartupMode=1\r\npressid=" + pressid + "\r\nprepassword=" + prepassword + "\r\nstaticIP=192.168.1.80\r\ngateway=192.168.1.1\r\nsubnet=255.255.255.0\r\ndns=223.5.5.5\r\n\0");
     configFile.close();
   }
 }
@@ -206,34 +214,47 @@ void task_server(void *pvParameters) {
     WiFiconfigRead();  //读取保存的AP名称和密码
   }
 
-  if (autoconnect == 1) {
-    server_presta();
-    closeServer();
+  if (startupMode == 1) {
+    nextServerState = MY_SERVER_STATE_AP;
+  } else if (startupMode == 2) {
+    nextServerState = MY_SERVER_STATE_STA;
+  } else if (startupMode == 3) {
+    nextServerState = MY_SERVER_STATE_AP_STA;
+  } else {
+    nextServerState = MY_SERVER_STATE_AP;
   }
   while (1) {
-    server_ap();
-    closeServer();
-
-    server_ap_sta();
-    closeServer();
-
-    if (mode_switch2) {
+    if (nextServerState == MY_SERVER_STATE_AP) {
+      server_ap();
+      closeServer();
+    } else if (nextServerState == MY_SERVER_STATE_STA) {
       ssid_hidden = 0;
       server_sta();
+      closeServer();
+    } else if (nextServerState == MY_SERVER_STATE_AP_STA) {
+      server_ap_sta();
+      closeServer();
+    } else if (nextServerState == MY_SERVER_STATE_WIFI_CONNECT) {
+      server_wifi_connect();
+      closeServer();
+    } else if (nextServerState == MY_SERVER_STATE_CONFIG) {
+      server_config();
+      closeServer();
+    } else {
+      server_ap();
+      closeServer();
     }
-    mode_switch2 = 1;
-    closeServer();
   }
 }
 
 //关闭WIFI并删除任务
 void closeServer() {
-  if (mode_switch3) {
+  if (isWifiOff) {
     ssid_hidden = 0;
 
     esp32_server.reset();
     esp32_server.end();  //关闭网站服务
-    serverState = 0;
+    isServerInitialized = 0;
 
     WiFi.mode(WIFI_OFF);     //关闭WIFI
     my_fs.end();             //关闭SD卡
@@ -304,19 +325,21 @@ void task_display(void *pvParameters) {
       if (flag_press)  //如果长按了3秒按键
       {
 
-        if (mode_switch3)  //判断当前服务器所处状态，0为运行，1为关闭
+        if (isWifiOff)  //判断当前服务器所处状态，0为运行，1为关闭
         {
-          mode_switch3 = 0;  //服务器状态变为开启
+          isWifiOff = 0;  //服务器状态变为开启
           mode_switch = 1;
-          if (autoconnect == 1) {
-            mode_wifi = 4;
+          if (startupMode == 2) {
+            serverDisplayState = MY_SERVER_DP_STATE_STA_CONNECT;
+          } else if (startupMode == 3) {
+            serverDisplayState = MY_SERVER_DP_STATE_AP_STA_CONNECT;
           } else {
-            mode_wifi = 1;
+            serverDisplayState = MY_SERVER_DP_STATE_AP;
           }
           xTaskCreatePinnedToCore(task_server, "Task_Server", 5120, NULL, 1, &Task_Server, 1);  //创建新的服务器任务
         } else {
-          mode_switch3 = 1;  //服务器状态变为关闭
-          mode_switch = 0;   //让服务器任务跳出循环，运行结束程序
+          isWifiOff = 1;    //服务器状态变为关闭
+          mode_switch = 0;  //让服务器任务跳出循环，运行结束程序
         }
         flag_press = 0;
       } else {
@@ -392,39 +415,31 @@ void serverInfo_Display() {
 
   memset(oled_RAM, 0, 128 * 8 * sizeof(unsigned char));
   // OLED_ShowString_RAM(0, 0, "ESP32 WebServer", 16);
-  OLED_ShowString_RAM(0, 0, "Battery:    %", 16);
+  OLED_ShowString_RAM(0, 0, "Battery:    %   ", 16);
   OLED_ShowNum_RAM(72, 0, batteryPercent, 3, 16);
   createBatTaskOnce();  //创建更新电池电量任务
-  if (mode_switch3) {
-    OLED_ShowString_RAM(0, 2, "WLAN OFF    ", 16);
-    OLED_ShowString_RAM(0, 4, "                ", 16);
-    OLED_ShowString_RAM(0, 6, "                ", 16);
+  if (isWifiOff) {
+    OLED_ShowString_RAM(0, 2, "WLAN OFF", 16);
+
   } else {
-    if (mode_wifi == 1) {
-      OLED_ShowString_RAM(0, 2, "Mode: AP    ", 16);
-      OLED_ShowString_RAM(0, 4, "Channel: ", 16);
+    if (serverDisplayState == MY_SERVER_DP_STATE_AP) {
+      OLED_ShowString_RAM(0, 2, "Mode: AP", 16);
+      OLED_ShowString_RAM(0, 4, "Channel:", 16);
       OLED_ShowNum_RAM(72, 4, channel, 2, 16);
       if (ssid_hidden) {
         OLED_ShowString_RAM(96, 4, "*", 16);
       }
-      OLED_ShowString_RAM(0, 6, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
-    } else if (mode_wifi == 2) {
-      OLED_ShowString_RAM(0, 2, "Mode: AP+STA", 16);
-      OLED_ShowString_RAM(0, 4, "Channel: ", 16);
-      OLED_ShowNum_RAM(72, 4, channel, 2, 16);
-      if (ssid_hidden) {
-        OLED_ShowString_RAM(96, 4, "*", 16);
-      }
-      OLED_ShowString_RAM(0, 6, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
-    } else if (mode_wifi == 3) {
+      OLED_ShowString_RAM(0, 6, (char *)APIPAD.c_str(), 16);  //显示当前服务器IP
+
+    } else if (serverDisplayState == MY_SERVER_DP_STATE_STA) {
       wifiState = WiFi.status();  //读取WiFi状态
-      OLED_ShowString_RAM(0, 2, "Mode: STA   ", 16);
+      OLED_ShowString_RAM(0, 2, "Mode: STA", 16);
       if (wifiState == WL_CONNECTED) {
         if (flag_wifiState == 1) {
-          IPAD = WiFi.localIP().toString();  //刷新IP地址
+          STAIPAD = WiFi.localIP().toString();  //刷新IP地址
           flag_wifiState = 0;
         }
-        OLED_ShowString_RAM(0, 4, (char *)IPAD.c_str(), 16);  //显示当前服务器IP
+        OLED_ShowString_RAM(0, 4, (char *)STAIPAD.c_str(), 16);  //显示当前服务器IP
         OLED_ShowString_RAM(0, 6, "RSSI: -", 16);
         RSSI_value = -WiFi.RSSI();
         OLED_ShowNum_RAM(56, 6, RSSI_value, 2, 16);
@@ -451,9 +466,135 @@ void serverInfo_Display() {
       }
       // Serial.printf("WL: %d\n", wifiState);
 
+    } else if (serverDisplayState == MY_SERVER_DP_STATE_AP_STA) {
+      wifiState = WiFi.status();  //读取WiFi状态
+      OLED_ShowString_RAM(0, 2, "Mode: AP+STA", 16);
+      OLED_ShowString_RAM(0, 6, (char *)APIPAD.c_str(), 16);  //AP模式IP
+      if (wifiState == WL_CONNECTED) {
+        if (flag_wifiState == 1) {
+          STAIPAD = WiFi.localIP().toString();  //刷新IP地址
+          flag_wifiState = 0;
+        }
+        OLED_ShowString_RAM(0, 4, (char *)STAIPAD.c_str(), 16);  //STA模式IP
+      } else if (wifiState == WL_IDLE_STATUS) {
+        OLED_ShowString_RAM(0, 4, "Reconnecting", 16);
+        flag_wifiState = 1;
+      } else if (wifiState == WL_NO_SSID_AVAIL) {
+        OLED_ShowString_RAM(0, 4, "No SSID Avail", 16);
+        flag_wifiState = 1;
+      } else if (wifiState == WL_CONNECT_FAILED) {
+        OLED_ShowString_RAM(0, 4, "Connect Failed", 16);
+        WiFi.reconnect();  //尝试重新连接WiFi
+        flag_wifiState = 1;
+      } else if (wifiState == WL_CONNECTION_LOST) {
+        OLED_ShowString_RAM(0, 4, "Connect Lost", 16);
+        flag_wifiState = 1;
+      } else if (wifiState == WL_DISCONNECTED) {
+        OLED_ShowString_RAM(0, 4, "Disconnected", 16);
+        flag_wifiState = 1;
+      } else {
+        OLED_ShowString_RAM(0, 4, "Failed", 16);
+        flag_wifiState = 1;
+      }
+      // Serial.printf("WL: %d\n", wifiState);
+
+
+    } else if (serverDisplayState == MY_SERVER_DP_STATE_WIFI_SCAN) {
+      OLED_ShowString_RAM(0, 2, "Mode: WIFI SACN", 16);
+      OLED_ShowString_RAM(0, 4, "Channel:", 16);
+      OLED_ShowNum_RAM(72, 4, channel, 2, 16);
+      if (ssid_hidden) {
+        OLED_ShowString_RAM(96, 4, "*", 16);
+      }
+      OLED_ShowString_RAM(0, 6, (char *)APIPAD.c_str(), 16);  //显示当前服务器IP
+
+
+    } else if (serverDisplayState == MY_SERVER_DP_STATE_CONFIG) {
+      OLED_ShowString_RAM(0, 2, "Mode: CONFIG", 16);
+
+      if (previousServerState == MY_SERVER_STATE_AP) {
+        OLED_ShowString_RAM(0, 4, "Channel:", 16);
+        OLED_ShowNum_RAM(72, 4, channel, 2, 16);
+        if (ssid_hidden) {
+          OLED_ShowString_RAM(96, 4, "*", 16);
+        }
+        OLED_ShowString_RAM(0, 6, (char *)APIPAD.c_str(), 16);  //显示当前服务器IP
+
+      } else if (previousServerState == MY_SERVER_STATE_STA) {
+        if (wifiState == WL_CONNECTED) {
+          if (flag_wifiState == 1) {
+            STAIPAD = WiFi.localIP().toString();  //刷新IP地址
+            flag_wifiState = 0;
+          }
+          OLED_ShowString_RAM(0, 4, (char *)STAIPAD.c_str(), 16);  //显示当前服务器IP
+          OLED_ShowString_RAM(0, 6, "RSSI: -", 16);
+          RSSI_value = -WiFi.RSSI();
+          OLED_ShowNum_RAM(56, 6, RSSI_value, 2, 16);
+          // Serial.println(WiFi.RSSI());
+        } else if (wifiState == WL_IDLE_STATUS) {
+          OLED_ShowString_RAM(0, 4, "Reconnecting", 16);
+          flag_wifiState = 1;
+        } else if (wifiState == WL_NO_SSID_AVAIL) {
+          OLED_ShowString_RAM(0, 4, "No SSID Avail", 16);
+          flag_wifiState = 1;
+        } else if (wifiState == WL_CONNECT_FAILED) {
+          OLED_ShowString_RAM(0, 4, "Connect Failed", 16);
+          WiFi.reconnect();  //尝试重新连接WiFi
+          flag_wifiState = 1;
+        } else if (wifiState == WL_CONNECTION_LOST) {
+          OLED_ShowString_RAM(0, 4, "Connect Lost", 16);
+          flag_wifiState = 1;
+        } else if (wifiState == WL_DISCONNECTED) {
+          OLED_ShowString_RAM(0, 4, "Disconnected", 16);
+          flag_wifiState = 1;
+        } else {
+          OLED_ShowString_RAM(0, 4, "Failed", 16);
+          flag_wifiState = 1;
+        }
+        // Serial.printf("WL: %d\n", wifiState);
+
+      } else if (previousServerState == MY_SERVER_STATE_AP_STA) {
+        OLED_ShowString_RAM(0, 6, (char *)APIPAD.c_str(), 16);  //AP模式IP
+        if (wifiState == WL_CONNECTED) {
+          if (flag_wifiState == 1) {
+            STAIPAD = WiFi.localIP().toString();  //刷新IP地址
+            flag_wifiState = 0;
+          }
+          OLED_ShowString_RAM(0, 4, (char *)STAIPAD.c_str(), 16);  //STA模式IP
+        } else if (wifiState == WL_IDLE_STATUS) {
+          OLED_ShowString_RAM(0, 4, "Reconnecting", 16);
+          flag_wifiState = 1;
+        } else if (wifiState == WL_NO_SSID_AVAIL) {
+          OLED_ShowString_RAM(0, 4, "No SSID Avail", 16);
+          flag_wifiState = 1;
+        } else if (wifiState == WL_CONNECT_FAILED) {
+          OLED_ShowString_RAM(0, 4, "Connect Failed", 16);
+          WiFi.reconnect();  //尝试重新连接WiFi
+          flag_wifiState = 1;
+        } else if (wifiState == WL_CONNECTION_LOST) {
+          OLED_ShowString_RAM(0, 4, "Connect Lost", 16);
+          flag_wifiState = 1;
+        } else if (wifiState == WL_DISCONNECTED) {
+          OLED_ShowString_RAM(0, 4, "Disconnected", 16);
+          flag_wifiState = 1;
+        } else {
+          OLED_ShowString_RAM(0, 4, "Failed", 16);
+          flag_wifiState = 1;
+        }
+        // Serial.printf("WL: %d\n", wifiState);
+      }
+
+
+    } else if (serverDisplayState == MY_SERVER_DP_STATE_STA_CONNECT) {
+      OLED_ShowString_RAM(0, 2, "Mode: STA       ", 16);
+      OLED_ShowString_RAM(0, 4, "Connecting      ", 16);
+
+    } else if (serverDisplayState == MY_SERVER_DP_STATE_AP_STA_CONNECT) {
+      OLED_ShowString_RAM(0, 2, "Mode: AP+STA    ", 16);
+      OLED_ShowString_RAM(0, 4, "Connecting      ", 16);
+
     } else {
-      OLED_ShowString_RAM(0, 2, "Mode: STA   ", 16);
-      OLED_ShowString_RAM(0, 4, "Connecting", 16);
+      OLED_ShowString_RAM(0, 2, "ERROR", 16);
     }
   }
   OLED_Display();  //全局刷新显示

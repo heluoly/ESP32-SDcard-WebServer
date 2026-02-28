@@ -3,7 +3,7 @@
 //读取txt文件
 String readTxtFile(fs::FS &fs, const char *path) {
   int i = 0;
-  const int maximumLength = 256;
+  #define maximumLength 256
   char readbuff[maximumLength];
   String message = "";
 
@@ -62,8 +62,8 @@ void listVideo_mp4(AsyncWebServerRequest *request) {
       } else if (i > page1 && i < page2) {
 
         filePath = String(file.path());
-        namePath = filePath + "/0.txt";                         //视频标题路径
-        picPath = filePath + "/0.jpg";                          //视频预览图路径
+        namePath = filePath + "/0.txt";                            //视频标题路径
+        picPath = filePath + "/0.jpg";                             //视频预览图路径
         videoName = readTxtFile(my_fs, (char *)namePath.c_str());  //读取视频标题
 
         if (!first) {
@@ -112,6 +112,6 @@ void openVideo_mp4(AsyncWebServerRequest *request) {
   message += "/0.jpg\" data-setup=\"{}\"><source src=\"";
   message += videoPath;
   message += "/video.mp4\" type=\"video/mp4\"></video></div></div></div><script src=\"/bin/videojs/8.23.4/video.min.js\"></script></body></html>";
-  
+
   request->send(200, "text/html", message);  //发送网页
 }

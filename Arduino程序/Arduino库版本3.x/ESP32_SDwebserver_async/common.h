@@ -20,7 +20,25 @@
 #define BTN_BOOT_PIN 0  //IO0作为按键
 // #define LED 33         //IO33作为led指示灯
 
-//String indexOfFilename(String filename);
+typedef enum {
+  MY_SERVER_STATE_AP = 1,
+  MY_SERVER_STATE_STA = 2,
+  MY_SERVER_STATE_AP_STA = 3,
+  MY_SERVER_STATE_WIFI_CONNECT = 4,
+  MY_SERVER_STATE_CONFIG = 5
+} my_server_state_t;
+
+typedef enum {
+  MY_SERVER_DP_STATE_ERROR = 0,
+  MY_SERVER_DP_STATE_AP = 1,
+  MY_SERVER_DP_STATE_STA = 2,
+  MY_SERVER_DP_STATE_AP_STA = 3,
+  MY_SERVER_DP_STATE_WIFI_SCAN = 4,
+  MY_SERVER_DP_STATE_CONFIG = 5,
+  MY_SERVER_DP_STATE_STA_CONNECT = 6,
+  MY_SERVER_DP_STATE_AP_STA_CONNECT = 7
+} my_server_display_state_t;
+
 String formatBytes(size_t bytes);
 // void listDir(fs::FS &fs, const char *dirname, uint8_t levels);
 char deleteFile(fs::FS &fs, const char *path);
