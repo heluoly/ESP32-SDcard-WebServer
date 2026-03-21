@@ -126,7 +126,21 @@ https://github.com/ESP32Async/AsyncTCP
 服务器配置存放位置通过common.h中的CONFIG_SD设置，0为FATFS，1为SD_MMC，默认存放在FATFS中，文件名为config.txt，其中存放WiFi名称密码等信息。
 
 
-# 使用说明
+# 视频批处理程序使用说明
+
+1、批处理程序为"process_videos.py"，该程序只使用于异步库版本的MP4格式视频处理，不适用于M3U8格式视频。
+
+2、该批处理程序作用为将多个MP4视频文件进行改名、生成视频预览图并生成本项目ESP32能够读取的文件结构格式。
+
+3、需要安装FFmpeg和python。
+
+4、使用示例：
+```python
+python process_videos.py /视频输入文件夹 /视频输出文件夹
+```
+"视频输入文件夹"存放你准备好的多个MP4文件，运行程序后，将"视频输出文件夹"内文件全部复制到内存卡中的/video-mp4/shortvideo或/video-mp4/movie内。
+
+# 服务器使用说明
 
 1、Boot键功能
 
