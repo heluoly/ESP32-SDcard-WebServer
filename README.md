@@ -128,11 +128,11 @@ https://github.com/ESP32Async/AsyncTCP
 
 # 视频批处理程序使用说明
 
-1、批处理程序为"process_videos.py"，该程序只使用于异步库版本的MP4格式视频处理，不适用于M3U8格式视频。
+1、批处理程序为"process_videos.py"，该程序只适用于异步库版本的MP4格式视频处理，不适用于M3U8格式视频。
 
 2、该批处理程序作用为将多个MP4视频文件进行改名、生成视频预览图并生成本项目ESP32能够读取的文件结构格式。
 
-3、需要安装FFmpeg和python。
+3、需要安装FFmpeg和python，并配置环境变量。
 
 4、使用示例：
 ```python

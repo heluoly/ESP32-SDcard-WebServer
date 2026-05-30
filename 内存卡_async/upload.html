@@ -370,6 +370,53 @@
       font-size: 13px;
     }
     
+    .resume-bar {
+      display: none;
+      background: #fffbe6;
+      border: 1px solid #ffe58f;
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin: 15px 0;
+      text-align: left;
+    }
+    
+    .resume-bar.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+    
+    .resume-bar .resume-info {
+      color: #ad6800;
+      font-size: 14px;
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+    
+    .resume-bar .resume-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn-warning {
+      background: #fa8c16;
+      color: white;
+    }
+    
+    .btn-warning:hover {
+      background: #ffa940;
+      transform: translateY(-1px);
+    }
+    
+    .btn-danger {
+      background: #ff4d4f;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #ff7875;
+      transform: translateY(-1px);
+    }
+    
     .loading {
       display: inline-block;
       width: 18px;
@@ -475,6 +522,8 @@
 <script>
 let currentPage = 1;
 let totalPages = 1;
+let existingUploadSize = 0;
+let uploadMode = 'full';
 
 // 页面加载完成后自动获取第一页数据
 document.addEventListener('DOMContentLoaded', function() {
@@ -880,7 +929,211 @@ function deleteFile(filepath) {
   xhr.send();
 }
 
-// 显示上传表单
+// 处理文件选择
+function handleFileSelect() {
+  const fileInput = document.getElementById('file1');
+  const file = fileInput.files[0];
+  
+  if (!file) return;
+  
+  const fileInfo = document.getElementById('file-info');
+  const fileName = document.getElementById('file-name');
+  const fileSize = document.getElementById('file-size');
+  const fileIcon = document.getElementById('file-icon');
+  const uploadBtn = document.getElementById('upload-btn');
+  const resumeBar = document.getElementById('resume-bar');
+  
+  fileIcon.textContent = getFileIcon(file.name);
+  fileName.textContent = file.name;
+  fileSize.textContent = `大小: ${formatFileSize(file.size)}`;
+  
+  fileInfo.style.display = 'block';
+  resumeBar.classList.remove('show');
+  uploadBtn.style.display = 'none';
+  existingUploadSize = 0;
+  uploadMode = 'full';
+  
+  checkUploadStatus(file.name);
+}
+
+// 上传文件
+function checkUploadStatus(filename) {
+  const uploadBtn = document.getElementById('upload-btn');
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', `/uploadStatus?filename=${encodeURIComponent(filename)}`, true);
+  
+  xhr.onload = function() {
+    try {
+      if (xhr.status === 200) {
+        const data = JSON.parse(xhr.responseText);
+        if (data.exists && data.size > 0) {
+          const fileInput = document.getElementById('file1');
+          const file = fileInput.files[0];
+          if (!file) return;
+          
+          if (data.size < file.size) {
+            existingUploadSize = data.size;
+            uploadMode = 'resume';
+            
+            const resumeBar = document.getElementById('resume-bar');
+            const resumeExistingSize = document.getElementById('resume-existing-size');
+            const percent = Math.round((data.size / file.size) * 100);
+            
+            resumeExistingSize.textContent = `${formatFileSize(data.size)} (${percent}%)`;
+            resumeBar.classList.add('show');
+            uploadBtn.style.display = 'none';
+          } else {
+            showStatus('文件已完整上传', 'warning');
+            existingUploadSize = 0;
+            uploadMode = 'full';
+          }
+        } else {
+          existingUploadSize = 0;
+          uploadMode = 'full';
+          uploadBtn.style.display = 'inline-flex';
+        }
+      }
+    } catch (e) {
+      uploadBtn.style.display = 'inline-flex';
+    }
+  };
+  
+  xhr.onerror = function() {
+    uploadBtn.style.display = 'inline-flex';
+  };
+  
+  xhr.send();
+}
+
+function resumeUpload() {
+  const fileInput = document.getElementById('file1');
+  const file = fileInput.files[0];
+  if (!file) return;
+  
+  const resumeBar = document.getElementById('resume-bar');
+  resumeBar.classList.remove('show');
+  
+  uploadMode = 'resume';
+  doUpload(existingUploadSize);
+}
+
+function restartUpload() {
+  const fileInput = document.getElementById('file1');
+  const file = fileInput.files[0];
+  if (!file) return;
+  
+  const resumeBar = document.getElementById('resume-bar');
+  resumeBar.classList.remove('show');
+  
+  const path = '/upload/' + file.name;
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', `/deleteUploadFile?deletePath=${encodeURIComponent(path)}`, true);
+  
+  xhr.onload = function() {
+    existingUploadSize = 0;
+    uploadMode = 'full';
+    doUpload(0);
+  };
+  
+  xhr.onerror = function() {
+    showStatus('删除旧文件失败，请重试', 'error');
+  };
+  
+  xhr.send();
+}
+
+function uploadFile() {
+  doUpload(0);
+}
+
+function doUpload(offset) {
+  const fileInput = document.getElementById('file1');
+  const file = fileInput.files[0];
+  
+  if (!file) {
+    showStatus('请先选择文件', 'warning');
+    return;
+  }
+  
+  const progressContainer = document.getElementById('progress-container');
+  const progressFill = document.getElementById('progress-fill');
+  const progressPercent = document.getElementById('progress-percent');
+  const progressStatus = document.getElementById('progress-status');
+  const uploadBtn = document.getElementById('upload-btn');
+  
+  progressContainer.style.display = 'block';
+  uploadBtn.disabled = true;
+  uploadBtn.style.display = 'none';
+  uploadBtn.innerHTML = '<span class="loading" style="width: 16px; height: 16px; border-width: 2px;"></span> 上传中...';
+  
+  let uploadBlob;
+  if (offset > 0 && offset < file.size) {
+    uploadBlob = file.slice(offset);
+  } else {
+    uploadBlob = file;
+    offset = 0;
+  }
+  
+  const totalToUpload = uploadBlob.size;
+  const totalSize = file.size;
+  
+  const formData = new FormData();
+  formData.append('file1', uploadBlob, file.name);
+  
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/upload', true);
+  
+  xhr.upload.addEventListener('progress', function(e) {
+    if (e.lengthComputable) {
+      const uploadedNow = e.loaded;
+      const totalUploaded = offset + uploadedNow;
+      const percent = Math.round((totalUploaded / totalSize) * 100);
+      progressFill.style.width = percent + '%';
+      progressPercent.textContent = percent + '%';
+      progressStatus.textContent = `已上传 ${formatFileSize(totalUploaded)} / ${formatFileSize(totalSize)}`;
+    }
+  });
+  
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      progressFill.style.width = '100%';
+      progressPercent.textContent = '100%';
+      progressStatus.textContent = '上传完成，正在处理...';
+      
+      setTimeout(() => {
+        showStatus('文件上传成功', 'success');
+        
+        document.getElementById('upload-form').reset();
+        document.getElementById('file-info').style.display = 'none';
+        document.getElementById('resume-bar').classList.remove('show');
+        progressContainer.style.display = 'none';
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
+        existingUploadSize = 0;
+        uploadMode = 'full';
+        
+        listFiles(1);
+      }, 1000);
+    } else {
+      showStatus(`上传失败: ${xhr.responseText || '服务器错误'}`, 'error');
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
+      uploadBtn.style.display = 'inline-flex';
+    }
+  };
+  
+  xhr.onerror = function() {
+    showStatus('上传中断: 网络错误，稍后可在文件列表中继续上传', 'warning');
+    progressStatus.textContent = '上传已中断';
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
+    uploadBtn.style.display = 'inline-flex';
+    existingUploadSize = offset + (progressFill.style.width ? (parseInt(progressFill.style.width) / 100 * totalSize - offset) : 0);
+  };
+  
+  xhr.send(formData);
+}
+
 function showUploadForm() {
   const container = document.getElementById('files-container');
   container.innerHTML = `
@@ -900,6 +1153,18 @@ function showUploadForm() {
               <div id="file-name" style="font-weight: 500; color: #333; font-size: 14px;"></div>
               <div id="file-size" style="font-size: 13px; color: #666; margin-top: 4px;"></div>
             </div>
+          </div>
+        </div>
+        
+        <div id="resume-bar" class="resume-bar">
+          <div class="resume-info" id="resume-info">检测到已存在部分文件，已上传：<span id="resume-existing-size">0</span></div>
+          <div class="resume-actions">
+            <button type="button" class="btn btn-warning" onclick="resumeUpload()" id="resume-btn">
+              <span class="btn-icon">⏯️</span> 继续上传
+            </button>
+            <button type="button" class="btn btn-danger" onclick="restartUpload()" id="restart-btn">
+              <span class="btn-icon">🗑️</span> 重新上传
+            </button>
           </div>
         </div>
         
@@ -923,104 +1188,8 @@ function showUploadForm() {
     </div>
   `;
   
-  // 隐藏分页
   document.getElementById('pagination').innerHTML = '';
-  
   document.querySelector('.section-title').textContent = '文件上传';
-}
-
-// 处理文件选择
-function handleFileSelect() {
-  const fileInput = document.getElementById('file1');
-  const file = fileInput.files[0];
-  
-  if (!file) return;
-  
-  const fileInfo = document.getElementById('file-info');
-  const fileName = document.getElementById('file-name');
-  const fileSize = document.getElementById('file-size');
-  const fileIcon = document.getElementById('file-icon');
-  const uploadBtn = document.getElementById('upload-btn');
-  
-  fileIcon.textContent = getFileIcon(file.name);
-  fileName.textContent = file.name;
-  fileSize.textContent = `大小: ${formatFileSize(file.size)}`;
-  
-  fileInfo.style.display = 'block';
-  uploadBtn.style.display = 'inline-flex';
-}
-
-// 上传文件
-function uploadFile() {
-  const fileInput = document.getElementById('file1');
-  const file = fileInput.files[0];
-  
-  if (!file) {
-    showStatus('请先选择文件', 'warning');
-    return;
-  }
-  
-  const progressContainer = document.getElementById('progress-container');
-  const progressFill = document.getElementById('progress-fill');
-  const progressPercent = document.getElementById('progress-percent');
-  const progressStatus = document.getElementById('progress-status');
-  const uploadBtn = document.getElementById('upload-btn');
-  
-  // 显示进度条
-  progressContainer.style.display = 'block';
-  uploadBtn.disabled = true;
-  uploadBtn.innerHTML = '<span class="loading" style="width: 16px; height: 16px; border-width: 2px;"></span> 上传中...';
-  
-  const formData = new FormData();
-  formData.append('file1', file);
-  
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', '/upload', true);
-  
-  // 上传进度事件
-  xhr.upload.addEventListener('progress', function(e) {
-    if (e.lengthComputable) {
-      const percent = Math.round((e.loaded / e.total) * 100);
-      progressFill.style.width = percent + '%';
-      progressPercent.textContent = percent + '%';
-      progressStatus.textContent = `已上传 ${formatFileSize(e.loaded)} / ${formatFileSize(e.total)}`;
-    }
-  });
-  
-  xhr.onload = function() {
-    if (xhr.status === 200) {
-      progressFill.style.width = '100%';
-      progressPercent.textContent = '100%';
-      progressStatus.textContent = '上传完成，正在处理...';
-      
-      setTimeout(() => {
-        showStatus('文件上传成功', 'success');
-        
-        // 重置表单
-        document.getElementById('upload-form').reset();
-        document.getElementById('file-info').style.display = 'none';
-        progressContainer.style.display = 'none';
-        uploadBtn.disabled = false;
-        uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
-        uploadBtn.style.display = 'none';
-        
-        // 返回文件列表
-        listFiles(1);
-      }, 1000);
-    } else {
-      showStatus(`上传失败: ${xhr.responseText || '服务器错误'}`, 'error');
-      uploadBtn.disabled = false;
-      uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
-    }
-  };
-  
-  xhr.onerror = function() {
-    showStatus('上传失败: 网络错误', 'error');
-    uploadBtn.disabled = false;
-    uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
-  };
-  
-  xhr.send(formData);
 }
 </script>
 </body>
