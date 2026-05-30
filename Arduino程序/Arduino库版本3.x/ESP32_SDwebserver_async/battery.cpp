@@ -37,10 +37,12 @@ int readBatteryVoltage() {
 
 //电池电压转换为百分比（亿纬INR18650/35V）
 int voltageToPercent(int voltage_mv) {
-  if (voltage_mv >= 4120)
+  if (voltage_mv >= 4125)
     return 100;
+  else if (voltage_mv >= 4100)
+    return 95 + (voltage_mv - 4100) * 5 / 25;
   else if (voltage_mv >= 4050)
-    return 75 + (voltage_mv - 4050) * 25 / 70;
+    return 75 + (voltage_mv - 4050) * 20 / 50;
   else if (voltage_mv >= 3450)
     return 3 + (voltage_mv - 3450) * 72 / 600;
   else if (voltage_mv >= 3300)

@@ -194,6 +194,7 @@ void server_ap() {
   esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
   esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
   esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
+  esp32_server.on("/uploadStatus", HTTP_GET, handleUploadStatus);              //查询上传状态（断点续传）
   esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
   esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
   esp32_server.on("/videolist_mp4", HTTP_GET, listVideo_mp4);                  //列出视频列表（mp4）
@@ -263,6 +264,7 @@ void server_sta() {
     esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
     esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
     esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
+    esp32_server.on("/uploadStatus", HTTP_GET, handleUploadStatus);              //查询上传状态（断点续传）
     esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
     esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
     esp32_server.on("/videolist_mp4", HTTP_GET, listVideo_mp4);                  //列出视频列表（mp4）
@@ -343,6 +345,7 @@ void server_ap_sta() {
     esp32_server.on("/download", HTTP_GET, downloadFile);                        //下载文件，带中文
     esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
     esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
+    esp32_server.on("/uploadStatus", HTTP_GET, handleUploadStatus);              //查询上传状态（断点续传）
     esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
     esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
     esp32_server.on("/videolist_mp4", HTTP_GET, listVideo_mp4);                  //列出视频列表（mp4）
@@ -449,7 +452,7 @@ public:
     addHeader("Accept-Ranges", "bytes");
     if (addContentRange) {
       char contentRange[64];
-      snprintf(contentRange, sizeof(contentRange), "bytes %d-%d/%d", _start, _end, total);
+      snprintf(contentRange, sizeof(contentRange), "bytes %zu-%zu/%zu", _start, _end, total);
       addHeader("Content-Range", contentRange);
     }
   }

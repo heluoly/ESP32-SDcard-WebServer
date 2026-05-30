@@ -68,7 +68,12 @@ void uploadFileRespond(AsyncWebServerRequest *request) {
 
 void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   if (!index) {
-    request->_tempFile = my_fs.open("/upload/" + filename, FILE_WRITE);
+    String path = "/upload/" + filename;
+    if (my_fs.exists(path)) {
+      request->_tempFile = my_fs.open(path, FILE_APPEND);
+    } else {
+      request->_tempFile = my_fs.open(path, FILE_WRITE);
+    }
     if (!request->_tempFile) {
       request->send(400, "text/plain", "File not available for writing");
     }
@@ -78,6 +83,25 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
   }
   if (final) {
     request->_tempFile.close();
+  }
+}
+
+void handleUploadStatus(AsyncWebServerRequest *request) {
+  if (!request->hasParam("filename")) {
+    request->send(400, "application/json", "{\"exists\":false,\"size\":0}");
+    return;
+  }
+  String filename = request->getParam("filename")->value();
+  String path = "/upload/" + filename;
+
+  if (my_fs.exists(path)) {
+    File f = my_fs.open(path, FILE_READ);
+    size_t sz = f.size();
+    f.close();
+    String json = "{\"exists\":true,\"size\":" + String(sz) + "}";
+    request->send(200, "application/json", json);
+  } else {
+    request->send(200, "application/json", "{\"exists\":false,\"size\":0}");
   }
 }
 
