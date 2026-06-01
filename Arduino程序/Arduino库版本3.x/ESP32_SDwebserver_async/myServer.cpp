@@ -195,8 +195,10 @@ void server_ap() {
   esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
   esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
   esp32_server.on("/uploadStatus", HTTP_GET, handleUploadStatus);              //查询上传状态（断点续传）
+  esp32_server.on("/categorylist", HTTP_GET, listVideoCategories);              //列出视频分类
   esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
   esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
+  esp32_server.on("/categorylist_mp4", HTTP_GET, listVideoCategories_mp4);      //列出视频分类（mp4）
   esp32_server.on("/videolist_mp4", HTTP_GET, listVideo_mp4);                  //列出视频列表（mp4）
   esp32_server.on("/openvideo_mp4", HTTP_GET, openVideo_mp4);                  //打开视频（mp4）
   esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
@@ -265,8 +267,10 @@ void server_sta() {
     esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
     esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
     esp32_server.on("/uploadStatus", HTTP_GET, handleUploadStatus);              //查询上传状态（断点续传）
+    esp32_server.on("/categorylist", HTTP_GET, listVideoCategories);              //列出视频分类
     esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
     esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
+    esp32_server.on("/categorylist_mp4", HTTP_GET, listVideoCategories_mp4);      //列出视频分类（mp4）
     esp32_server.on("/videolist_mp4", HTTP_GET, listVideo_mp4);                  //列出视频列表（mp4）
     esp32_server.on("/openvideo_mp4", HTTP_GET, openVideo_mp4);                  //打开视频（mp4）
     esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
@@ -346,10 +350,12 @@ void server_ap_sta() {
     esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            //删除文件
     esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  //上传文件
     esp32_server.on("/uploadStatus", HTTP_GET, handleUploadStatus);              //查询上传状态（断点续传）
+    esp32_server.on("/categorylist", HTTP_GET, listVideoCategories);              //列出视频分类
     esp32_server.on("/videolist", HTTP_GET, listvideo);                          //列出视频列表
     esp32_server.on("/openvideo", HTTP_GET, openVideo);                          //打开视频
+    esp32_server.on("/categorylist_mp4", HTTP_GET, listVideoCategories_mp4);      //列出视频分类（mp4）
     esp32_server.on("/videolist_mp4", HTTP_GET, listVideo_mp4);                  //列出视频列表（mp4）
-    esp32_server.on("/openvideo_mp4", HTTP_GET, openVideo_mp4);                  //打开视频（mp4）
+    esp32_server.on("/openvideo_mp4", HTTP_GET, openVideo_mp4);                  //打开视频（mp4） 
     esp32_server.on("/gamelist", HTTP_GET, listGame);                            //列出游戏列表
     esp32_server.on("/opengame", HTTP_GET, openGame);                            //打开游戏
     esp32_server.on("/saveText", HTTP_POST, handleSaveText);                     //保存文本到txt文件

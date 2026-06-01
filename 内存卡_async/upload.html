@@ -727,9 +727,8 @@ function renderPagination(currentPage, totalPages) {
     const pagesContainer = document.createElement('div');
     pagesContainer.className = 'pagination-pages';
     
-    // 如果页数较多，使用智能分页显示
+    // 页数较少时显示所有页码
     if (totalPages <= 7) {
-        // 页数少时显示所有页码
         for (let i = 1; i <= totalPages; i++) {
             const pageButton = document.createElement('button');
             pageButton.textContent = i;
@@ -742,137 +741,72 @@ function renderPagination(currentPage, totalPages) {
             pagesContainer.appendChild(pageButton);
         }
     } else {
-        // 页数多时使用智能分页
-        // 总是显示第一页
-        const firstButton = document.createElement('button');
-        firstButton.textContent = 1;
-        if (1 === currentPage) {
-            firstButton.classList.add('active');
-        }
-        firstButton.addEventListener('click', () => {
-            listFiles(1);
-        });
-        pagesContainer.appendChild(firstButton);
+        // 页数超过7页：显示首页、尾页，当前页两边各2页
+        // 添加页码按钮
+        const addPageButton = (pageNum, isActive = false) => {
+            const btn = document.createElement('button');
+            btn.textContent = pageNum;
+            if (isActive) btn.classList.add('active');
+            btn.addEventListener('click', () => listFiles(pageNum));
+            pagesContainer.appendChild(btn);
+        };
         
-        // 当前页靠近开头时
+        // 添加省略号
+        const addEllipsis = () => {
+            const ellipsis = document.createElement('button');
+            ellipsis.textContent = '...';
+            ellipsis.classList.add('ellipsis');
+            pagesContainer.appendChild(ellipsis);
+        };
+        
+        addPageButton(1, currentPage === 1);
+        
+        let startPage = Math.max(2, currentPage - 2);
+        let endPage = Math.min(totalPages - 1, currentPage + 2);
+        
         if (currentPage <= 3) {
-            for (let i = 2; i <= 4; i++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = i;
-                if (i === currentPage) {
-                    pageButton.classList.add('active');
-                }
-                pageButton.addEventListener('click', () => {
-                    listFiles(i);
-                });
-                pagesContainer.appendChild(pageButton);
-            }
-            
-            // 添加省略号
-            const ellipsis = document.createElement('button');
-            ellipsis.textContent = '...';
-            ellipsis.classList.add('ellipsis');
-            pagesContainer.appendChild(ellipsis);
-            
-            // 显示最后一页
-            const lastButton = document.createElement('button');
-            lastButton.textContent = totalPages;
-            lastButton.addEventListener('click', () => {
-                listFiles(totalPages);
-            });
-            pagesContainer.appendChild(lastButton);
-        } 
-        // 当前页靠近结尾时
-        else if (currentPage >= totalPages - 2) {
-            // 添加省略号
-            const ellipsis = document.createElement('button');
-            ellipsis.textContent = '...';
-            ellipsis.classList.add('ellipsis');
-            pagesContainer.appendChild(ellipsis);
-            
-            for (let i = totalPages - 3; i <= totalPages - 1; i++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = i;
-                if (i === currentPage) {
-                    pageButton.classList.add('active');
-                }
-                pageButton.addEventListener('click', () => {
-                    listFiles(i);
-                });
-                pagesContainer.appendChild(pageButton);
-            }
-            
-            // 显示最后一页
-            const lastButton = document.createElement('button');
-            lastButton.textContent = totalPages;
-            if (totalPages === currentPage) {
-                lastButton.classList.add('active');
-            }
-            lastButton.addEventListener('click', () => {
-                listFiles(totalPages);
-            });
-            pagesContainer.appendChild(lastButton);
-        } 
-        // 当前页在中间时
-        else {
-            // 添加省略号
-            const ellipsis1 = document.createElement('button');
-            ellipsis1.textContent = '...';
-            ellipsis1.classList.add('ellipsis');
-            pagesContainer.appendChild(ellipsis1);
-            
-            // 显示当前页及前后各一页
-            for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = i;
-                if (i === currentPage) {
-                    pageButton.classList.add('active');
-                }
-                pageButton.addEventListener('click', () => {
-                    listFiles(i);
-                });
-                pagesContainer.appendChild(pageButton);
-            }
-            
-            // 添加省略号
-            const ellipsis2 = document.createElement('button');
-            ellipsis2.textContent = '...';
-            ellipsis2.classList.add('ellipsis');
-            pagesContainer.appendChild(ellipsis2);
-            
-            // 显示最后一页
-            const lastButton = document.createElement('button');
-            lastButton.textContent = totalPages;
-            lastButton.addEventListener('click', () => {
-                listFiles(totalPages);
-            });
-            pagesContainer.appendChild(lastButton);
+            startPage = 2;
+            endPage = Math.min(totalPages - 1, 5);
+        }
+        if (currentPage >= totalPages - 2) {
+            startPage = Math.max(2, totalPages - 4);
+            endPage = totalPages - 1;
+        }
+        
+        if (startPage > 2) {
+            addEllipsis();
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            addPageButton(i, i === currentPage);
+        }
+        
+        if (endPage < totalPages - 1) {
+            addEllipsis();
+        }
+        
+        if (totalPages > 1) {
+            addPageButton(totalPages, currentPage === totalPages);
         }
     }
     
     pagination.appendChild(pagesContainer);
     
-    // 创建导航按钮区域
+    // 创建导航按钮区域（上一页/下一页）
     const navContainer = document.createElement('div');
     navContainer.className = 'pagination-nav';
     
-    // 上一页按钮
     if (currentPage > 1) {
         const prevButton = document.createElement('button');
         prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> 上一页';
-        prevButton.addEventListener('click', () => {
-            listFiles(currentPage - 1);
-        });
+        prevButton.addEventListener('click', () => listFiles(currentPage - 1));
         navContainer.appendChild(prevButton);
     }
     
-    // 下一页按钮
     if (currentPage < totalPages) {
         const nextButton = document.createElement('button');
         nextButton.innerHTML = '下一页 <i class="fas fa-chevron-right"></i>';
-        nextButton.addEventListener('click', () => {
-            listFiles(currentPage + 1);
-        });
+        nextButton.addEventListener('click', () => listFiles(currentPage + 1));
         navContainer.appendChild(nextButton);
     }
     

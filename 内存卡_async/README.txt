@@ -17,6 +17,8 @@
 视频的标题存放在与视频相同路径下的 0.txt文件内，编码格式为utf-8。
 视频的预览图存放在与视频相同路径下的 0.jpg文件内。
 
+3、视频分类名称可在/video/shortvideo或/video/movie下的0.txt设置，如没有该文件则默认将视频分类文件夹名称作为视频分类名称
+
 五、在根目录下，copy.txt用于存放剪切板内容，编码格式为utf-8。
 
 六、在根目录下，config.txt用于保存AP模式下热点名称、热点密码、热点WiFi信道以及STA模式下WiFi自动连接信息，配置文件最后必须以回车结尾，文件编码格式为utf-8。
@@ -47,7 +49,8 @@
 │  └─ ...
 ├─ upload.html            //文件管理网页
 ├─ video                  //存放m3u8格式视频
-│  ├─ movie
+│  ├─ movie               //movie分类文件夹
+│  │  ├─ 0.txt            //存放movie视频类名称
 │  │  ├─ 1                //每个视频单独一个文件夹，文件夹名称不能带中文及特殊字符
 │  │  │  ├─ 0.jpg         //视频预览图
 │  │  │  ├─ 0.txt         //视频标题
@@ -65,14 +68,15 @@
 │  │  │  ├─ ...
 │  │  │  └─ index.m3u8
 │  │  └─ 3
-│  ├─ movie.html          //movie类视频索引
-│  ├─ shortvideo
+│  ├─ shortvideo          //shortvideo分类文件夹
+│  │  ├─ 0.txt            //存放shortvideo视频类名称
 │  │  ├─ 1
 │  │  ├─ 2
 │  │  └─ ...
-│  └─ shortvideo.html
+│  └─ category.html       //m3u8视频列表调用网页
 ├─ video-mp4              //存放mp4格式视频
-│  ├─ movie
+│  ├─ movie               //movie分类文件夹
+│  │  ├─ 0.txt            //存放movie视频类名称
 │  │  ├─ 1                //每个视频单独一个文件夹，文件夹名称不能带中文及特殊字符
 │  │  │  ├─ 0.jpg         //视频预览图
 │  │  │  ├─ 0.txt         //视频标题
@@ -82,12 +86,12 @@
 │  │  │  ├─ 0.txt
 │  │  │  └─ video.mp4
 │  │  └─ ...
-│  ├─ movie.html          //movie类视频索引
-│  ├─ shortvideo
+│  ├─ shortvideo          //shortvideo分类文件夹
+│  │  ├─ 0.txt            //存放shortvideo视频类名称
 │  │  ├─ 1
 │  │  ├─ 2
 │  │  └─ ...
-│  └─ shortvideo.html
+│  └─ category.html       //mp4视频列表调用网页
 └─ webgame                //存放flash游戏
    ├─ objecty             //flash播放器
    │  └─ ...

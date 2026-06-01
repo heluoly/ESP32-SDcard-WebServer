@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 	<meta charset="UTF-8">
@@ -10,11 +11,28 @@
 	<img id="logo" src="logo.jpg" width="200" height="200"/>
 	</center>
 	<center>
-	</br ></br >
-	<p><a href="/video/shortvideo.html">短视频</a></p>
-	<p><a href="/video/movie.html">电影</a></p>
+	<div id="categoryList"><br><br><p>加载中...</p></div>
 	</center>
-	
-</body>
 
+<script>
+(async function() {
+	try {
+		const resp = await fetch('/categorylist');
+		const data = await resp.json();
+		const container = document.getElementById('categoryList');
+		if (!data.categories || data.categories.length === 0) {
+			container.innerHTML = '<br><br><p>暂无视频分类</p>';
+			return;
+		}
+		let html = '<br><br>';
+		data.categories.forEach(cat => {
+			html += '<p><a href="/video/category.html?cat=' + encodeURIComponent(cat.name) + '">' + cat.title + '</a></p>';
+		});
+		container.innerHTML = html;
+	} catch (e) {
+		document.getElementById('categoryList').innerHTML = '<br><br><p>加载失败，请刷新重试</p>';
+	}
+})();
+</script>
+</body>
 </html>

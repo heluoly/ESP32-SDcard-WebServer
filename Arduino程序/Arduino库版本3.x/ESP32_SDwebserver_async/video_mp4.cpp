@@ -27,6 +27,44 @@ String readTxtFile(fs::FS &fs, const char *path) {
   return message;
 }
 
+//列出视频分类
+void listVideoCategories_mp4(AsyncWebServerRequest *request) {
+  String message = "{\"categories\":[ ";
+  bool first = true;
+
+  File root = my_fs.open("/video-mp4/");
+  if (!root || !root.isDirectory()) {
+    request->send(200, "application/json", "{\"categories\":[]}");
+    return;
+  }
+
+  File entry = root.openNextFile();
+  while (entry) {
+    if (entry.isDirectory()) {
+      String folderPath = String(entry.path());
+      String folderName = String(entry.name());
+      String titlePath = folderPath + "/0.txt";
+      String displayName = folderName;
+
+      if (my_fs.exists(titlePath)) {
+        String temp = readTxtFile(my_fs, titlePath.c_str());
+        temp.trim();
+        if (temp.length() > 0) {
+          displayName = temp;
+        }
+      }
+
+      if (!first) message += ",";
+      first = false;
+
+      message += "{\"name\":\"" + folderName + "\",\"title\":\"" + displayName + "\",\"path\":\"" + folderPath + "/\"}";
+    }
+    entry = root.openNextFile();
+  }
+  message += "]}";
+  request->send(200, "application/json", message);
+}
+
 //列出内存卡中的视频
 void listVideo_mp4(AsyncWebServerRequest *request) {
   String videoTape = request->getParam("videoTape")->value();  //获取视频分区路径
