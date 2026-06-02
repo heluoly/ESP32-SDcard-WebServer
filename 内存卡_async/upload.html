@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -88,11 +89,7 @@
       background: #e8e8e8;
       transform: translateY(-1px);
     }
-    
-    .btn-icon {
-      font-size: 16px;
-    }
-    
+        
     .status-card {
       background: #e6f7ff;
       color: #1890ff;
@@ -229,7 +226,7 @@
       background: #fff1f0;
     }
     
-    /* 分页样式 - 修改后的布局 */
+    /* 分页样式 */
     .pagination {
       margin-top: 30px;
       padding-top: 20px;
@@ -499,12 +496,10 @@
     
     <div class="toolbar">
       <button class="btn btn-primary" onclick="listFiles(1)">
-        <span class="btn-icon">📋</span>
-        文件列表
+        <i class="fas fa-file-alt"></i> 文件列表
       </button>
       <button class="btn btn-secondary" onclick="showUploadForm()">
-        <span class="btn-icon">⬆️</span>
-        文件上传
+        <i class="fas fa-upload"></i> 文件上传
       </button>
     </div>
     
@@ -629,6 +624,7 @@ function formatFileSize(bytes) {
 function listFiles(page = 1) {
   currentPage = page;
   
+  document.querySelector('.section-title').textContent = '文件列表';
   // 显示加载状态
   document.getElementById('files-container').innerHTML = `
     <div class="loading-state">
@@ -710,7 +706,7 @@ function renderFileList(data) {
   
   filesHTML += '</div>';
   container.innerHTML = filesHTML;
-  
+
   // 渲染分页
   renderPagination(currentPage, totalPages);
 }
@@ -741,7 +737,6 @@ function renderPagination(currentPage, totalPages) {
             pagesContainer.appendChild(pageButton);
         }
     } else {
-        // 页数超过7页：显示首页、尾页，当前页两边各2页
         // 添加页码按钮
         const addPageButton = (pageNum, isActive = false) => {
             const btn = document.createElement('button');
@@ -1042,7 +1037,7 @@ function doUpload(offset) {
         document.getElementById('resume-bar').classList.remove('show');
         progressContainer.style.display = 'none';
         uploadBtn.disabled = false;
-        uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
+        uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 开始上传';
         existingUploadSize = 0;
         uploadMode = 'full';
         
@@ -1051,7 +1046,7 @@ function doUpload(offset) {
     } else {
       showStatus(`上传失败: ${xhr.responseText || '服务器错误'}`, 'error');
       uploadBtn.disabled = false;
-      uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
+      uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 开始上传';
       uploadBtn.style.display = 'inline-flex';
     }
   };
@@ -1060,7 +1055,7 @@ function doUpload(offset) {
     showStatus('上传中断: 网络错误，稍后可在文件列表中继续上传', 'warning');
     progressStatus.textContent = '上传已中断';
     uploadBtn.disabled = false;
-    uploadBtn.innerHTML = '<span class="btn-icon">⬆️</span> 开始上传';
+    uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 开始上传';
     uploadBtn.style.display = 'inline-flex';
     existingUploadSize = offset + (progressFill.style.width ? (parseInt(progressFill.style.width) / 100 * totalSize - offset) : 0);
   };
@@ -1094,10 +1089,10 @@ function showUploadForm() {
           <div class="resume-info" id="resume-info">检测到已存在部分文件，已上传：<span id="resume-existing-size">0</span></div>
           <div class="resume-actions">
             <button type="button" class="btn btn-warning" onclick="resumeUpload()" id="resume-btn">
-              <span class="btn-icon">⏯️</span> 继续上传
+              <i class="fas fa-play"></i> 继续上传
             </button>
             <button type="button" class="btn btn-danger" onclick="restartUpload()" id="restart-btn">
-              <span class="btn-icon">🗑️</span> 重新上传
+              <i class="fas fa-sync-alt"></i> 重新上传
             </button>
           </div>
         </div>
@@ -1114,8 +1109,7 @@ function showUploadForm() {
         
         <div style="margin-top: 15px;">
           <button type="button" class="btn btn-primary" onclick="uploadFile()" id="upload-btn" style="display: none;">
-            <span class="btn-icon">⬆️</span>
-            开始上传
+            <i class="fas fa-cloud-upload-alt"></i> 开始上传
           </button>
         </div>
       </form>
