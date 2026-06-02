@@ -252,9 +252,11 @@
     <script>
         const params = new URLSearchParams(window.location.search);
         const cat = params.get('cat') || '';
+        const cat2 = params.get('cat2') || '';
+        const finalCat = cat2 || cat || '视频';
 
-        document.getElementById('pageTitle').textContent = cat || '视频';
-        if (cat) { document.title = cat; }
+        document.getElementById('pageTitle').textContent = finalCat;
+        document.title = finalCat;
 
         const apiVideoTape = '/video-mp4/' + cat + '/';
 

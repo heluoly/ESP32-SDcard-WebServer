@@ -26,7 +26,7 @@
 		}
 		let html = '<br><br>';
 		data.categories.forEach(cat => {
-			html += '<p><a href="/video-mp4/category.html?cat=' + encodeURIComponent(cat.name) + '">' + cat.title + '</a></p>';
+			html += '<p><a href="/video-mp4/category.html?cat=' + encodeURIComponent(cat.name) + '&cat2=' + encodeURIComponent(cat.title) + '">' + cat.title + '</a></p>';
 		});
 		container.innerHTML = html;
 	} catch (e) {
