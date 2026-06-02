@@ -487,14 +487,14 @@
                 let startPage = Math.max(2, currentPage - 2);
                 let endPage = Math.min(totalPages - 1, currentPage + 2);
                 
-                // 边界修正：靠近开头时，连续显示第2～5页（如果总页数够）
+                // 边界修正：靠近开头时，连续显示第2～6页（如果总页数够）
                 if (currentPage <= 3) {
                     startPage = 2;
-                    endPage = Math.min(totalPages - 1, 5);
+                    endPage = Math.min(totalPages - 1, 6);
                 }
-                // 边界修正：靠近结尾时，连续显示倒数第5～倒数第2页
+                // 边界修正：靠近结尾时，连续显示倒数第6～倒数第2页
                 if (currentPage >= totalPages - 2) {
-                    startPage = Math.max(2, totalPages - 4);
+                    startPage = Math.max(2, totalPages - 5);
                     endPage = totalPages - 1;
                 }
                 
