@@ -75,17 +75,19 @@ https://github.com/ESP32Async/AsyncTCP
 
 5、该版本文件管理中支持了断点下载和多线程下载，最高支持4线程下载。
 
-6、烧录程序时需要修改分区表，改成“FATFS”格式
+6、烧录程序时需要修改分区表，需要在arduino的"工具"下拉菜单中的"Partition Scheme"，选择包含“FATFS”格式的分区表
 
-7、电池电压检测引脚在battery.h中修改
+7、根据你的模组选择是否开启PSRAM功能，默认为禁用，开启需要在arduino的"工具"下拉菜单中的"PSRAM"配置，2MB PSRAM选择"QSPI PSRAM" ,8MB PSRAM选择"OPI PSRAM"，同时还要在common.h文件中将CONFIG_PSRAM参数设置为1，
 
-8、OLED显示屏的I2C引脚在oled.cpp中修改
+8、电池电压检测引脚在battery.h中修改
 
-9、该版本可推流mp4格式视频，并可以对视频进度拖拽，配置方式参考"内存卡_async"内的"README.txt"
+9、OLED显示屏的I2C引脚在oled.cpp中修改
 
-10、该版本增加AP+STA的服务器模式，ESP32相当一个路由器，可以同时从上级路由以及ESP32热点访问ESP32，并且ESP32会上级路由数据进行NAT转发，连接ESP32热点时也能访问互联网
+10、该版本可推流mp4格式视频，并可以对视频进度拖拽，配置方式参考"内存卡_async"内的"README.txt"
 
-11、AP模式下主页IP地址修改为192.168.4.1
+11、该版本增加AP+STA的服务器模式，ESP32相当一个路由器，可以同时从上级路由以及ESP32热点访问ESP32，并且ESP32会上级路由数据进行NAT转发，连接ESP32热点时也能访问互联网
+
+12、AP模式下主页IP地址修改为192.168.4.1
 
 
 # 开始前准备

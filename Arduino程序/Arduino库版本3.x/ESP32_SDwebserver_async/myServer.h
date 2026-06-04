@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include "lwip/lwip_napt.h"
 #include <lwip/tcpip.h>
+#include "esp_heap_caps.h"
 #include "game.h"
 #include "upload.h"
 #include "video.h"

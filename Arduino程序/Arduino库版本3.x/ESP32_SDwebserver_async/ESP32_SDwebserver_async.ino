@@ -25,6 +25,8 @@ https://github.com/ESP32Async/AsyncTCP
 #include "esp_sntp.h"
 #include "lwip/lwip_napt.h"
 #include <lwip/tcpip.h>
+#include "esp_psram.h"
+#include "esp_heap_caps.h"
 
 #include "common.h"
 #include "myServer.h"
@@ -107,6 +109,21 @@ void serverInfo_Display();
 void setup() {
   // Serial.begin(115200);  // 启动串口通讯
   // Serial.println("");
+
+//PSRAM初始化
+#if CONFIG_PSRAM
+  if (psramFound()) {
+    // Serial.println("PSRAM Found");
+    if (!psramInit()) {
+      // Serial.println("PSRAM init Failed");
+      return;
+    }
+  } else {
+    // Serial.println("PSRAM Not Found");
+    return;
+  }
+#endif
+
 #if CONFIG_SD
   //SD卡初始化
   //ESP32-S3 SD卡引脚定义
@@ -119,7 +136,7 @@ void setup() {
   // SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
   SD_MMC.setPins(11, 12, 10, 9, 14, 13);
 
-  if (!config_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, 6))  //SD卡初始化，BOARD_MAX_SDMMC_FREQ：40M，将MMC并发数修改为6
+  if (!config_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, config_SD_maxOpenFiles))  //SD卡初始化，BOARD_MAX_SDMMC_FREQ：40000kHz，config_SD_maxOpenFiles：自定义5-10
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
@@ -180,7 +197,7 @@ void task_server(void *pvParameters) {
   // SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
   SD_MMC.setPins(11, 12, 10, 9, 14, 13);
 
-  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, 6))  //SD卡初始化，BOARD_MAX_SDMMC_FREQ：40000kHz，将MMC并发数修改为6
+  if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, config_SD_maxOpenFiles))  //SD卡初始化，BOARD_MAX_SDMMC_FREQ：40000kHz，config_SD_maxOpenFiles：自定义5-10
   {
     // Serial.println("Card Mount Failed");
     hasSD = false;
