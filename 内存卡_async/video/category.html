@@ -1,418 +1,375 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>视频分类</title>
-    <link rel="stylesheet" href="/bin/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="/bin/font-awesome/6.7.2/css/all.min.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-        }
-        
-        body {
-            background-color: #f8f9fa;
-            color: #333;
-            line-height: 1.6;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        h1 {
-            text-align: center;
-            margin-bottom: 40px;
-            font-size: 36px;
-            color: #333;
-            padding-top: 20px;
-        }
-        
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        
-        .video-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            border: 1px solid #f0f0f0;
-            cursor: pointer;
-        }
-        
-        .video-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        .thumbnail-container {
-            position: relative;
-            width: 100%;
-            height: 200px;
-            overflow: hidden;
-        }
-        
-        .thumbnail {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s;
-        }
-        
-        .video-card:hover .thumbnail {
-            transform: scale(1.05);
-        }
-        
-        .play-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .video-card:hover .play-overlay {
-            opacity: 1;
-        }
-        
-        .play-icon {
-            width: 60px;
-            height: 60px;
-            background: #ff4757;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            color: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 0 20px rgba(255, 71, 87, 0.7);
-        }
-        .video-info {
-            padding: 15px;
-        }
-        
-        .video-title {
-            font-size: 16px;
-            color: #333;
-            font-weight: 500;
-            text-align: center;
-        }
-        
-        .pagination {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      }
+      body {
+        background-color: #f8f9fa;
+        color: #333;
+        line-height: 1.6;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        font-size: 36px;
+        color: #333;
+        padding-top: 20px;
+        border-bottom: 1px solid #eaeaea;
+        padding-bottom: 20px;
+        margin-bottom: 40px;
+      }
+      .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+      }
+      .video-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f0f0f0;
+        cursor: pointer;
+      }
+      .video-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+      .thumbnail-container {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+      }
+      .thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+      }
+      .video-card:hover .thumbnail {
+        transform: scale(1.05);
+      }
+      .play-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .video-card:hover .play-overlay {
+        opacity: 1;
+      }
+      .play-icon {
+        width: 60px;
+        height: 60px;
+        background: #1890ff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 0 20px rgba(24, 144, 255, 0.7);
+      }
+      .video-info {
+        padding: 15px;
+      }
+      .video-title {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+        text-align: center;
+      }
+      .pagination {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eaeaea;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+      }
+      .pagination-pages {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+      .pagination-pages button {
+        width: 40px;
+        height: 40px;
+        border: 1px solid #d9d9d9;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #333;
+        font-weight: 500;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pagination-pages button:hover:not(.active):not(.ellipsis) {
+        border-color: #1890ff;
+        color: #1890ff;
+      }
+      .pagination-pages button.active {
+        background: #1890ff;
+        color: white;
+        border-color: #1890ff;
+      }
+      .pagination-pages button.ellipsis {
+        background: transparent;
+        border: none;
+        cursor: default;
+        color: #999;
+        font-size: 18px;
+      }
+      .pagination-nav {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+      }
+      .pagination-nav button {
+        padding: 8px 20px;
+        border: 1px solid #d9d9d9;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #333;
+        font-weight: 500;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .pagination-nav button:hover {
+        border-color: #1890ff;
+        color: #1890ff;
+      }
+      .pagination-nav button i {
+        font-size: 12px;
+      }
+      @media (max-width: 768px) {
         .pagination-pages {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 100%;
+          gap: 5px;
         }
-        
-        .pagination-scroll {
-            display: flex;
-            overflow-x: auto;
-            gap: 5px;
-            padding: 10px 0;
-            max-width: 100%;
-            scrollbar-width: thin;
-            scrollbar-color: #ff4757 #f0f0f0;
+        .pagination-pages button {
+          width: 36px;
+          height: 36px;
+          font-size: 13px;
         }
-        
-        .pagination-scroll::-webkit-scrollbar {
-            height: 6px;
-        }
-        
-        .pagination-scroll::-webkit-scrollbar-track {
-            background: #f0f0f0;
-            border-radius: 3px;
-        }
-        
-        .pagination-scroll::-webkit-scrollbar-thumb {
-            background: #ff4757;
-            border-radius: 3px;
-        }
-        
-        .pagination button {
-            padding: 10px 15px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            color: #555;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-        
-        .pagination button:hover {
-            background: #f5f5f5;
-            border-color: #ccc;
-        }
-        
-        .pagination button.active {
-            background: #ff4757;
-            color: white;
-            border-color: #ff4757;
-        }
-        
-        .pagination button.ellipsis {
-            background: transparent;
-            border: none;
-            cursor: default;
-            color: #777;
-        }
-        
-        .pagination button.ellipsis:hover {
-            background: transparent;
-        }
-        
-        .pagination-nav {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        
         .pagination-nav button {
-            padding: 10px 20px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            color: #555;
-            cursor: pointer;
-            transition: all 0.3s;
+          padding: 8px 12px;
+          font-size: 13px;
         }
-        
-        .pagination-nav button:hover {
-            background: #f5f5f5;
-            border-color: #ccc;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 18px;
-            color: #777;
-            grid-column: 1 / -1;
-        }
-        
-        @media (max-width: 768px) {
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            }
-            
-            .pagination-scroll {
-                justify-content: flex-start;
-            }
-            
-            .pagination button {
-                padding: 8px 12px;
-                font-size: 14px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .pagination-nav {
-                flex-wrap: wrap;
-            }
-        }
+      }
+      .loading {
+        text-align: center;
+        padding: 40px;
+        font-size: 18px;
+        color: #777;
+        grid-column: 1 / -1;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1 id="pageTitle">视频</h1>
-        
-        <div class="video-grid" id="videoGrid">
-        </div>
-        
-        <div class="pagination" id="pagination">
-        </div>
+      <h1 id="pageTitle">视频</h1>
+      <div class="video-grid" id="videoGrid"></div>
+      <div class="pagination" id="pagination"></div>
     </div>
-
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const cat = params.get('cat') || '';
-        const cat2 = params.get('cat2') || '';
-        const finalCat = cat2 || cat || '视频';
+      const params = new URLSearchParams(window.location.search);
+      const cat = params.get("cat") || "";
+      const cat2 = params.get("cat2") || "";
+      const finalCat = cat2 || cat || "视频";
 
-        document.getElementById('pageTitle').textContent = finalCat;
-        document.title = finalCat;
+      document.getElementById("pageTitle").textContent = finalCat;
+      document.title = finalCat;
 
-        const apiVideoTape = '/video/' + cat + '/';
+      const apiVideoTape = "/video/" + cat + "/";
 
-        async function fetchVideos(page) {
-            try {
-                const response = await fetch(`/videolist?videoTape=${encodeURIComponent(apiVideoTape)}&page=${page}`);
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('获取视频数据失败:', error);
-                throw error;
-            }
+      async function fetchVideos(page) {
+        try {
+          const response = await fetch(`/videolist?videoTape=${encodeURIComponent(apiVideoTape)}&page=${page}`);
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error("获取视频数据失败:", error);
+          throw error;
+        }
+      }
+
+      function renderVideos(videos) {
+        const videoGrid = document.getElementById("videoGrid");
+        videoGrid.innerHTML = "";
+
+        if (videos.length === 0) {
+          videoGrid.innerHTML = '<div class="loading">暂无视频数据</div>';
+          return;
         }
 
-        function renderVideos(videos) {
-            const videoGrid = document.getElementById('videoGrid');
-            videoGrid.innerHTML = '';
-            
-            if (videos.length === 0) {
-                videoGrid.innerHTML = '<div class="loading">暂无视频数据</div>';
-                return;
-            }
-            
-            videos.forEach(video => {
-                const videoCard = document.createElement('div');
-                videoCard.className = 'video-card';
-                
-                videoCard.innerHTML = `
-                    <div class="thumbnail-container">
-                        <img src="${video.cover}" alt="${video.title}" class="thumbnail" loading="lazy">
-                        <div class="play-overlay">
-                            <div class="play-icon">
-                                <i class="fas fa-play"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="video-info">
-                        <h3 class="video-title">${video.title}</h3>
-                    </div>
-                `;
-                
-                videoCard.addEventListener('click', () => {
-                    openVideo(video.path);
-                });
-                
-                videoGrid.appendChild(videoCard);
-            });
-        }
+        videos.forEach((video) => {
+          const videoCard = document.createElement("div");
+          videoCard.className = "video-card";
 
-        function renderPagination(currentPage, totalPages) {
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
-            
-            if (totalPages <= 0) return;
-            
-            const pagesContainer = document.createElement('div');
-            pagesContainer.className = 'pagination-pages';
-            
-            const addPageButton = (pageNum, isActive = false) => {
-                const btn = document.createElement('button');
-                btn.textContent = pageNum;
-                if (isActive) btn.classList.add('active');
-                btn.addEventListener('click', () => loadPage(pageNum));
-                pagesContainer.appendChild(btn);
-            };
-            
-            const addEllipsis = () => {
-                const ellipsis = document.createElement('button');
-                ellipsis.textContent = '...';
-                ellipsis.classList.add('ellipsis');
-                ellipsis.disabled = true; // 不可点击
-                pagesContainer.appendChild(ellipsis);
-            };
-            
-            if (totalPages <= 7) {
-                for (let i = 1; i <= totalPages; i++) {
-                    addPageButton(i, i === currentPage);
-                }
-            } else {
-                addPageButton(1, currentPage === 1);
-                
-                let startPage = Math.max(2, currentPage - 2);
-                let endPage = Math.min(totalPages - 1, currentPage + 2);
-                
-                if (currentPage <= 3) {
-                    startPage = 2;
-                    endPage = Math.min(totalPages - 1, 6);
-                }
-                if (currentPage >= totalPages - 2) {
-                    startPage = Math.max(2, totalPages - 5);
-                    endPage = totalPages - 1;
-                }
-                
-                if (startPage > 2) {
-                    addEllipsis();
-                }
-                
-                for (let i = startPage; i <= endPage; i++) {
-                    addPageButton(i, i === currentPage);
-                }
-                
-                if (endPage < totalPages - 1) {
-                    addEllipsis();
-                }
-                
-                if (totalPages > 1) {
-                    addPageButton(totalPages, currentPage === totalPages);
-                }
-            }
-            
-            pagination.appendChild(pagesContainer);
-            
-            // 上一页 / 下一页 导航
-            const navContainer = document.createElement('div');
-            navContainer.className = 'pagination-nav';
-            
-            if (currentPage > 1) {
-                const prevButton = document.createElement('button');
-                prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> 上一页';
-                prevButton.addEventListener('click', () => loadPage(currentPage - 1));
-                navContainer.appendChild(prevButton);
-            }
-            
-            if (currentPage < totalPages) {
-                const nextButton = document.createElement('button');
-                nextButton.innerHTML = '下一页 <i class="fas fa-chevron-right"></i>';
-                nextButton.addEventListener('click', () => loadPage(currentPage + 1));
-                navContainer.appendChild(nextButton);
-            }
-            
-            pagination.appendChild(navContainer);
-        }
+          videoCard.innerHTML = `
+                  <div class="thumbnail-container">
+                      <img src="${video.cover}" alt="${video.title}" class="thumbnail" loading="lazy">
+                      <div class="play-overlay">
+                          <div class="play-icon">
+                              <i class="fas fa-play"></i>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="video-info">
+                      <h3 class="video-title">${video.title}</h3>
+                  </div>
+              `;
 
-        function openVideo(path) {
-            const encodedPath = encodeURIComponent(path);
-            const url = `/openvideo?videoPath=${encodedPath}`;
-            window.open(url, '_blank');
-        }
+          videoCard.addEventListener("click", () => {
+            openVideo(video.path);
+          });
 
-        async function loadPage(page) {
-            const videoGrid = document.getElementById('videoGrid');
-            videoGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>';
-            
-            try {
-                const data = await fetchVideos(page);
-                renderVideos(data.videos);
-                renderPagination(data.currentPage, data.totalPages);
-            } catch (error) {
-                console.error('加载视频失败:', error);
-                videoGrid.innerHTML = '<div class="loading">加载失败，请重试</div>';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadPage(1);
+          videoGrid.appendChild(videoCard);
         });
+      }
+
+      function renderPagination(currentPage, totalPages) {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+
+        if (totalPages <= 0) return;
+
+        const pagesContainer = document.createElement("div");
+        pagesContainer.className = "pagination-pages";
+
+        const addPageButton = (pageNum, isActive = false) => {
+          const btn = document.createElement("button");
+          btn.textContent = pageNum;
+          if (isActive) btn.classList.add("active");
+          btn.addEventListener("click", () => loadPage(pageNum));
+          pagesContainer.appendChild(btn);
+        };
+
+        const addEllipsis = () => {
+          const ellipsis = document.createElement("button");
+          ellipsis.textContent = "...";
+          ellipsis.classList.add("ellipsis");
+          ellipsis.disabled = true;
+          pagesContainer.appendChild(ellipsis);
+        };
+
+        if (totalPages <= 7) {
+          for (let i = 1; i <= totalPages; i++) {
+            addPageButton(i, i === currentPage);
+          }
+        } else {
+          addPageButton(1, currentPage === 1);
+
+          let startPage = Math.max(2, currentPage - 2);
+          let endPage = Math.min(totalPages - 1, currentPage + 2);
+
+          if (currentPage <= 3) {
+            startPage = 2;
+            endPage = Math.min(totalPages - 1, 6);
+          }
+          if (currentPage >= totalPages - 2) {
+            startPage = Math.max(2, totalPages - 5);
+            endPage = totalPages - 1;
+          }
+
+          if (startPage > 2) {
+            addEllipsis();
+          }
+
+          for (let i = startPage; i <= endPage; i++) {
+            addPageButton(i, i === currentPage);
+          }
+
+          if (endPage < totalPages - 1) {
+            addEllipsis();
+          }
+
+          if (totalPages > 1) {
+            addPageButton(totalPages, currentPage === totalPages);
+          }
+        }
+
+        pagination.appendChild(pagesContainer);
+
+        const navContainer = document.createElement("div");
+        navContainer.className = "pagination-nav";
+
+        if (currentPage > 1) {
+          const prevButton = document.createElement("button");
+          prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> 上一页';
+          prevButton.addEventListener("click", () => loadPage(currentPage - 1));
+          navContainer.appendChild(prevButton);
+        }
+
+        if (currentPage < totalPages) {
+          const nextButton = document.createElement("button");
+          nextButton.innerHTML = '下一页 <i class="fas fa-chevron-right"></i>';
+          nextButton.addEventListener("click", () => loadPage(currentPage + 1));
+          navContainer.appendChild(nextButton);
+        }
+
+        pagination.appendChild(navContainer);
+      }
+
+      function openVideo(path) {
+        const encodedPath = encodeURIComponent(path);
+        const url = `/openvideo?videoPath=${encodedPath}`;
+        window.open(url, "_blank");
+      }
+
+      async function loadPage(page) {
+        const videoGrid = document.getElementById("videoGrid");
+        videoGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>';
+
+        try {
+          const data = await fetchVideos(page);
+          renderVideos(data.videos);
+          renderPagination(data.currentPage, data.totalPages);
+        } catch (error) {
+          console.error("加载视频失败:", error);
+          videoGrid.innerHTML = '<div class="loading">加载失败，请重试</div>';
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadPage(1);
+      });
     </script>
-</body>
+  </body>
 </html>
