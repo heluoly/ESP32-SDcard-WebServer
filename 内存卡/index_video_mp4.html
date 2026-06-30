@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>在线影院</title>
+</head>
+<body>
+	<center>
+	<h1 class="h1 font-w300 mt-15" align="center">在  线  影  院</h1>
+	<img id="logo" src="logo.jpg" width="200" height="200"/>
+	</center>
+	<center>
+	<div id="categoryList"><br><br><p>加载中...</p></div>
+	</center>
+
+<script>
+(async function() {
+	try {
+		const resp = await fetch('/categorylist_mp4');
+		const data = await resp.json();
+		const container = document.getElementById('categoryList');
+		if (!data.categories || data.categories.length === 0) {
+			container.innerHTML = '<br><br><p>暂无视频分类</p>';
+			return;
+		}
+		let html = '<br><br>';
+		data.categories.forEach(cat => {
+			html += '<p><a href="/video-mp4/category.html?cat=' + encodeURIComponent(cat.name) + '&cat2=' + encodeURIComponent(cat.title) + '">' + cat.title + '</a></p>';
+		});
+		container.innerHTML = html;
+	} catch (e) {
+		document.getElementById('categoryList').innerHTML = '<br><br><p>加载失败，请刷新重试</p>';
+	}
+})();
+</script>
+</body>
+</html>
