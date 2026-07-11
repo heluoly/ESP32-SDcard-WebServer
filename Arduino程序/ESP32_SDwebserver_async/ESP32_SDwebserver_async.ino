@@ -43,6 +43,13 @@ https://github.com/ESP32Async/AsyncTCP
 #define SWITCH_OFF HIGH
 #define FORMAT_FFAT_IF_FAILED true  //如出现FFAT初始化失败，将该参数改true格式化FFAT
 
+//ESP32-S3 SD卡引脚定义
+int clk = 11;
+int cmd = 12;
+int d0 = 10;
+int d1 = 9;
+int d2 = 14;
+int d3 = 13;
 bool hasSD = false;         //是否有SD卡
 bool ONE_BIT_MODE = false;  //设置SD卡模式 1bit：true 4bit：false
 
@@ -123,15 +130,7 @@ void setup() {
 
 #if CONFIG_SD
   //SD卡初始化
-  //ESP32-S3 SD卡引脚定义
-  // int clk = 11;
-  // int cmd = 12;
-  // int d0 = 10;
-  // int d1 = 9;
-  // int d2 = 14;
-  // int d3 = 13;
-  // SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
-  SD_MMC.setPins(11, 12, 10, 9, 14, 13);
+  SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
 
   if (!config_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, config_SD_maxOpenFiles))  //SD卡初始化，BOARD_MAX_SDMMC_FREQ：40000kHz，config_SD_maxOpenFiles：自定义5-10
   {
@@ -184,15 +183,7 @@ void task_server(void *pvParameters) {
   //  26, 13          <<< For 26MHz XTAL
   //  24, 12          <<< For 24MHz XTAL
 
-  //ESP32-S3 SD卡引脚定义
-  // int clk = 11;
-  // int cmd = 12;
-  // int d0 = 10;
-  // int d1 = 9;
-  // int d2 = 14;
-  // int d3 = 13;
-  // SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
-  SD_MMC.setPins(11, 12, 10, 9, 14, 13);
+  SD_MMC.setPins(clk, cmd, d0, d1, d2, d3);
 
   if (!my_fs.begin("/sdcard", ONE_BIT_MODE, false, BOARD_MAX_SDMMC_FREQ, config_SD_maxOpenFiles))  //SD卡初始化，BOARD_MAX_SDMMC_FREQ：40000kHz，config_SD_maxOpenFiles：自定义5-10
   {
