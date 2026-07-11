@@ -8,22 +8,24 @@
 - **模式转换（WiFi配网）** -- 服务器可在AP、STA、AP+STA模式互相转换，默认为AP模式，可通过网页让服务器连接WiFi接入局域网，然后通过局域网访问服务器
 - **OLED屏显示** -- 显示服务器状态、IP地址、时钟等
 
-![image](/assets/ESP32-S3服务器硬件.jpg)
+![image](/assets/ESP32-S3服务器硬件.jpg "ESP32-S3服务器硬件")
 
-![image](/assets/ESP32-S3服务器主页.jpg)
+![image](/assets/ESP32-S3服务器主页.jpg "ESP32-S3服务器主页")
 
 
 # 重要提醒
 
 - 本项目适用于ESP32-S3系列或更高性能模组，普通的ESP32模组会因为异步读取内存卡数据而卡死
 
+
 # 准备工作01 - 硬件准备
 
 准备一块ESP32-S3开发板、一个SDIO接口的SD或TF卡卡座、一块I2C接口的OLED显示屏，按照下图接线
 
-![image](/assets/ESP32-S3接线图.jpg)
+![image](/assets/ESP32-S3接线图.jpg "ESP32-S3接线图")
 
 或者使用项目的PCB电路板打样制作
+
 
 # 准备工作02 - 软件烧录
 
@@ -44,6 +46,7 @@
 7. OLED显示屏的I2C引脚在oled.cpp中修改，默认SDA: 15，SCL: 16
 
 完成上述操作即可编译并烧录
+
 
 # 准备工作03 - 内存卡准备
 
@@ -68,6 +71,7 @@ python process_videos.py /视频输入文件夹路径 /视频输出文件夹路�
 
 大功告成，将内存卡插入内存卡座，接通电源，即可运行服务器
 
+
 # 使用说明
 
 - BOOT按键（0号引脚按键）功能
@@ -83,10 +87,19 @@ python process_videos.py /视频输入文件夹路径 /视频输出文件夹路�
 - 如何修改WiFi热点名称和密码
 在服务器主页点击"服务器配置"，按照提示输入热点名称和密码后点击"提交"即可修改
 
+
 # 功能展示：
 
-（展示网页）
-（展示多线程下载速度图片）
+![image](/assets/文件管理.jpg "文件管理")
+
+![image](/assets/文件上传.jpg "文件上传")
+
+![image](/assets/文件下载.jpg "文件下载")
+
+![image](/assets/视频列表.jpg "视频列表")
+
+![image](/assets/视频播放.jpg "视频播放")
+
 
 # 视频演示：
 
@@ -105,13 +118,17 @@ SD卡代码参考 https://youtu.be/e1xOgZsnAuw
 
 文件上传代码参考 https://github.com/smford/esp32-asyncwebserver-fileupload-example
 
-视频播放器使用videoJS、videojs-contrib-hls https://github.com/videojs/video.js
+视频播放器使用videoJS https://github.com/videojs/video.js
 
 网页配网代码参考 https://github.com/yuan910715/Esp8266_NTP_Clock_Weather 中的网页配网部分
 
 OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的 examples/SSD1306ClockDemo
 
 Font Awesome https://fontawesome.com/
+
+ESPAsyncWebServer https://github.com/ESP32Async/ESPAsyncWebServer
+
+AsyncTCP https://github.com/ESP32Async/AsyncTCP
 
 
 # 额外说明
