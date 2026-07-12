@@ -27,7 +27,7 @@
 或者使用项目的PCB电路板打样制作
 
 
-# 准备工作02 - 软件烧录
+# 准备工作02 - 固件烧录
 
 1. 在arduino中安装如下依赖库：
 **ESPAsyncWebServer** https://github.com/ESP32Async/ESPAsyncWebServer
@@ -103,11 +103,7 @@ python process_videos.py /视频输入文件夹路径 /视频输出文件夹路�
 
 # 视频演示：
 
-1、https://www.bilibili.com/video/BV1pu4m1A7bo
-
-2、https://www.bilibili.com/video/BV1r34117746
-
-3、https://www.bilibili.com/video/BV1SG411x7tz
+- https://www.bilibili.com/video/BV1BoNg6kE8S/
 
 
 # 参考项目
