@@ -480,14 +480,12 @@ void handleUserRequest(AsyncWebServerRequest *request) {
     contentType = "text/html";
   } else if (path.endsWith(".html")) contentType = "text/html";
   else if (path.endsWith(".mp4")) contentType = "video/mp4";
-  else if (path.endsWith(".ts")) contentType = "video/mp2t";
   else if (path.endsWith(".css")) contentType = "text/css";
   else if (path.endsWith(".js")) contentType = "application/javascript";
+  else if (path.endsWith(".jpg")) contentType = "image/jpeg";
   else if (path.endsWith(".png")) contentType = "image/png";
   else if (path.endsWith(".gif")) contentType = "image/gif";
-  else if (path.endsWith(".jpg")) contentType = "image/jpeg";
   else if (path.endsWith(".ico")) contentType = "image/x-icon";
-  else if (path.endsWith(".m3u8")) contentType = "application/x-mpegurl";
   else contentType = "application/octet-stream";
 
   if (!my_fs.exists(path)) {

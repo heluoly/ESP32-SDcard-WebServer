@@ -90,6 +90,7 @@ void configAP(AsyncWebServerRequest *request) {
     password = password2;
     channel = String2Char((char *)channel2.c_str());
     ssid_hidden = String2Char((char *)hidden2.c_str());
+    startupMode = String2Char((char *)startupMode2.c_str());
     message += htmlAP1 + "<h2>配置成功</h2>" + htmlfoot;
     request->send(200, "text/html", message);
   } else {
