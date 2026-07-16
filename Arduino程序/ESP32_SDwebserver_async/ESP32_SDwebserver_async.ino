@@ -428,12 +428,13 @@ void serverInfo_Display() {
 
   } else {
     if (serverDisplayState == MY_SERVER_DP_STATE_AP) {
-      OLED_ShowString_RAM(0, 2, "Mode: AP", 16);
+      if (ssid_hidden) {
+        OLED_ShowString_RAM(0, 2, "Mode: AP*", 16);
+      } else {
+        OLED_ShowString_RAM(0, 2, "Mode: AP", 16);
+      }
       OLED_ShowString_RAM(0, 4, "Channel:", 16);
       OLED_ShowNum_RAM(72, 4, channel, 2, 16);
-      if (ssid_hidden) {
-        OLED_ShowString_RAM(96, 4, "*", 16);
-      }
       OLED_ShowString_RAM(0, 6, (char *)APIPAD.c_str(), 16);  //显示当前服务器IP
 
     } else if (serverDisplayState == MY_SERVER_DP_STATE_STA) {
@@ -473,7 +474,11 @@ void serverInfo_Display() {
 
     } else if (serverDisplayState == MY_SERVER_DP_STATE_AP_STA) {
       wifiState = WiFi.status();  //读取WiFi状态
-      OLED_ShowString_RAM(0, 2, "Mode: AP+STA", 16);
+      if (ssid_hidden) {
+        OLED_ShowString_RAM(0, 2, "Mode: AP*+STA", 16);
+      } else {
+        OLED_ShowString_RAM(0, 2, "Mode: AP+STA", 16);
+      }
       OLED_ShowString_RAM(0, 6, (char *)APIPAD.c_str(), 16);  //AP模式IP
       if (wifiState == WL_CONNECTED) {
         if (flag_wifiState == 1) {
