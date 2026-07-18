@@ -106,6 +106,7 @@ void modeConversion(AsyncWebServerRequest *request) {
   }
 
   request->send(response);
+  vTaskDelay(500 / portTICK_PERIOD_MS);
   mode_switch = 0;  //使下面的函数跳出while循环，从而在loop函数中进入下一个模式
 }
 

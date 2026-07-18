@@ -24,7 +24,6 @@ https://github.com/ESP32Async/AsyncTCP
 #include "esp_sntp.h"
 #include "lwip/lwip_napt.h"
 #include <lwip/tcpip.h>
-#include "esp_psram.h"
 #include "esp_heap_caps.h"
 
 #include "common.h"
@@ -113,20 +112,6 @@ void serverInfo_Display();
 void setup() {
   // Serial.begin(115200);  // 启动串口通讯
   // Serial.println("");
-
-//PSRAM初始化
-#if CONFIG_PSRAM
-  if (psramFound()) {
-    // Serial.println("PSRAM Found");
-    if (!psramInit()) {
-      // Serial.println("PSRAM init Failed");
-      return;
-    }
-  } else {
-    // Serial.println("PSRAM Not Found");
-    return;
-  }
-#endif
 
 #if CONFIG_SD
   //SD卡初始化

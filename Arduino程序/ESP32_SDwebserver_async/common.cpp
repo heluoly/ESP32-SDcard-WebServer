@@ -441,6 +441,7 @@ bool configDelete(fs::FS &fs, const char *key, const char *filename) {
 // char filetxt[CONFIG_FILE_MAX_LENGTH] = { 0 };
 //一次写入配置文件多个参数1
 char configWriteOpen(fs::FS &fs, const char *filename, char *filetxt) {
+  filetxt[0] = '\0';
   uint16_t i = 0;
 
   File file = fs.open(filename);
@@ -453,83 +454,92 @@ char configWriteOpen(fs::FS &fs, const char *filename, char *filetxt) {
       filetxt[i] = file.read();
       i++;
     } else {
-      filetxt[i] = '\0';
-      break;
+      // Serial.println("Buffer overflow");
+      return 0;
     }
   }
+  filetxt[i] = '\0';
   file.close();
   return 1;
 }
 
 //一次写入配置文件多个参数2
 char configRewrite(const char *key, const char *val, char *filetxt) {
+  if (key == nullptr || val == nullptr || filetxt == nullptr) return 0;
+
   char flag_line = 0;
   char flag_ok = 0;
   char fileAll[CONFIG_FILE_MAX_LENGTH] = { 0 };
-  char fileLine[CONFIG_FILE_MAX_LENGTH];
-  char temp;
-  char *n;
-  int i = 0, k = 0, j = 0;
+  char line[CONFIG_MAX_LENGTH] = { 0 };
+  int  linePos = 0;
+  bool keyFound = false;
 
-  for (j = 0; j < CONFIG_FILE_MAX_LENGTH; j++) {
-    if (flag_ok == 0) {
-      temp = filetxt[j];
-      if (temp == '\r') {
-        flag_line = 1;  //读取完一行
-        fileLine[i] = '\0';
-        i = 0;
-      } else if (temp == '\n') {
-        if (i > 2) {
-          flag_line = 2;  //读取完一行
-          fileLine[i] = '\0';
-        }
-        i = 0;
-      } else if (temp == '\0') {
-        if (i > 2) {
-          flag_line = 2;  //读取完
-          fileLine[i] = '\0';
-        }
+
+  const char *p = filetxt;
+  while (*p) {
+    linePos = 0;
+    line[0] = '\0';
+
+    while (*p && *p != '\r' && *p != '\n') {
+      if (linePos < CONFIG_MAX_LENGTH - 1) {
+        line[linePos++] = *p++;
       } else {
-        fileLine[i] = temp;
-        if (i < CONFIG_FILE_MAX_LENGTH - 1) {
-          i++;  //读取下一位
-        } else {
-          return 0;
-        }
+        return 0;
       }
-    } else {  //找到修改值后保存修改值后面的数据
-
-      fileAll[k] = filetxt[j];
-      k++;
     }
-    //行操作
-    if (flag_line) {
-      if (strncmp(key, fileLine, strlen(key)) == 0) {
-        n = strchr(fileLine, '=');  //关键字符第一次出现的位置
-        if (n != NULL) {
-          if (flag_line == 1) {  //判断是那种系统
-            sprintf(n + 1, "%s\r\0", val);
-          } else {
-            sprintf(n + 1, "%s\r\n\0", val);
-          }
-          strcat(fileAll, n - strlen(key));
-          k = strlen(fileAll);
-          flag_ok = 1;
-        }
-      } else {
-        strcat(fileAll, fileLine);  //找到修改值前缓存前面数据
-        strcat(fileAll, "\r\n");
+    line[linePos] = '\0';
+
+    // 记录该行后的换行符序列，可能是 "\r", "\n" 或 "\r\n"
+    const char *eol = "";
+    if (*p == '\r') {
+      eol = "\r";
+      p++;
+      if (*p == '\n') {
+        eol = "\r\n";
+        p++;
       }
-      flag_line = 0;
+    } else if (*p == '\n') {
+      eol = "\n";
+      p++;
+    }
+
+    // 检查当前行是否以 key= 开头
+    size_t keyLen = strlen(key);
+    if (strncmp(line, key, keyLen) == 0 && line[keyLen] == '=') {
+      char newLine[CONFIG_MAX_LENGTH];
+      int written = snprintf(newLine, sizeof(newLine), "%s=%s%s", key, val, eol);   // 会自动在末尾添加'\0'
+      if (written < 0 || written >= (int)sizeof(newLine)) return 0;
+
+      // 追加新行到输出缓冲区
+      size_t currentLen = strlen(fileAll);
+      size_t remain = sizeof(fileAll) - currentLen;
+      if (strlen(newLine) >= remain) return 0;
+      strcat(fileAll, newLine);
+
+      keyFound = true;
+
+      if (*p) {
+        size_t restLen = strlen(p);
+        if (currentLen + strlen(newLine) + restLen >= sizeof(fileAll)) return 0;
+        strcat(fileAll, p);
+      }
+      break; // 已处理完全部内容，退出循环
+
+    } else {
+      size_t currentLen = strlen(fileAll);
+      size_t remain = sizeof(fileAll) - currentLen;
+      size_t need = strlen(line) + strlen(eol);
+      if (need >= remain) return 0;
+      strcat(fileAll, line);
+      strcat(fileAll, eol);
     }
   }
-  if (flag_ok) {
-    strcpy(filetxt, fileAll);  //复制字符串输出
-    // Serial.println(filetxt);
+
+  if (keyFound) {
+    strcpy(filetxt, fileAll);
     return 1;
-  } else {
-    return 0;
   }
+  return 0;
 }
 
 //一次写入配置文件多个参数3
