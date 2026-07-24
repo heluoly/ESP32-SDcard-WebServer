@@ -125,7 +125,6 @@ int String2int(char *str) {
   return (int)res;
 }
 
-
 // 读取一行配置，返回行结束符类型
 int readConfigLine(File &file, char *buffer, int bufferSize) {
   int index = 0;

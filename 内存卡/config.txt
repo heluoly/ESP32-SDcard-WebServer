@@ -8,3 +8,5 @@ staticIP=192.168.1.80
 gateway=192.168.1.1
 subnet=255.255.255.0
 dns=223.5.5.5
+webDavMode=0
+webDavPort=8080

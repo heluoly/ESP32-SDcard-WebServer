@@ -14,7 +14,7 @@ Font Awesome https://fontawesome.com/
 https://github.com/ESP32Async/ESPAsyncWebServer
 https://github.com/ESP32Async/AsyncTCP
 */
-
+#include "Arduino.h"
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncTCP.h>
@@ -101,7 +101,7 @@ char hour2;
 char minute2;
 char second2;
 //网络时间同步服务器地址
-const char *ntpServer1 = "pool.ntp.org";
+const char *ntpServer1 = "ntp.tencent.com";
 const char *ntpServer2 = "ntp.aliyun.com";
 //电池检测
 int batteryPercent = 100;                 //电池电量百分比
@@ -118,7 +118,10 @@ void serverInfo_Display();
 void ARDUINO_ISR_ATTR onTimer1();
 void ARDUINO_ISR_ATTR onTimer2();
 
-void setup() {
+extern "C" void app_main()
+{
+  initArduino();
+
   // Serial.begin(115200);  // 启动串口通讯
   // Serial.println("");
 
@@ -148,7 +151,7 @@ void setup() {
   }
 #endif
 
-  //SPIFFS里是否存在配置文件config.txt
+  //内存卡或flash里是否存在配置文件config.txt
   if (!config_fs.exists("/config.txt")) {
     File configFile = config_fs.open("/config.txt", FILE_WRITE);
     if (!configFile) {
@@ -158,15 +161,13 @@ void setup() {
     configFile.print("ssid=" + ssid + "\r\npassword=" + password + "\r\nchannel=1\r\nstartupMode=1\r\npressid=" + pressid + "\r\nprepassword=" + prepassword + "\r\nstaticIP=192.168.1.80\r\ngateway=192.168.1.1\r\nsubnet=255.255.255.0\r\ndns=223.5.5.5\r\nwebDavMode=0\r\nwebDavPort=8080\r\n\0");
     configFile.close();
   }
-}
 
-void loop() {
   xTaskCreatePinnedToCore(task_server, "Task_Server", 5120, NULL, 1, &Task_Server, 1);     //创建第1核心服务器任务
   xTaskCreatePinnedToCore(task_display, "Task_Display", 2560, NULL, 1, &Task_Display, 0);  //创建第2核心显示任务
   // vTaskDelay(10000 / portTICK_PERIOD_MS);
   vTaskDelete(NULL);
-}
 
+}
 
 //第1核心任务
 void task_server(void *pvParameters) {
@@ -255,7 +256,7 @@ void closeServer() {
     esp32_server.end();  //关闭网站服务
     isServerInitialized = 0;
 
-    stopWebDavService();
+    stopWebDavService();     //关闭WebDAV
 
     WiFi.mode(WIFI_OFF);     //关闭WIFI
     my_fs.end();             //关闭SD卡

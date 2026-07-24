@@ -6,6 +6,7 @@
 - **网页视频播放** -- 可用浏览器播放服务器内存卡中存放的视频，视频播放器使用videoJS，支持自由拖拽进度、外挂字幕
 - **剪切板** -- 一个临时的文本中转站，可将文本临时保存在服务器上
 - **模式转换（WiFi配网）** -- 服务器可在AP、STA、AP+STA模式互相转换，默认为AP模式，可通过网页让服务器连接WiFi接入局域网，然后通过局域网访问服务器
+- **WebDAV协议** -- 可使用支持WebDAV协议的播放器播放服务器中的视频
 - **OLED屏显示** -- 显示服务器状态、IP地址、时钟等
 
 ![image](/assets/ESP32-S3服务器硬件.jpg "ESP32-S3服务器硬件")
@@ -87,6 +88,8 @@ python process_videos.py /视频输入文件夹路径 /视频输出文件夹路�
 - 如何修改WiFi热点名称和密码
 在服务器主页点击"服务器配置"，按照提示输入热点名称和密码后点击"提交"即可修改
 
+- 如何开启WebDAV服务
+在服务器主页点击"服务器配置"，找到配置WebDAV网页，按照提示开启WebDAV服务，该服务默认工作在8080端口
 
 # 功能展示：
 
@@ -119,6 +122,8 @@ SD卡代码参考 https://youtu.be/e1xOgZsnAuw
 网页配网代码参考 https://github.com/yuan910715/Esp8266_NTP_Clock_Weather 中的网页配网部分
 
 OLED屏幕时钟参考 https://github.com/ThingPulse/esp8266-oled-ssd1306 中的 examples/SSD1306ClockDemo
+
+WebDAV参考 https://github.com/d-a-v/ESPWebDAV
 
 Font Awesome https://fontawesome.com/
 
