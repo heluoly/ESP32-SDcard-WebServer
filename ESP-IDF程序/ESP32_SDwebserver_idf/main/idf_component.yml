@@ -14,6 +14,5 @@ dependencies:
   #   # `public` flag doesn't have an effect dependencies of the `main` component.
   #   # All dependencies of `main` are public by default.
   #   public: true
-  espressif/arduino-esp32: ^3.3.10
-  esp32async/espasyncwebserver: ^3.11.2
-  esp32async/asynctcp: ^3.4.91
+  espressif/arduino-esp32: ^3.3.11
+  esp32async/espasyncwebserver: ^3.12.0

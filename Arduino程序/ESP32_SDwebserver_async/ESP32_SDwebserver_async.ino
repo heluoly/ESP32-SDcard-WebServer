@@ -255,7 +255,7 @@ void closeServer() {
     esp32_server.end();  //关闭网站服务
     isServerInitialized = 0;
 
-    stopWebDavService();
+    stopWebDavService();     //关闭WebDAV
 
     WiFi.mode(WIFI_OFF);     //关闭WIFI
     my_fs.end();             //关闭SD卡

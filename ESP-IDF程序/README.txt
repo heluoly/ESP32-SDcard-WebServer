@@ -1,4 +1,4 @@
-编译环境：ESP-IDF v5.5.4 + VScode + ESP-IDF扩展
+编译环境：ESP-IDF v5.5.5 + VScode + ESP-IDF扩展
 默认配置适用于：ESP32-S3-WROOM-1-N16R8
 
 在IDF中可以修改lwIP协议栈中 TCP 默认发送缓冲区的大小，因此在IDF中编译的固件推流速度比Arduino中编译的快

@@ -1,4 +1,5 @@
 idf_component_register(
                        SRC_DIRS "."
-                       REQUIRES arduino-esp32 fatfs
+                       PRIV_REQUIRES spi_flash
+                       REQUIRES fatfs arduino-esp32
                        INCLUDE_DIRS "include")

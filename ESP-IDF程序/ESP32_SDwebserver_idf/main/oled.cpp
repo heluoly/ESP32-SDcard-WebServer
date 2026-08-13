@@ -122,7 +122,6 @@ void OLED_ShowChar(unsigned char x, unsigned char y, unsigned char chr, unsigned
 }
 void OLED_ShowChar_RAM(unsigned char x, unsigned char y, unsigned char chr, unsigned char sizey) {
   uint8_t c = chr - ' ';
-  uint8_t sizex = sizey / 2;
   uint16_t i;
   uint8_t temp;
   if (sizey == 8) {

@@ -65,28 +65,28 @@ void handleGet(AsyncWebServerRequest *request) {
 
 // 构建 PROPFIND 的单条响应 XML
 String buildPropResponse(const String &href, File file, bool isDir) {
-  String xml = "  <D:response>\n";
-  xml += "    <D:href>" + c2enc(href) + "</D:href>\n";
-  xml += "    <D:propstat>\n";
-  xml += "      <D:prop>\n";
+  String xml = "<D:response>\n";
+  xml += "<D:href>" + c2enc(href) + "</D:href>\n";
+  xml += "<D:propstat>\n";
+  xml += "<D:prop>\n";
 
   time_t lastWrite = file.getLastWrite();
   String dateStr = date2date(lastWrite);
-  xml += "        <D:getlastmodified>" + dateStr + "</D:getlastmodified>\n";
-  xml += "        <D:creationdate>" + dateStr + "</D:creationdate>\n";
+  xml += "<D:getlastmodified>" + dateStr + "</D:getlastmodified>\n";
+  // xml += "<D:creationdate>" + dateStr + "</D:creationdate>\n";
 
   if (isDir) {
-    xml += "        <D:resourcetype><D:collection/></D:resourcetype>\n";
+    xml += "<D:resourcetype><D:collection/></D:resourcetype>\n";
   } else {
-    xml += "        <D:resourcetype/>\n";
-    xml += "        <D:getcontentlength>" + String(file.size()) + "</D:getcontentlength>\n";
+    xml += "<D:resourcetype/>\n";
+    xml += "<D:getcontentlength>" + String(file.size()) + "</D:getcontentlength>\n";
   }
-  xml += "        <D:displayname>" + String(file.name()) + "</D:displayname>\n";
+  xml += "<D:displayname>" + String(file.name()) + "</D:displayname>\n";
 
-  xml += "      </D:prop>\n";
-  xml += "      <D:status>HTTP/1.1 200 OK</D:status>\n";
-  xml += "    </D:propstat>\n";
-  xml += "  </D:response>\n";
+  xml += "</D:prop>\n";
+  xml += "<D:status>HTTP/1.1 200 OK</D:status>\n";
+  xml += "</D:propstat>\n";
+  xml += "</D:response>\n";
   return xml;
 }
 
