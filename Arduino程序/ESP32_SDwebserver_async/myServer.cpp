@@ -69,7 +69,6 @@ void backToServer(AsyncWebServerRequest *request) {
   response->addHeader("Refresh", "3; url=/");  //等待3秒刷新
   response->addHeader("Connection", "close");
   request->send(response);
-
   mode_switch = 0;  //使下面的函数跳出while循环，从而在loop函数中进入下一个模式
 }
 //发送模式转换页面
@@ -217,15 +216,7 @@ void server_ap() {
   esp32_server.on("/setTime", HTTP_GET, setTime);                              //设置时间
 
   //开启或关闭WebDAV
-  if (webDavMode == 1) {
-    if (webDavState == 0) {
-      startWebDavService();
-    }
-  } else if (webDavMode == 0) {
-    if (webDavState == 1) {
-      stopWebDavService();
-    }
-  }
+  handleWebDavService();
 
   while (mode_switch)  //监听用户请求，直到模式转换
   {
@@ -299,15 +290,7 @@ void server_sta() {
     xTaskCreatePinnedToCore(task_sntp, "Task_Sntp", 2048, NULL, 5, &Task_Sntp, 0);  //创建网络时间同步任务
 
     //开启或关闭WebDAV
-    if (webDavMode == 1) {
-      if (webDavState == 0) {
-        startWebDavService();
-      }
-    } else if (webDavMode == 0) {
-      if (webDavState == 1) {
-        stopWebDavService();
-      }
-    }
+    handleWebDavService();
 
     while (mode_switch)  //监听用户请求，直到模式转换
     {
@@ -389,15 +372,7 @@ void server_ap_sta() {
     xTaskCreatePinnedToCore(task_sntp, "Task_Sntp", 2048, NULL, 5, &Task_Sntp, 0);  //创建网络时间同步任务
 
     //开启或关闭WebDAV
-    if (webDavMode == 1) {
-      if (webDavState == 0) {
-        startWebDavService();
-      }
-    } else if (webDavMode == 0) {
-      if (webDavState == 1) {
-        stopWebDavService();
-      }
-    }
+    handleWebDavService();
 
     while (mode_switch)  //监听用户请求，直到模式转换
     {

@@ -23,40 +23,33 @@ String date2date(time_t date) {
   return buf;
 }
 
-bool notEncodable (char c) {
-    return (c >= 'A' && c <= 'Z') ||
-           (c >= 'a' && c <= 'z') ||
-           (c >= '0' && c <= '9') ||
-           c == '-' || c == '_' || c == '.' || c == '~' || c == '/';
+bool notEncodable(char c) {
+  return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~' || c == '/';
 }
 
-char itoH(int c)
-{
-    return c <= 9 ? c + '0' : c - 10 + 'A';
+char itoH(int c) {
+  return c <= 9 ? c + '0' : c - 10 + 'A';
 }
 
-String c2enc(const String& decoded)
-{
-    size_t l = decoded.length();
-    for (size_t i = 0; i < decoded.length(); i++)
-        if (!notEncodable(decoded[i]))
-            l += 2;
+String c2enc(const String &decoded) {
+  size_t l = decoded.length();
+  for (size_t i = 0; i < decoded.length(); i++)
+    if (!notEncodable(decoded[i]))
+      l += 2;
 
-    String ret;
-    ret.reserve(l);
-    for (size_t i = 0; i < decoded.length(); i++)
-    {
-        char c = decoded[i];
-        if (notEncodable(c))
-            ret += c;
-        else
-        {
-            ret += '%';
-            ret += itoH(c >> 4);
-            ret += itoH(c & 0xf);
-        }
+  String ret;
+  ret.reserve(l);
+  for (size_t i = 0; i < decoded.length(); i++) {
+    char c = decoded[i];
+    if (notEncodable(c))
+      ret += c;
+    else {
+      ret += '%';
+      ret += itoH(c >> 4);
+      ret += itoH(c & 0xf);
     }
-    return ret;
+  }
+  return ret;
 }
 
 void handleGet(AsyncWebServerRequest *request) {
@@ -164,6 +157,7 @@ void handleWebDAV(AsyncWebServerRequest *request) {
 
 void startWebDavService() {
   if (esp32_server_WebDAV != nullptr) {
+    esp32_server_WebDAV->reset();
     esp32_server_WebDAV->end();
     delete esp32_server_WebDAV;
     esp32_server_WebDAV = nullptr;
@@ -176,9 +170,20 @@ void startWebDavService() {
 
 void stopWebDavService() {
   if (esp32_server_WebDAV != nullptr) {
+    esp32_server_WebDAV->reset();
     esp32_server_WebDAV->end();
     delete esp32_server_WebDAV;
     esp32_server_WebDAV = nullptr;
     webDavState = 0;
+  }
+}
+
+void handleWebDavService() {
+  if (webDavMode == 1) {
+    startWebDavService();
+  } else if (webDavMode == 0) {
+    if (webDavState == 1) {
+      stopWebDavService();
+    }
   }
 }

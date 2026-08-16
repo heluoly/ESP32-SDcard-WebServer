@@ -7,5 +7,6 @@
 void handleWebDAV(AsyncWebServerRequest *request);
 void startWebDavService();
 void stopWebDavService();
+void handleWebDavService();
 
 #endif
