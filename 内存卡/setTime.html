@@ -1,67 +1,300 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>
-      配置时间
-    </title>
-    <script type="text/javascript">
-        function showDateTime(){
-    var sWeek=new Array("日","一","二","三","四","五","六");  //声明数组存储一周七天
-    var myDate=new Date(); //获取当天日期
-    var sYear=myDate.getFullYear(); //获取年
-    var sMonth=myDate.getMonth()+1; //获取月
-    var sDate=myDate.getDate(); //获取日
-    var sDay=sWeek[myDate.getDay()]; //根据得到的数字星期,利用数组转化为星期
-    var h=myDate.getHours(); //获取小时
-    var m=myDate.getMinutes(); //获取分钟
-    var s=myDate.getSeconds(); //获取秒
-    //输入日期和星期
-    document.getElementById("date").innerHTML=(sYear+"年"+sMonth+"月"+sDate+"日"+"星期"+sDay+"<br/>");
-    h = formatTwoDigits(h);  //格式化小时,如果不足两位在前面补0
-    m = formatTwoDigits(m); //格式化分钟,如果不足两位在前面补0
-    s = formatTwoDigits(s); //格式化秒钟后,如果不足两位在前面补0
-    //显示时间
-    document.getElementById("msg").innerHTML=(h+":"+m+":"+s+"<br/>");
-    setTimeout("showDateTime()",1000);//每秒执行一次showDateTime函数
-    }
-    window.onload=showDateTime;//在整个页面加载完成后执行此函数
-    //如果输入数是一位数,则在十位上补0
-    function formatTwoDigits(s) {
-    if (s<10)
-        return "0"+s;
-    else
-        return s;
-    }
-    </script>
-	<script type="text/javascript">
-        function getTime(){
-        var date = new Date();
-        var hour = date.getHours();
-        var minute = date.getMinutes();
-        var second = date.getSeconds();
-        var xmlhttp=new XMLHttpRequest();
-        xmlhttp.open("GET","/setTime?hour="+hour+"&minute="+minute+"&second="+second,true);
-        xmlhttp.send();
-        xmlhttp.onload = function(e){alert(this.responseText);}
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>配置时间</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    </script>
-    <style type="text/css">
-    div.c2 {text-align: center}
-    span.c1 {font-size: 30px;}
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f7fb;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            padding: 20px;
+        }
+
+        .card {
+            max-width: 480px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 40px 36px 44px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.02);
+            transition: box-shadow 0.25s ease;
+            text-align: center;
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 56px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.2em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .time-display {
+            background: #f8faff;
+            border-radius: 18px;
+            padding: 28px 20px 24px;
+            margin-bottom: 32px;
+            transition: background 0.2s;
+        }
+
+        .date-text {
+            font-size: 20px;
+            font-weight: 450;
+            color: #2c3e50;
+            letter-spacing: 0.6px;
+            margin-bottom: 8px;
+        }
+
+        .time-text {
+            font-size: 52px;
+            font-weight: 300;
+            color: #0a1628;
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.2;
+        }
+
+        .time-text .colon {
+            color: #b0b8c4;
+            font-weight: 200;
+            margin: 0 2px;
+        }
+
+        .btn-upload {
+            display: inline-block;
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 17px;
+            font-weight: 480;
+            color: #ffffff;
+            background: #1e2a3a;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: background 0.25s ease, transform 0.12s ease, box-shadow 0.25s ease;
+            letter-spacing: 0.4px;
+            box-shadow: 0 4px 12px rgba(30, 42, 58, 0.15);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-upload:hover {
+            background: #2c3e56;
+            box-shadow: 0 8px 20px rgba(30, 42, 58, 0.20);
+        }
+
+        .btn-upload:active {
+            transform: scale(0.97);
+            background: #141e2a;
+            box-shadow: 0 2px 8px rgba(30, 42, 58, 0.12);
+        }
+
+        .btn-upload:focus-visible {
+            outline: 2px solid #1e2a3a;
+            outline-offset: 3px;
+        }
+
+        .result-box {
+            margin-top: 24px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 400;
+            color: #4a5a6e;
+            background: #f7f9fc;
+            border-radius: 14px;
+            padding: 12px 18px;
+            border: 1px solid #edf0f4;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+            word-break: break-word;
+        }
+
+        .result-box.success {
+            background: #f2f9f2;
+            border-color: #c6e0c6;
+            color: #1f6f3a;
+        }
+
+        .result-box.error {
+            background: #fdf4f2;
+            border-color: #f5d6d0;
+            color: #b13e2e;
+        }
+
+        @media (max-width: 520px) {
+            .card {
+                padding: 28px 20px 32px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .time-text {
+                font-size: 40px;
+            }
+
+            .date-text {
+                font-size: 17px;
+            }
+
+            .btn-upload {
+                font-size: 15px;
+                padding: 14px 16px;
+            }
+
+            .result-box {
+                font-size: 14px;
+                padding: 10px 14px;
+                min-height: 38px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            .time-text {
+                font-size: 32px;
+            }
+            .date-text {
+                font-size: 15px;
+            }
+            .card {
+                padding: 20px 14px 24px;
+            }
+        }
     </style>
-  </head>
-  <body>
-  <center>
-    <h1 class="h1 font-w300 mt-15" align="center">配置时间</h1>
-    <img id="logo" src="logo.jpg" width="200" height="200"/>
-  </center>
-    <div class="c2">
-      <h1 id="date"></h1>
-	  <span id="msg" class="c1"></span><br/><br/>
-	  <input type="button" value="上传系统时间" onclick="getTime()">
+</head>
+<body>
+
+    <div class="card" role="main" aria-label="时间配置面板">
+        <header>
+            <h1>配置时间</h1>
+        </header>
+
+        <div class="time-display">
+            <div class="date-text" id="date">加载中…</div>
+            <div class="time-text" id="msg">--:--:--</div>
+        </div>
+
+        <button class="btn-upload" id="uploadBtn" type="button">
+            上传系统时间
+        </button>
+
+        <div class="result-box" id="result">等待操作…</div>
     </div>
-  </body>
+
+    <script>
+        (function() {
+            "use strict";
+            const dateEl = document.getElementById('date');
+            const timeEl = document.getElementById('msg');
+            const resultEl = document.getElementById('result');
+            const uploadBtn = document.getElementById('uploadBtn');
+
+            function formatTwoDigits(s) {
+                return s < 10 ? "0" + s : "" + s;
+            }
+            function showDateTime() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth() + 1;
+                const day = now.getDate();
+                const weekDays = ["日", "一", "二", "三", "四", "五", "六"];
+                const week = weekDays[now.getDay()];
+
+                const h = formatTwoDigits(now.getHours());
+                const m = formatTwoDigits(now.getMinutes());
+                const s = formatTwoDigits(now.getSeconds());
+
+                dateEl.textContent = year + "年" + month + "月" + day + "日 星期" + week;
+                timeEl.innerHTML = h + '<span class="colon">:</span>' + m + '<span class="colon">:</span>' + s;
+
+                requestAnimationFrame(function() {
+                    setTimeout(showDateTime, 1000 - (Date.now() % 1000));
+                });
+            }
+
+            function sendTime() {
+                const t = Math.floor(Date.now() / 1000);
+
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = "上传中…";
+                resultEl.className = "result-box";
+                resultEl.textContent = "正在同步…";
+
+                const xhr = new XMLHttpRequest();
+                xhr.open("GET", "/setTime?t=" + t, true);
+
+                xhr.onload = function() {
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = "上传系统时间";
+
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const resp = xhr.responseText || "同步成功";
+                        resultEl.className = "result-box success";
+                        resultEl.textContent = resp;
+                    } else {
+                        resultEl.className = "result-box error";
+                        resultEl.textContent = "服务器响应异常 (HTTP " + xhr.status + ")";
+                    }
+                };
+
+                xhr.onerror = function() {
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = "上传系统时间";
+                    resultEl.className = "result-box error";
+                    resultEl.textContent = "发送失败，请检查网络连接";
+                };
+
+                xhr.timeout = 8000;
+                xhr.ontimeout = function() {
+                    xhr.abort();
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = "上传系统时间";
+                    resultEl.className = "result-box error";
+                    resultEl.textContent = "请求超时，请重试";
+                };
+
+                xhr.send();
+            }
+
+            uploadBtn.addEventListener('click', sendTime);
+
+            showDateTime();
+
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    showDateTime();
+                }
+            });
+
+        })();
+    </script>
+
+</body>
 </html>

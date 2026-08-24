@@ -5,6 +5,7 @@
 #include "oled.h"
 #include "time.h"
 #include "esp_sntp.h"
+#include <WiFi.h>
 
 //时钟中心位置
 #define clockCenterX 64  //时钟X轴
