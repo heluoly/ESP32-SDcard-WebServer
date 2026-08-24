@@ -163,8 +163,8 @@ void server_ap() {
   currentServerState = MY_SERVER_STATE_AP;
   nextServerState = MY_SERVER_STATE_AP;
   // WiFi.setAutoReconnect(false);
-  WiFi.disconnect(true, true);
-  // WiFi.softAPdisconnect(true);
+  WiFi.disconnect(false, true);
+  // WiFi.softAPdisconnect(false);
   WiFi.mode(WIFI_AP);
 
   // IPAddress local_IP(192, 168, 1, 1);  //配置ESP32的IP地址
@@ -237,7 +237,7 @@ void server_sta() {
   serverDisplayState = MY_SERVER_DP_STATE_STA_CONNECT;
   currentServerState = MY_SERVER_STATE_STA;
   nextServerState = MY_SERVER_STATE_AP;
-  WiFi.softAPdisconnect(true);
+  WiFi.softAPdisconnect(false);
   WiFi.mode(WIFI_STA);
 
   //尝试连接上次成功连接WIFI
