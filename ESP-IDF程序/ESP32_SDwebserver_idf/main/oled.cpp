@@ -19,7 +19,7 @@ static i2c_master_dev_handle_t oled_dev;
 extern unsigned char oled_RAM[8][128];
 
 void i2c_dma_init() {
-  i2c_master_bus_config_t bus_cfg = { 0 };
+  i2c_master_bus_config_t bus_cfg = {};
   bus_cfg.i2c_port = I2C_PORT_NUM;
   bus_cfg.sda_io_num = GPIO_NUM_15;  //OLED显示屏sda管脚
   bus_cfg.scl_io_num = GPIO_NUM_16;  //OLED显示屏scl管脚
@@ -33,6 +33,8 @@ void i2c_dma_init() {
     .dev_addr_length = I2C_ADDR_BIT_LEN_7,
     .device_address = OLED_ADDR,
     .scl_speed_hz = OLED_I2C_FREQ,
+    .scl_wait_us = 0,
+    .flags = 0,
   };
 
   i2c_master_bus_add_device(i2c_bus, &dev_cfg, &oled_dev);
