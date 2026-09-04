@@ -20,7 +20,7 @@
 
 #define CONFIG_PSRAM 1  //是否启用PSRAM，0：禁用，1：启用
 #if CONFIG_PSRAM        //根据是否开启PSRAM设置SD卡最大打开文件数量
-#define config_SD_maxOpenFiles 10
+#define config_SD_maxOpenFiles 12
 #else
 #define config_SD_maxOpenFiles 6
 #endif

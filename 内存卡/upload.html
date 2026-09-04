@@ -935,6 +935,7 @@
 
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/upload", true);
+        xhr.setRequestHeader("X-Upload-Offset", String(offset));
 
         xhr.upload.addEventListener("progress", function (e) {
           if (e.lengthComputable) {
@@ -972,17 +973,17 @@
             uploadBtn.disabled = false;
             uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 开始上传';
             uploadBtn.style.display = "inline-flex";
+            checkUploadStatus(file.name);
           }
         };
 
         xhr.onerror = function () {
-          showStatus("上传中断: 网络错误，稍后可在文件列表中继续上传", "warning");
+          showStatus("上传中断: 网络错误，请稍后继续上传", "warning");
           progressStatus.textContent = "上传已中断";
           uploadBtn.disabled = false;
           uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 开始上传';
           uploadBtn.style.display = "inline-flex";
-          existingUploadSize =
-            offset + (progressFill.style.width ? (parseInt(progressFill.style.width) / 100) * totalSize - offset : 0);
+          checkUploadStatus(file.name);
         };
 
         xhr.send(formData);

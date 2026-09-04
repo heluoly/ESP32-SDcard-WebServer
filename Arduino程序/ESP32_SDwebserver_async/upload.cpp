@@ -69,13 +69,41 @@ void uploadFileRespond(AsyncWebServerRequest *request) {
 void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
   if (!index) {
     String path = "/upload/" + filename;
-    if (my_fs.exists(path)) {
+    uint32_t offset = 0;
+    if (request->hasHeader("X-Upload-Offset")) {
+      const AsyncWebHeader *h = request->getHeader("X-Upload-Offset");
+      if (h && h->value().length() > 0) {
+        offset = (uint32_t)strtoul(h->value().c_str(), NULL, 10);
+      }
+    }
+    uint32_t prevSize = 0;
+    bool existed = my_fs.exists(path);
+    if (existed) {
+      File t = my_fs.open(path, FILE_READ);
+      if (t) {
+        prevSize = t.size();
+        t.close();
+      }
+    }
+    if (offset > 0) {
+      if (!existed) {
+        request->send(404, "text/plain", "resume target missing");
+        return;
+      }
+      if (prevSize != offset) {
+        request->send(409, "text/plain", "offset mismatch, re-query upload status");
+        return;
+      }
       request->_tempFile = my_fs.open(path, FILE_APPEND);
     } else {
+      if (existed) {
+        my_fs.remove(path);
+      }
       request->_tempFile = my_fs.open(path, FILE_WRITE);
     }
     if (!request->_tempFile) {
       request->send(400, "text/plain", "File not available for writing");
+      return;
     }
   }
   if (len) {

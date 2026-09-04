@@ -62,16 +62,16 @@ void listUploadFile(AsyncWebServerRequest *request) {
 }
 
 
-void uploadFileRespond(AsyncWebServerRequest *request) {
-  request->send(200);
-}
-
-
-#define UPLOAD_WRITER_BUF_COUNT 4           //数据缓冲个数
-#define UPLOAD_WRITER_BUF_SIZE  (32 * 1024) //单块32KB（优先PSRAM）
-#define UPLOAD_WRITER_PRIO      (12)        //高于async_tcp(10)，低于tcpip线程
-#define UPLOAD_WRITER_STACK     (6144)
-#define UPLOAD_QUEUE_WAIT_MS    (1000)      //背压等待上限（async_tcp带看门狗，不能久等）
+//文件上传队列
+#define UPLOAD_WRITER_BUF_COUNT 8            //数据缓冲个数（加大以吸收写卡抖动）
+#define UPLOAD_WRITER_BUF_SIZE  (64 * 1024)  //单块64KB（优先PSRAM）
+#define UPLOAD_WRITER_PRIO      (12)         //高于async_tcp(10)，低于tcpip线程
+#define UPLOAD_WRITER_STACK     (2048)
+#define UPLOAD_QUEUE_WAIT_MS    (250)        //单次等缓冲的粒度（多次重试，不立即判失败）
+#define UPLOAD_STALL_LIMIT_MS   (6000)       //连续无写卡进展的上限，超过视为卡死
+#define UPLOAD_JOIN_TRIES       (100)        //等待写卡任务退出：100 x 50ms = 5s
+#define UPLOAD_SENTINEL_TRIES   (50)         //投递结束哨兵：50 x 100ms = 5s
+#define UPLOAD_MAX_ACTIVE       2            //同路径活动会话登记表大小
 
 //写队列元素：缓冲指针 + 本次实际要写的字节数（NULL指针=结束哨兵）
 typedef struct {
@@ -79,7 +79,9 @@ typedef struct {
   size_t len;
 } uploadWriteItem_t;
 
-typedef struct {
+typedef struct uploadSession uploadSession_t;
+
+struct uploadSession {
   File file;                   //目标文件（由写卡任务打开/关闭）
   QueueHandle_t qEmpty;        //空闲缓冲队列
   QueueHandle_t qFull;         //待写缓冲队列（buf==NULL=结束哨兵）
@@ -90,11 +92,81 @@ typedef struct {
   size_t bufCap;
   uint8_t *cur;                //当前正在填充的缓冲
   size_t curUsed;
-  volatile bool ok;            //链路是否正常（出错后停止写入）
+  volatile bool ok;            //链路是否正常（写盘失败/彻底卡死后停止写入）
   volatile uint32_t recvBytes; //收包侧累计收到的文件字节（校验用）
   volatile uint32_t writeBytes;//写卡侧累计已写入字节（诊断用）
   uint32_t prevSize;           //断点续传：文件原有的字节数（新文件为0）
-} uploadSession_t;
+  uint32_t stallMs;            //连续等待空缓冲的累计毫秒数
+  char path[256];              //目标文件路径（同路径互斥用）
+};
+
+//同路径活动会话登记：防止同一文件被两个会话并发追加/覆盖
+static struct {
+  bool used;
+  char path[256];
+  uploadSession_t *sess;
+} s_activeUploads[UPLOAD_MAX_ACTIVE];
+static SemaphoreHandle_t s_activeMux = NULL;
+
+//登记会话；返回 false 表示同路径已有其它活动会话
+static bool uploadRegisterPath(const char *path, uploadSession_t *s) {
+  if (!s_activeMux) {
+    s_activeMux = xSemaphoreCreateMutex();
+  }
+  bool ok = false;
+  if (s_activeMux && xSemaphoreTake(s_activeMux, portMAX_DELAY) == pdTRUE) {
+    for (int i = 0; i < UPLOAD_MAX_ACTIVE; i++) {
+      if (s_activeUploads[i].used && s_activeUploads[i].sess != s &&
+          strcmp(s_activeUploads[i].path, path) == 0) {
+        xSemaphoreGive(s_activeMux);
+        return false;
+      }
+    }
+    for (int i = 0; i < UPLOAD_MAX_ACTIVE; i++) {
+      if (!s_activeUploads[i].used) {
+        strncpy(s_activeUploads[i].path, path, sizeof(s_activeUploads[i].path) - 1);
+        s_activeUploads[i].path[sizeof(s_activeUploads[i].path) - 1] = '\0';
+        s_activeUploads[i].sess = s;
+        s_activeUploads[i].used = true;
+        ok = true;
+        break;
+      }
+    }
+    xSemaphoreGive(s_activeMux);
+  }
+  return ok;
+}
+
+//注销会话
+static void uploadUnregisterSession(uploadSession_t *s) {
+  if (!s || !s_activeMux) return;
+  if (xSemaphoreTake(s_activeMux, portMAX_DELAY) == pdTRUE) {
+    for (int i = 0; i < UPLOAD_MAX_ACTIVE; i++) {
+      if (s_activeUploads[i].used && s_activeUploads[i].sess == s) {
+        s_activeUploads[i].used = false;
+        s_activeUploads[i].sess = NULL;
+        s_activeUploads[i].path[0] = '\0';
+      }
+    }
+    xSemaphoreGive(s_activeMux);
+  }
+}
+
+//查询某路径是否已有活动上传会话（只读探测，不做任何改动）
+static bool uploadPathActive(const char *path) {
+  if (!s_activeMux || !path) return false;
+  bool active = false;
+  if (xSemaphoreTake(s_activeMux, portMAX_DELAY) == pdTRUE) {
+    for (int i = 0; i < UPLOAD_MAX_ACTIVE; i++) {
+      if (s_activeUploads[i].used && strcmp(s_activeUploads[i].path, path) == 0) {
+        active = true;
+        break;
+      }
+    }
+    xSemaphoreGive(s_activeMux);
+  }
+  return active;
+}
 
 //取第i块缓冲指针
 static inline uint8_t *uploadBufferAt(uploadSession_t *s, size_t i) {
@@ -114,7 +186,7 @@ static void uploadWriterTask(void *pv) {
       while (remaining > 0) {
         size_t w = s->file.write(p, remaining);
         if (w == 0 || w > remaining) {  //写盘失败（如SD卡满）
-          ESP_LOGW("upload", "write fail at offset %llu (req %u)", (unsigned int)s->writeBytes, (unsigned)remaining);
+          // ESP_LOGW("upload", "write fail at offset %u (req %u)", (unsigned int)s->writeBytes, (unsigned)remaining);
           s->ok = false;
           break;
         }
@@ -133,13 +205,19 @@ static void uploadWriterTask(void *pv) {
   vTaskDelete(NULL);
 }
 
-//等待写卡任务退出（最多3s）
-static void uploadSessionJoin(uploadSession_t *s) {
-  if (s == NULL || s->task == NULL || s->doneSem == NULL) return;
-  for (int i = 0; i < 60; i++) {
-    if (xSemaphoreTake(s->doneSem, pdMS_TO_TICKS(50)) == pdTRUE) break;
+//等待写卡任务退出（最多5s）
+static bool uploadSessionJoin(uploadSession_t *s) {
+  if (s == NULL || s->doneSem == NULL) return true;
+  if (s->task == NULL) return true;
+  bool done = false;
+  for (int i = 0; i < UPLOAD_JOIN_TRIES; i++) {
+    if (xSemaphoreTake(s->doneSem, pdMS_TO_TICKS(50)) == pdTRUE) {
+      done = true;
+      break;
+    }
   }
   s->task = NULL;
+  return done;
 }
 
 //释放会话资源（调用前需已结束写卡任务）
@@ -155,14 +233,22 @@ static void uploadSessionFree(uploadSession_t *s) {
 //异常中止：投递结束哨兵，让写卡任务把已入队数据写完、关闭文件并退出，然后回收
 static void uploadSessionAbort(uploadSession_t *s) {
   if (s == NULL) return;
-  uploadWriteItem_t end;
-  end.buf = NULL;
-  end.len = 0;
-  for (int i = 0; i < 20; i++) {  //若队列满则等待腾位，最多约2s
-    if (xQueueSend(s->qFull, &end, pdMS_TO_TICKS(100)) == pdTRUE) break;
+  if (s->task != NULL) {
+    uploadWriteItem_t end;
+    end.buf = NULL;
+    end.len = 0;
+    for (int i = 0; i < UPLOAD_SENTINEL_TRIES; i++) {  //队列满则等待腾位，最多约5s
+      if (xQueueSend(s->qFull, &end, pdMS_TO_TICKS(100)) == pdTRUE) break;
+    }
   }
-  uploadSessionJoin(s);
-  uploadSessionFree(s);
+  bool joined = uploadSessionJoin(s);
+  if (joined) {
+    uploadUnregisterSession(s);
+    uploadSessionFree(s);
+  } else {
+    //写卡任务5秒内没能退出（SD彻底卡死）
+    // ESP_LOGE("upload", "abort: writer task not exiting, session leaked (SD stalled?)");
+  }
 }
 
 //创建会话：分配缓冲池/队列/信号量并启动写卡任务；失败返回NULL（文件由调用者关闭）
@@ -173,9 +259,10 @@ static uploadSession_t *uploadSessionCreate(File &file, const char *path) {
   s->bufCount = UPLOAD_WRITER_BUF_COUNT;
   s->bufCap = UPLOAD_WRITER_BUF_SIZE;
   s->ok = true;
-  // snprintf(s->path, sizeof(s->path), "%s", path);
+  s->stallMs = 0;
+  snprintf(s->path, sizeof(s->path), "%s", path);
   s->qEmpty = xQueueCreate(s->bufCount, sizeof(uploadWriteItem_t));
-  s->qFull = xQueueCreate(s->bufCount + 2, sizeof(uploadWriteItem_t));
+  s->qFull = xQueueCreate(s->bufCount + 4, sizeof(uploadWriteItem_t));
   s->doneSem = xSemaphoreCreateBinary();
   if (s->qEmpty == NULL || s->qFull == NULL || s->doneSem == NULL) goto fail;
 
@@ -214,7 +301,16 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
     }
 
     String path = "/upload/" + filename;
-    //断点续传：若文件已存在，记录原有大小并在其后追加
+
+    //断点续传起点：客户端通过 X-Upload-Offset 头显式声明本次上传的起始偏移
+    uint32_t offset = 0;
+    if (request->hasHeader("X-Upload-Offset")) {
+      const AsyncWebHeader *h = request->getHeader("X-Upload-Offset");
+      if (h && h->value().length() > 0) {
+        offset = (uint32_t)strtoul(h->value().c_str(), NULL, 10);
+      }
+    }
+
     uint32_t prevSize = 0;
     bool existed = my_fs.exists(path);
     if (existed) {
@@ -224,10 +320,27 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
         t.close();
       }
     }
+
+    if (uploadPathActive(path.c_str())) {
+      request->send(409, "text/plain", "another upload is active on this file");
+      return;
+    }
+
     File f;
-    if (existed) {
+    if (offset > 0) {
+      if (!existed) {
+        request->send(404, "text/plain", "resume target missing");
+        return;
+      }
+      if (prevSize != offset) {
+        request->send(409, "text/plain", "offset mismatch, re-query upload status");
+        return;
+      }
       f = my_fs.open(path, FILE_APPEND);
     } else {
+      if (existed) {
+        my_fs.remove(path);
+      }
       f = my_fs.open(path, FILE_WRITE);
     }
     if (!f) {
@@ -242,9 +355,22 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
       return;
     }
     s->prevSize = prevSize;
+
+    //正式登记（此前的探测已确认无同路径会话，此处必然成功）
+    if (!uploadRegisterPath(path.c_str(), s)) {
+      uploadSessionAbort(s);
+      request->send(409, "text/plain", "too Many Requests");
+      return;
+    }
+
     request->_tempObject = s;
 
-    //请求异常断开时收尾（正常结束后_tempObject已置NULL，此处为空操作）
+    //大文件上传在拥塞/慢卡时会较长时间没有数据处理事件，关闭该连接的3秒RX空闲超时，避免服务器误杀仍在进行的上传
+    if (request->client()) {
+      request->client()->setRxTimeout(0);
+    }
+
+    //请求异常断开时收尾（正常结束后_tempObject由uploadFileRespond置NULL）
     request->onDisconnect([request]() {
       uploadSession_t *sess = (uploadSession_t *)request->_tempObject;
       if (sess != NULL) {
@@ -255,20 +381,37 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
   }
 
   if (s == NULL) {
-    return;  //会话创建失败：忽略后续数据
+    return;  //会话创建失败或被拒绝：忽略后续数据
   }
 
   //生产端：数据拷入当前缓冲，攒满整块（指针+长度）交给写卡任务
   if (len > 0 && s->ok) {
-    while (len > 0) {
+    while (len > 0 && s->ok) {
       if (s->cur == NULL) {
         uploadWriteItem_t it;
-        if (xQueueReceive(s->qEmpty, &it, pdMS_TO_TICKS(UPLOAD_QUEUE_WAIT_MS)) != pdTRUE) {
-          s->ok = false;  //长时间等不到空闲缓冲：写卡严重落后，停止接收
-          break;
+        uint32_t t0 = millis();
+        BaseType_t got = xQueueReceive(s->qEmpty, &it, pdMS_TO_TICKS(UPLOAD_QUEUE_WAIT_MS));
+        uint32_t waited = millis() - t0;
+        if (got == pdTRUE) {
+          if (!s->ok) {  //写卡已失败：归还刚取得的缓冲，立即停止接收
+            uploadWriteItem_t back;
+            back.buf = it.buf;
+            back.len = 0;
+            xQueueSend(s->qEmpty, &back, 0);
+            break;
+          }
+          s->cur = it.buf;
+          s->curUsed = 0;
+          s->stallMs = 0;  //取得缓冲：写卡恢复，清除累计等待
+        } else {
+          s->stallMs += waited;
+          if (s->stallMs >= UPLOAD_STALL_LIMIT_MS) {
+            // ESP_LOGW("upload", "no buffer for %ums, stop receiving (SD stalled?)", (unsigned)s->stallMs);
+            s->ok = false;  //写卡长期无进展：停止接收；文件保持已写前缀，最终返回500
+            break;
+          }
+          continue;  //短暂的背压：重试等待，不丢数据
         }
-        s->cur = it.buf;
-        s->curUsed = 0;
       }
       size_t space = s->bufCap - s->curUsed;
       size_t n = (len < space) ? len : space;
@@ -284,7 +427,10 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
         full.len = s->bufCap;
         s->cur = NULL;
         s->curUsed = 0;
-        if (xQueueSend(s->qFull, &full, pdMS_TO_TICKS(UPLOAD_QUEUE_WAIT_MS)) != pdTRUE) {
+        if (xQueueSend(s->qFull, &full, pdMS_TO_TICKS(UPLOAD_QUEUE_WAIT_MS)) == pdTRUE) {
+          s->stallMs = 0;
+        } else {
+          // ESP_LOGW("upload", "qFull send timeout");
           s->ok = false;
           uploadWriteItem_t back;
           back.buf = full.buf;
@@ -297,8 +443,7 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
   }
 
   if (final) {
-    request->_tempObject = NULL;  //收尾开始，断开回调不再触碰本会话
-    //残块（<32KB）按真实长度交给写卡任务
+    //收尾：只投递残块与结束哨兵，不做任何长阻塞
     if (s->cur != NULL) {
       if (s->curUsed > 0 && s->ok) {
         uploadWriteItem_t tail;
@@ -320,13 +465,49 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
       s->cur = NULL;
       s->curUsed = 0;
     }
-    //结束哨兵，等待写卡任务把剩余数据写完并关闭文件
+    //结束哨兵，写卡任务会把剩余数据写完、关闭文件并退出
+    if (s->task != NULL) {
+      uploadWriteItem_t end;
+      end.buf = NULL;
+      end.len = 0;
+      xQueueSend(s->qFull, &end, pdMS_TO_TICKS(UPLOAD_QUEUE_WAIT_MS));
+    }
+    //_tempObject保持指向会话，交给uploadFileRespond收尾
+  }
+}
+
+//请求体全部接收完成后的请求处理器（uploadFileRespond由服务器在body结束后调用）
+void uploadFileRespond(AsyncWebServerRequest *request) {
+  uploadSession_t *s = (uploadSession_t *)request->_tempObject;
+  if (s == NULL) {
+    return;  //会话创建失败/被拒绝时已发出错误响应（400/404/409/500），这里不能覆盖它
+  }
+  request->_tempObject = NULL;
+
+  //防御：若客户端在最终边界之前就结束了body（异常/截断），final回调可能未执行，写卡任务仍在等待结束哨兵——这里补投一个哨兵
+  if (s->task != NULL) {
     uploadWriteItem_t end;
     end.buf = NULL;
     end.len = 0;
     xQueueSend(s->qFull, &end, pdMS_TO_TICKS(UPLOAD_QUEUE_WAIT_MS));
-    uploadSessionJoin(s);
+  }
+
+  bool joined = uploadSessionJoin(s);  //等待写卡任务把剩余数据写完并关闭文件
+  bool ok = joined && s->ok && (s->recvBytes == s->writeBytes);
+
+  if (joined) {
+    uploadUnregisterSession(s);
     uploadSessionFree(s);
+  } else {
+    //写卡任务5秒内没能退出（SD彻底卡死）：保留登记项与资源，避免并发写同一文件
+    // ESP_LOGE("upload", "finalize: writer task not exiting, session leaked (SD stalled?)");
+  }
+
+  if (ok) {
+    request->send(200, "text/plain", "OK");
+  } else {
+    //文件保留已写入的前缀字节，客户端重新查询 /uploadStatus 后可断点续传
+    request->send(500, "text/plain", joined ? "upload write failed" : "server stalled");
   }
 }
 
