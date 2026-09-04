@@ -570,6 +570,15 @@
           try {
             if (xhr.status === 200) {
               const data = JSON.parse(xhr.responseText);
+              const files = data.files;
+              if (files && files.length === 0) {
+                const lastPage = parseInt(data.totalPages, 10) || 0;
+                const requestedPage = parseInt(data.currentPage, 10) || page;
+                if (lastPage >= 1 && requestedPage > lastPage) {
+                  listFiles(lastPage);
+                  return;
+                }
+              }
               renderFileList(data);
               showStatus(`已加载第 ${page} 页文件列表`, "success");
             }
