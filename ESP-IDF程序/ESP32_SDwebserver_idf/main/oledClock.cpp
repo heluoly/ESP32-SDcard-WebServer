@@ -10,14 +10,14 @@ extern char hour2;
 extern char minute2;
 extern char second2;
 // oled显存
-extern unsigned char oled_RAM[128][8];
+extern unsigned char oled_RAM[8][128];
 // 更新时间标志
 extern char flag_timeSet;
 
 extern const char *ntpServer1;
 extern const char *ntpServer2;
 
-// extern TaskHandle_t Task_Sntp;  //网络时间同步任务
+// extern TaskHandle_t Task_Sntp;  // 网络时间同步任务
 
 static void updateDisplayTime(const struct tm *timeinfo) {
   hour2 = timeinfo->tm_hour;

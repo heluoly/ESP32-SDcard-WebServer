@@ -37,7 +37,7 @@ const String htmlWebDav4 = "<br><br><input type=\"submit\" value=\"提交\" /></
 const String htmlfoot = "<p><a href=\"/\">返回服务器</a> <a href=\"/pageConfigAP\">配置热点</a> <a href=\"/pageConfigAutoConnect\">配置WiFi</a> <a href=\"/pageConfigWebDav\">配置WebDAV</a></p></div></body></html>";
 
 
-//发送配置AP网页
+// 发送配置AP网页
 void pageConfigAP(AsyncWebServerRequest *request) {
   int i = 1;
   String message = htmlAP1 + htmlAP2 + ssid + htmlAP3 + password + htmlAP4;
@@ -72,13 +72,13 @@ void pageConfigAP(AsyncWebServerRequest *request) {
   request->send(200, "text/html", message);
 }
 
-//保存修改的热点名称和密码
+// 保存修改的热点名称和密码
 void configAP(AsyncWebServerRequest *request) {
-  String ssid2 = request->getParam("hotspotName")->value();          //获取热点名称
-  String password2 = request->getParam("hotspotPassword")->value();  //获取热点密码
-  String channel2 = request->getParam("channel")->value();           //获取AP信道
-  String hidden2 = request->getParam("hidden")->value();             //获取wifi隐身配置
-  String startupMode2 = request->getParam("startupMode")->value();   //获取上电默认模式
+  String ssid2 = request->getParam("hotspotName")->value();          // 获取热点名称
+  String password2 = request->getParam("hotspotPassword")->value();  // 获取热点密码
+  String channel2 = request->getParam("channel")->value();           // 获取AP信道
+  String hidden2 = request->getParam("hidden")->value();             // 获取wifi隐身配置
+  String startupMode2 = request->getParam("startupMode")->value();   // 获取上电默认模式
   String message = "";
   char filetxt[CONFIG_FILE_MAX_LENGTH] = { 0 };
   char flag = 0;
@@ -107,7 +107,7 @@ void configAP(AsyncWebServerRequest *request) {
   }
 }
 
-//发送配置WiFi自动连接网页
+// 发送配置WiFi自动连接网页
 void pageConfigAutoConnect(AsyncWebServerRequest *request) {
   String message = htmlAutoConnect1 + htmlAutoConnect2 + htmlAutoConnect3;
   message += pressid;
@@ -127,11 +127,11 @@ void pageConfigAutoConnect(AsyncWebServerRequest *request) {
   request->send(200, "text/html", message);
 }
 
-//保存WiFi自动连接配置
+// 保存WiFi自动连接配置
 void configAutoConnect(AsyncWebServerRequest *request) {
-  String pressid2 = request->getParam("pressid")->value();          //获取WiFi名称
-  String prepassword2 = request->getParam("prepassword")->value();  //获取WiFi密码
-  String startupMode2 = request->getParam("startupMode")->value();  //获取上电默认模式
+  String pressid2 = request->getParam("pressid")->value();          // 获取WiFi名称
+  String prepassword2 = request->getParam("prepassword")->value();  // 获取WiFi密码
+  String startupMode2 = request->getParam("startupMode")->value();  // 获取上电默认模式
   String message = "";
   char filetxt[CONFIG_FILE_MAX_LENGTH] = { 0 };
   char flag = 0;
@@ -161,7 +161,7 @@ void config_handleNotFound(AsyncWebServerRequest *request) {
   request->send(404, "text/plain", message);
 }
 
-//发送配置WebDAV网页
+// 发送配置WebDAV网页
 void pageConfigWebDav(AsyncWebServerRequest *request) {
   String message = htmlWebDav1 + htmlWebDav2;
   message += webDavPort;
@@ -175,10 +175,10 @@ void pageConfigWebDav(AsyncWebServerRequest *request) {
   request->send(200, "text/html", message);
 }
 
-//保存WebDAV配置
+// 保存WebDAV配置
 void configWebDav(AsyncWebServerRequest *request) {
-  String webDavPort2 = request->getParam("webDavPort")->value();  //获取WebDAV端口
-  String webDavMode2 = request->getParam("webDavMode")->value();  //获取WebDAV模式
+  String webDavPort2 = request->getParam("webDavPort")->value();  // 获取WebDAV端口
+  String webDavMode2 = request->getParam("webDavMode")->value();  // 获取WebDAV模式
   int webDavPort3 = String2int((char *)webDavPort2.c_str());
   String message = "";
 

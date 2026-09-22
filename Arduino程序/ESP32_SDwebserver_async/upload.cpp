@@ -1,10 +1,10 @@
 #include "upload.h"
 
 void listUploadFile(AsyncWebServerRequest *request) {
-  String page = request->getParam("page")->value();  //获取页数
+  String page = request->getParam("page")->value();  // 获取页数
   const char *dirname = "/upload";
   uint8_t i = 1;
-  const char pageBreak = 20;  //设定分页区间，每20个文件一页
+  const char pageBreak = 20;  // 设定分页区间，每20个文件一页
   char page0 = String2Char((char *)page.c_str());
   char page1 = (page0 - 1) * pageBreak;
   char page2 = page0 * pageBreak + 1;
@@ -50,7 +50,7 @@ void listUploadFile(AsyncWebServerRequest *request) {
     }
     file = root.openNextFile();
   }
-  // message.remove(message.length() - 1);  //删除最后的","
+  // message.remove(message.length() - 1);  // 删除最后的","
 
   pageTotal = (i + pageBreak - 2) / pageBreak;
   message += " ], \"currentPage\": ";
@@ -145,7 +145,7 @@ void deleteUploadFile(AsyncWebServerRequest *request) {
   }
 }
 
-//https://forum.arduino.cc/t/esp32-espasyncwebserver-library-beginchunkedresponse-usage/1403445/15
+// https://forum.arduino.cc/t/esp32-espasyncwebserver-library-beginchunkedresponse-usage/1403445/15
 
 void downloadUploadFile(AsyncWebServerRequest *request) {
   String attname = request->getParam("attname")->value();

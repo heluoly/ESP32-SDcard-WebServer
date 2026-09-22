@@ -7,10 +7,10 @@
 #include "esp_sntp.h"
 #include <WiFi.h>
 
-//时钟中心位置
-#define clockCenterX 64  //时钟X轴
-#define clockCenterY 32  //时钟Y轴
-#define clockRadius 31   //表盘大小
+// 时钟中心位置
+#define clockCenterX 64  // 时钟X轴
+#define clockCenterY 32  // 时钟Y轴
+#define clockRadius 31   // 表盘大小
 
 void setTime(AsyncWebServerRequest *request);
 void oledClock_Display();

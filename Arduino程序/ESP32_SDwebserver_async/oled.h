@@ -28,7 +28,7 @@ void OLED_ShowNum(unsigned char x, unsigned char y, uint32_t num, unsigned char 
 void OLED_ShowNum_RAM(unsigned char x, unsigned char y, uint32_t num, unsigned char len, unsigned char sizey);
 void OLED_ShowString(unsigned char x, unsigned char y, const char *chr, unsigned char sizey);
 void OLED_ShowString_RAM(unsigned char x, unsigned char y, const char *chr, unsigned char sizey);
-//void OLED_ShowChinese(unsigned char x,unsigned char y,const unsigned char no,unsigned char sizey);
+// void OLED_ShowChinese(unsigned char x,unsigned char y,const unsigned char no,unsigned char sizey);
 // void OLED_DrawBMP(unsigned char x,unsigned char y,unsigned char sizex, unsigned char sizey,const unsigned char BMP[]);
 void OLED_Init(void);
 

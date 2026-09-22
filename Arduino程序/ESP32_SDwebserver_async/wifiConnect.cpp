@@ -18,13 +18,13 @@ const String htmlWIFIConnect4 = "\" disabled=\"\"><br>DNS：<input name=\"dns\" 
 const String htmlWIFIConnect5 = "\" disabled=\"\"><br><br><input type=\"button\" value=\"扫描\" onclick=\"scan()\"> <input type=\"button\" value=\"连接\" onclick=\"wifi()\"></form><div id=\"scan\"></div><p><a href=\"/\">返回AP模式</a> </p></div></body></html>";
 
 
-//定义一个结构体，用于存放4位IP地址
+// 定义一个结构体，用于存放4位IP地址
 struct struct_ipaddr {
   uint8_t ipaddr_temp[4];
 };
 
 
-//发送配网页面
+// 发送配网页面
 void handleRoot(AsyncWebServerRequest *request) {
   char buff[CONFIG_MAX_LENGTH];
   String staticIP1 = "";
@@ -47,7 +47,7 @@ void handleRoot(AsyncWebServerRequest *request) {
   request->send(200, "text/html", message);
 }
 
-//扫描附近WIFI并返回
+// 扫描附近WIFI并返回
 void HandleScanWifi(AsyncWebServerRequest *request) {
   uint8_t i = 0;
   String scanstr = "";
@@ -66,15 +66,15 @@ void HandleScanWifi(AsyncWebServerRequest *request) {
   request->send(200, "text/html", scanstr);
 }
 
-//尝试连接网页发送的WIFI
+// 尝试连接网页发送的WIFI
 void HandleWifi(AsyncWebServerRequest *request) {
-  String wifis = request->getParam("ssid")->value();          //获取WIFI名称
-  String wifip = request->getParam("password")->value();      //获取WIFI密码
-  String ip2 = request->getParam("ip")->value();              //判断是DHCP连接还是静态IP连接
-  String staticIP2 = request->getParam("staticIP")->value();  //静获取态IP地址
-  String gateway2 = request->getParam("gateway")->value();    //静获取态IP网关
-  String subnet2 = request->getParam("subnet")->value();      //静获取态IP子网
-  String dns2 = request->getParam("dns")->value();            //静获取态IP的dns
+  String wifis = request->getParam("ssid")->value();          // 获取WIFI名称
+  String wifip = request->getParam("password")->value();      // 获取WIFI密码
+  String ip2 = request->getParam("ip")->value();              // 判断是DHCP连接还是静态IP连接
+  String staticIP2 = request->getParam("staticIP")->value();  // 静获取态IP地址
+  String gateway2 = request->getParam("gateway")->value();    // 静获取态IP网关
+  String subnet2 = request->getParam("subnet")->value();      // 静获取态IP子网
+  String dns2 = request->getParam("dns")->value();            // 静获取态IP的dns
   struct_ipaddr x;
   // String IPAD3 = "";
   // Serial.println("received:" + wifis);
@@ -87,7 +87,7 @@ void HandleWifi(AsyncWebServerRequest *request) {
   */
   WiFi.disconnect(true, true);
 
-  if (ip2 == "1")  //配置静态IP情况
+  if (ip2 == "1")  // 配置静态IP情况
   {
     x = StringToIPAddress(staticIP2);
     IPAddress staticIP(x.ipaddr_temp[0], x.ipaddr_temp[1], x.ipaddr_temp[2], x.ipaddr_temp[3]);
@@ -108,19 +108,17 @@ void HandleWifi(AsyncWebServerRequest *request) {
     WiFi.config(test, test, test, test);
   }
 
-  //尝试连接WIFI
+  // 尝试连接WIFI
   WiFi.begin((char *)wifis.c_str(), (char *)wifip.c_str());
-  for (int i = 0; i < 9; i++)  //超时判断，Async TCP 5秒不喂狗会重启
+  for (int i = 0; i < 9; i++)  // 超时判断，Async TCP 5秒不喂狗会重启
   {
-    if (WiFi.status() == WL_CONNECTED)  //如果检测到状态为成功连接WIFI
+    if (WiFi.status() == WL_CONNECTED)  // 如果检测到状态为成功连接WIFI
     {
       // Serial.printf("SSID:%s\r\n", WiFi.SSID().c_str());
       // Serial.printf("PSW:%s\r\n", WiFi.psk().c_str());
       STAIPAD = WiFi.localIP().toString();
 
-      //写入配置文件当前连接的WiFi
-      // configWrite(config_fs, "pressid", (char*)wifis.c_str(), "/config.txt");
-      // configWrite(config_fs, "prepassword", (char*)wifip.c_str(), "/config.txt");
+      // 写入配置文件当前连接的WiFi
       char filetxt[CONFIG_FILE_MAX_LENGTH] = { 0 };
       configWriteOpen(config_fs, "/config.txt", (char *)filetxt);
       configRewrite("pressid", (char *)wifis.c_str(), (char *)filetxt);
@@ -130,10 +128,6 @@ void HandleWifi(AsyncWebServerRequest *request) {
       prepassword = wifip;
       if (ip2 == "1")  //保存静态IP
       {
-        // configWrite(config_fs, "staticIP", (char*)staticIP2.c_str(), "/config.txt");
-        // configWrite(config_fs, "gateway", (char*)gateway2.c_str(), "/config.txt");
-        // configWrite(config_fs, "subnet", (char*)subnet2.c_str(), "/config.txt");
-        // configWrite(config_fs, "dns", (char*)dns2.c_str(), "/config.txt");
         memset(filetxt, 0, sizeof(filetxt));
         configWriteOpen(config_fs, "/config.txt", (char *)filetxt);
         configRewrite("staticIP", (char *)staticIP2.c_str(), (char *)filetxt);
@@ -142,11 +136,11 @@ void HandleWifi(AsyncWebServerRequest *request) {
         configRewrite("dns", (char *)dns2.c_str(), (char *)filetxt);
         configWriteClose(config_fs, "/config.txt", (char *)filetxt);
       }
-      request->send(200, "text/html", "连接成功 IP: " + STAIPAD);  //发送连接的IP地址
-      nextServerState = MY_SERVER_STATE_AP_STA;                    //配网成功，跳转到AP+STA模式
-      mode_switch = 0;                                             //函数跳出while循环，从而在loop函数中进入下一个模式
+      request->send(200, "text/html", "连接成功 IP: " + STAIPAD);  // 发送连接的IP地址
+      nextServerState = MY_SERVER_STATE_AP_STA;                    // 配网成功，跳转到AP+STA模式
+      mode_switch = 0;                                             // 函数跳出while循环，从而在loop函数中进入下一个模式
 
-      return;  //如果成功连接，则返回到主函数
+      return;  // 如果成功连接，则返回到主函数
 
     } else {
       vTaskDelay(500 / portTICK_PERIOD_MS);
@@ -155,7 +149,7 @@ void HandleWifi(AsyncWebServerRequest *request) {
   request->send(200, "text/html", "连接失败");
 }
 
-//将IP地址字符串转换为结构体，分别存储4位IP地址
+// 将IP地址字符串转换为结构体，分别存储4位IP地址
 struct struct_ipaddr StringToIPAddress(String ipaddr) {
   struct struct_ipaddr y;
   y.ipaddr_temp[0] = 0;
@@ -168,10 +162,10 @@ struct struct_ipaddr StringToIPAddress(String ipaddr) {
   uint8_t temp[3] = { 1, 10, 100 };
   len = ipaddr.length();
   for (i = 0; i < len; i++) {
-    if (ipaddr[i] == '.')  //通过.来分割IP地址
+    if (ipaddr[i] == '.')  // 通过.来分割IP地址
     {
       for (k = 0; k < i - j; k++) {
-        y.ipaddr_temp[count] += (ipaddr[i - k - 1] & 0x0f) * temp[k];  //个位*1 + 十位*10 + 百位*100
+        y.ipaddr_temp[count] += (ipaddr[i - k - 1] & 0x0f) * temp[k];  // 个位*1 + 十位*10 + 百位*100
       }
       j = i + 1;
       count++;

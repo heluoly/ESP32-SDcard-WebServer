@@ -71,30 +71,30 @@ char writeFile(fs::FS &fs, const char *path, const char *message) {
   }
 }
 
-//下载带中文名文件
+// 下载带中文名文件
 void downloadFile(AsyncWebServerRequest *request) {
   String filePath = request->getParam("filePath")->value();
   AsyncWebServerResponse *response = request->beginResponse(my_fs, filePath, String());
   request->send(response);
 }
 
-//字符串转数字
+// 字符串转数字
 char String2Char(char *str) {
-  char flag = '+';  //指示结果是否带符号
+  char flag = '+';  // 指示结果是否带符号
   long res = 0;
 
-  if (*str == '-')  //字符串带负号
+  if (*str == '-')  // 字符串带负号
   {
-    ++str;       //指向下一个字符
-    flag = '-';  //将标志设为负号
+    ++str;       // 指向下一个字符
+    flag = '-';  // 将标志设为负号
   }
-  //逐个字符转换，并累加到结果res
-  while (*str >= 48 && *str <= 57)  //如果是数字才进行转换，数字0~9的ASCII码：48~57
+  // 逐个字符转换，并累加到结果res
+  while (*str >= 48 && *str <= 57)  // 如果是数字才进行转换，数字0~9的ASCII码：48~57
   {
-    res = 10 * res + *str++ - 48;  //字符'0'的ASCII码为48,48-48=0刚好转化为数字0
+    res = 10 * res + *str++ - 48;  // 字符'0'的ASCII码为48,48-48=0刚好转化为数字0
   }
 
-  if (flag == '-')  //处理是负数的情况
+  if (flag == '-')  // 处理是负数的情况
   {
     res = -res;
   }
@@ -103,28 +103,27 @@ char String2Char(char *str) {
 }
 
 int String2int(char *str) {
-  char flag = '+';  //指示结果是否带符号
+  char flag = '+';  // 指示结果是否带符号
   long res = 0;
 
-  if (*str == '-')  //字符串带负号
+  if (*str == '-')  // 字符串带负号
   {
-    ++str;       //指向下一个字符
-    flag = '-';  //将标志设为负号
+    ++str;       // 指向下一个字符
+    flag = '-';  // 将标志设为负号
   }
-  //逐个字符转换，并累加到结果res
-  while (*str >= 48 && *str <= 57)  //如果是数字才进行转换，数字0~9的ASCII码：48~57
+  // 逐个字符转换，并累加到结果res
+  while (*str >= 48 && *str <= 57)  // 如果是数字才进行转换，数字0~9的ASCII码：48~57
   {
-    res = 10 * res + *str++ - 48;  //字符'0'的ASCII码为48,48-48=0刚好转化为数字0
+    res = 10 * res + *str++ - 48;  // 字符'0'的ASCII码为48,48-48=0刚好转化为数字0
   }
 
-  if (flag == '-')  //处理是负数的情况
+  if (flag == '-')  // 处理是负数的情况
   {
     res = -res;
   }
 
   return (int)res;
 }
-
 
 // 读取一行配置，返回行结束符类型
 int readConfigLine(File &file, char *buffer, int bufferSize) {
@@ -280,7 +279,7 @@ bool configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
   file.close();
   
   // 处理文件内容
-  bool keyFound = false;
+  // bool keyFound = false;
   String output;
   int lineStart = 0;
   
@@ -302,7 +301,7 @@ bool configWrite(fs::FS &fs, const char *key, const char *val, const char *filen
           output += key;
           output += "=";
           output += val;
-          keyFound = true;
+          // keyFound = true;
         } else {
           // 保持原行不变
           output += line;
@@ -460,7 +459,7 @@ bool configDelete(fs::FS &fs, const char *key, const char *filename) {
 }
 
 // char filetxt[CONFIG_FILE_MAX_LENGTH] = { 0 };
-//一次写入配置文件多个参数1
+// 一次写入配置文件多个参数1
 char configWriteOpen(fs::FS &fs, const char *filename, char *filetxt) {
   filetxt[0] = '\0';
   uint16_t i = 0;
@@ -484,7 +483,7 @@ char configWriteOpen(fs::FS &fs, const char *filename, char *filetxt) {
   return 1;
 }
 
-//一次写入配置文件多个参数2
+// 一次写入配置文件多个参数2
 char configRewrite(const char *key, const char *val, char *filetxt) {
   if (key == nullptr || val == nullptr || filetxt == nullptr) return 0;
 
@@ -561,7 +560,7 @@ char configRewrite(const char *key, const char *val, char *filetxt) {
   return 0;
 }
 
-//一次写入配置文件多个参数3
+// 一次写入配置文件多个参数3
 char configWriteClose(fs::FS &fs, const char *filename, char *filetxt) {
   File file = fs.open(filename, FILE_WRITE);
   if (!file) {
