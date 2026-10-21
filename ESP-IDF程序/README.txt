@@ -4,13 +4,23 @@
 在IDF中可以修改lwIP协议栈中 TCP 默认发送缓冲区的大小，因此在IDF中编译的固件推流速度比Arduino中编译的快
 推流速度最高可到3.5MB/s，速度不达标检查模组天线布局、检查焊接是否有锡珠残留在天线附近，以及更换性能好的SD/TF卡，找一个信号干扰小的地方和时段测试
 
-编译方法：
+ESP32_SDwebserver_idf版本编译方法：
 1、新建一个IDF工程项目，在上方选择信任工作区，把新建项目的main文件夹把里面的文件删除
 2、将本项目中的程序文件复制到你新建的项目中
 3、参照项目README.md修改代码中你所用的引脚号
 4、点击左下角小扳手开始编译，保持网络畅通，编译前会自动下载所需依赖
-5、如果编译失败，在managed_components\esp32async__asynctcp\CMakeLists.txt文件中加入REQUIRES arduino-esp32
+5、等待编译失败，项目会生成managed_components文件夹，将本项目下 `/补丁/esp-idf` 目录内的全部文件复制到managed_components文件夹，完成覆盖替换
 6、编译完成后，点击左下角插头图标选择烧录方式，点击闪电图标进行烧录
+
+ESP32_SDwebserver_exFAT版本在idf版本上增加了exFAT文件系统的支持，该文件系统不再受最大存储4GB文件的限制
+ESP32_SDwebserver_exFAT版本编译方法：
+1、找到你在电脑上安装ESP-IDF v5.5.5的安装目录，打开 `.\esp-idf\components\fatfs\src\ffconf.h` 文件，将 #define FF_LBA64 和 #define FF_FS_EXFAT 后的 0 改 1
+2、新建一个IDF工程项目，在上方选择信任工作区，把新建项目的main文件夹把里面的文件删除
+3、将本项目中的程序文件复制到你新建的项目中
+4、参照项目README.md修改代码中你所用的引脚号
+5、点击左下角小扳手开始编译，保持网络畅通，编译前会自动下载所需依赖
+6、等待编译失败，项目会生成managed_components文件夹，将本项目下 `/补丁/esp-idf` 目录内的全部文件复制到managed_components文件夹，完成覆盖替换
+7、编译完成后，点击左下角插头图标选择烧录方式，点击闪电图标进行烧录
 
 一些可能导致编译报错的情况以及解决方法：
 1、项目文件路径过长。解决办法：新建项目在磁盘根目录，同时缩短项目文件名长度
