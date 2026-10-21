@@ -29,13 +29,11 @@ void i2c_dma_init() {
 
   i2c_new_master_bus(&bus_cfg, &i2c_bus);
 
-  i2c_device_config_t dev_cfg = {
-    .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-    .device_address = OLED_ADDR,
-    .scl_speed_hz = OLED_I2C_FREQ,
-    .scl_wait_us = 0,
-    .flags = 0,
-  };
+  i2c_device_config_t dev_cfg = {};
+  dev_cfg.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+  dev_cfg.device_address = OLED_ADDR;
+  dev_cfg.scl_speed_hz = OLED_I2C_FREQ;
+  dev_cfg.scl_wait_us = 0;
 
   i2c_master_bus_add_device(i2c_bus, &dev_cfg, &oled_dev);
 }

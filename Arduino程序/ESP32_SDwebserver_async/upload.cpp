@@ -1,4 +1,5 @@
 #include "upload.h"
+#include "rangeFileResponse.h"
 
 void listUploadFile(AsyncWebServerRequest *request) {
   String page = request->getParam("page")->value();  // 获取页数
@@ -17,9 +18,11 @@ void listUploadFile(AsyncWebServerRequest *request) {
   File root = my_fs.open(dirname);
   if (!root) {
     request->send(404, "text/plain", "Not found");
+    return;
   }
   if (!root.isDirectory()) {
     request->send(404, "text/plain", "Not found");
+    return;
   }
 
   message += "{\"files\": [ ";
@@ -145,119 +148,20 @@ void deleteUploadFile(AsyncWebServerRequest *request) {
   }
 }
 
-// https://forum.arduino.cc/t/esp32-espasyncwebserver-library-beginchunkedresponse-usage/1403445/15
-
 void downloadUploadFile(AsyncWebServerRequest *request) {
-  String attname = request->getParam("attname")->value();
+  if (!request->hasParam("downloadPath")) {
+    request->send(400, "text/plain", "missing downloadPath");
+    return;
+  }
   String downloadPath = request->getParam("downloadPath")->value();
-
-  // Serial.println(downloadPath);
-  if (!my_fs.exists(downloadPath)) {
-    request->send(404, "text/plain", "Not found");
-    return;
+  String attname = "";
+  if (request->hasParam("attname")) {
+    attname = request->getParam("attname")->value();
+  }
+  if (attname.length() == 0) {
+    int slash = downloadPath.lastIndexOf('/');
+    attname = (slash >= 0) ? downloadPath.substring(slash + 1) : downloadPath;
   }
 
-  File file = my_fs.open(downloadPath, FILE_READ);
-  if (!file) {
-    request->send(500, "text/plain", "Failed to open file");
-    return;
-  }
-
-  size_t fileSize = file.size();
-  size_t startByte = 0;
-  size_t endByte = fileSize - 1;
-  bool isPartialContent = false;
-
-  // 解析Range头部
-  if (request->hasHeader("Range")) {
-    String rangeHeader = request->getHeader("Range")->value();
-    // Serial.println("Range Header: " + rangeHeader);
-
-    if (rangeHeader.startsWith("bytes=")) {
-      String rangeValue = rangeHeader.substring(6);
-      int dashIndex = rangeValue.indexOf('-');
-
-      if (dashIndex != -1) {
-        String startStr = rangeValue.substring(0, dashIndex);
-        String endStr = rangeValue.substring(dashIndex + 1);
-
-        if (startStr.length() > 0) {
-          startByte = (size_t)strtoul(startStr.c_str(), NULL, 10);
-        }
-
-        if (endStr.length() > 0) {
-          endByte = (size_t)strtoul(endStr.c_str(), NULL, 10);
-        } else {
-          endByte = fileSize - 1;
-        }
-
-        // 边界检查
-        if (startByte >= fileSize || endByte >= fileSize || startByte > endByte) {
-          request->send(416, "text/plain", "The requested scope is invalid");
-          file.close();
-          return;
-        }
-
-        isPartialContent = true;
-      }
-    }
-  }
-
-  size_t contentLength = endByte - startByte + 1;
-
-  // 跳转到起始位置
-  if (startByte > 0) {
-    if (!file.seek(startByte)) {
-      request->send(500, "text/plain", "Failed to open file");
-      file.close();
-      return;
-    }
-  }
-
-  // Serial.printf("传输范围: %s [%zu-%zu]/%zu, 长度: %zu\n", attname.c_str(), startByte, endByte, fileSize, contentLength);
-
-  // 使用智能指针管理文件对象
-  auto filePtr = std::make_shared<File>(std::move(file));
-
-  // 创建分块响应
-  AsyncWebServerResponse *response = request->beginChunkedResponse(
-    "application/octet-stream",
-    [filePtr, startByte, endByte, contentLength](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
-      // 计算剩余字节数
-      size_t bytesRemaining = contentLength - index;
-
-      // 如果已经传输完毕
-      if (bytesRemaining == 0) {
-        filePtr->close();
-        return 0;
-      }
-
-      // 计算本次读取的字节数
-      size_t bytesToRead = min(maxLen, bytesRemaining);
-
-      // 读取文件数据
-      size_t bytesRead = filePtr->read(buffer, bytesToRead);
-
-      // 检查是否到达了结束位置
-      size_t currentPos = startByte + index + bytesRead;
-      if (currentPos > endByte + 1) {
-        bytesRead = endByte + 1 - (startByte + index);
-      }
-
-      return bytesRead;
-    });
-
-  // 设置HTTP头
-  if (isPartialContent) {
-    response->setCode(206);
-    String contentRange = "bytes " + String(startByte) + "-" + String(endByte) + "/" + String(fileSize);
-    response->addHeader("Content-Range", contentRange);
-  }
-
-  response->addHeader("Content-Length", String(contentLength));
-  response->addHeader("Accept-Ranges", "bytes");
-  response->addHeader("Content-Disposition", "attachment; filename=\"" + attname + "\"");
-  response->addHeader("Connection", "close");
-
-  request->send(response);
+  rangeFileServeDownload(request, downloadPath, attname);
 }

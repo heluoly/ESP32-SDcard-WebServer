@@ -5,6 +5,24 @@ size_t parseSize(const String& s) {
     return (size_t) strtoul(s.c_str(), nullptr, 10);
 }
 
+static String contentTypeForPath(const String &path) {
+  if (path.endsWith(".html")) return "text/html";
+  if (path.endsWith(".mp4")) return "video/mp4";
+  if (path.endsWith(".vtt")) return "text/vtt";
+  if (path.endsWith(".css")) return "text/css";
+  if (path.endsWith(".js")) return "application/javascript";
+  if (path.endsWith(".json")) return "application/json";
+  if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
+  if (path.endsWith(".png")) return "image/png";
+  if (path.endsWith(".gif")) return "image/gif";
+  if (path.endsWith(".ico")) return "image/x-icon";
+  if (path.endsWith(".txt")) return "text/plain; charset=utf-8";
+  if (path.endsWith(".mkv")) return "video/x-matroska";
+  if (path.endsWith(".mp3")) return "audio/mpeg";
+  if (path.endsWith(".m4a")) return "audio/mp4";
+  return "application/octet-stream";
+}
+
 class RangeFileResponse : public AsyncAbstractResponse {
 private:
   File _file;
@@ -61,18 +79,7 @@ public:
 };
 
 
-void rangeFileServe(AsyncWebServerRequest *request, const String& path) {
-  String contentType = "";
-  if (path.endsWith(".html")) contentType = "text/html";
-  else if (path.endsWith(".mp4")) contentType = "video/mp4";
-  else if (path.endsWith(".css")) contentType = "text/css";
-  else if (path.endsWith(".js")) contentType = "application/javascript";
-  else if (path.endsWith(".jpg")) contentType = "image/jpeg";
-  else if (path.endsWith(".png")) contentType = "image/png";
-  else if (path.endsWith(".gif")) contentType = "image/gif";
-  else if (path.endsWith(".ico")) contentType = "image/x-icon";
-  else contentType = "application/octet-stream";
-
+void serveFile(AsyncWebServerRequest *request, const String& path, const String &contentType, const String &downloadName) {
   if (!my_fs.exists(path)) {
     request->send(404, "text/plain", "File not found");
     return;
@@ -115,6 +122,9 @@ void rangeFileServe(AsyncWebServerRequest *request, const String& path) {
           request->send(500, "text/plain", "Internal Server Error");
           return;
         }
+        if (downloadName.length()) {
+          response->addHeader("Content-Disposition", "attachment; filename=\"" + downloadName + "\"");
+        }
         request->send(response);
         return;
       } else if (dashIndex == 0) {
@@ -130,6 +140,9 @@ void rangeFileServe(AsyncWebServerRequest *request, const String& path) {
           delete response;
           request->send(500, "text/plain", "Internal Server Error");
           return;
+        }
+        if (downloadName.length()) {
+          response->addHeader("Content-Disposition", "attachment; filename=\"" + downloadName + "\"");
         }
         request->send(response);
         return;
@@ -150,5 +163,16 @@ void rangeFileServe(AsyncWebServerRequest *request, const String& path) {
     request->send(500, "text/plain", "Internal Server Error");
     return;
   }
+  if (downloadName.length()) {
+    response->addHeader("Content-Disposition", "attachment; filename=\"" + downloadName + "\"");
+  }
   request->send(response);
+}
+
+void rangeFileServe(AsyncWebServerRequest *request, const String &path) {
+  serveFile(request, path, contentTypeForPath(path), "");
+}
+
+void rangeFileServeDownload(AsyncWebServerRequest *request, const String &path, const String &downloadName) {
+  serveFile(request, path, "application/octet-stream", downloadName);
 }

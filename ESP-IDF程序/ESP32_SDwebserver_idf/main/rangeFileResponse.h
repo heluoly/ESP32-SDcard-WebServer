@@ -3,6 +3,7 @@
 
 #include "common.h"
 
-void rangeFileServe(AsyncWebServerRequest *request, const String& path);
+void rangeFileServe(AsyncWebServerRequest *request, const String &path);
+void rangeFileServeDownload(AsyncWebServerRequest *request, const String &path, const String &downloadName);
 
 #endif
