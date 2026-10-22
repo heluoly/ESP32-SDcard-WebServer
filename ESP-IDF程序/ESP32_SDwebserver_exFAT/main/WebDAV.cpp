@@ -75,6 +75,7 @@ String buildPropResponse(const String &href, File file, bool isDir) {
     xml += "<D:resourcetype/>\n";
     char sizeBuf[24];
     snprintf(sizeBuf, sizeof(sizeBuf), "%llu", (unsigned long long)sd64::fileSize(file.path()));
+    xml += "<D:getcontentlength>" + String(sizeBuf) + "</D:getcontentlength>\n";
   }
   xml += "<D:displayname>" + String(file.name()) + "</D:displayname>\n";
 
