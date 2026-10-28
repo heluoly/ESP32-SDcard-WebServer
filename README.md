@@ -66,7 +66,7 @@
 ```python
 python process_videos.py /视频输入文件夹路径 /视频输出文件夹路径
 ```
-"视频输入文件夹路径"存放你准备好的多个MP4文件，"视频输入文件夹路径"将得到本项目ESP32能够读取的文件结构格式，每个子文件夹包含0.jpg，0.txt，video.mp4
+"视频输入文件夹路径"存放你准备好的多个MP4文件，"视频输出文件夹路径"将得到本项目ESP32能够读取的文件结构格式，每个子文件夹包含0.jpg，0.txt，video.mp4
 
 6. 运行程序后，将"视频输出文件夹路径"内文件全部复制到内存卡中的/video-mp4/shortvideo或/video-mp4/movie内，手动配置方式请参考项目中/内存卡/README.txt文件
 
@@ -107,6 +107,8 @@ python process_videos.py /视频输入文件夹路径 /视频输出文件夹路�
 # 视频演示：
 
 - https://www.bilibili.com/video/BV1BoNg6kE8S/
+
+- https://www.bilibili.com/video/BV1rysX6JEyX/
 
 
 # 参考项目

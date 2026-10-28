@@ -6,3 +6,5 @@
 打开路径 `%USERPROFILE%\Documents\Arduino\libraries`，将本项目下 `/补丁/arduino` 目录内的全部文件复制到此目录，完成覆盖替换。
 3. ESP‑IDF程序使用方式：
 完成首次编译后，项目会生成 `managed_components` 文件夹，将本项目下 `/补丁/esp-idf` 目录内的全部文件复制到该目录，完成覆盖替换。
+
+其中 `/补丁/esp-idf` 内的 `espressif__esp-modbus` 是 `arduino-esp32:3.3.12` 的依赖，解决开启-O2优化这个文件会报错，这个补丁能解决报错
