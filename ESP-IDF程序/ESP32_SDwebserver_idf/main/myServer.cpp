@@ -19,6 +19,7 @@ extern char ssid_hidden;
 extern char startupMode;
 extern String pressid;
 extern String prepassword;
+extern char enableIpv6;
 extern char webDavState;
 extern char webDavMode;
 extern int webDavPort;
@@ -74,11 +75,45 @@ void pageModeConversion(AsyncWebServerRequest *request) {
   String message = htmlHeader;
   message += "<title>服务器模式转换</title><style>.container { width: 320px; margin: 0 auto; }</style></head><body><div class=\"container\"><h2>服务器模式转换</h2>";
   if (currentServerState == MY_SERVER_STATE_AP) {
-    message += "<h3>当前模式：AP模式</h3><p><a href=\"/modeConversion?nextServerState=2\">转换为STA模式</a></p><p><a href=\"/modeConversion?nextServerState=3\">转换为AP+STA模式</a></p><p><a href=\"/wifiConnect\">网页配网</a></p><p><a href=\"/\">返回主页</a></p></div></body></html>";
+    message += "<h3>当前模式：AP模式</h3>IP地址：<br>";
+    message += APIPAD;
+    message += "<p><a href=\"/modeConversion?nextServerState=2\">转换为STA模式</a></p><p><a href=\"/modeConversion?nextServerState=3\">转换为AP+STA模式</a></p><p><a href=\"/wifiConnect\">网页配网</a></p><p><a href=\"/\">返回主页</a></p></div></body></html>";
   } else if (currentServerState == MY_SERVER_STATE_STA) {
-    message += "<h3>当前模式：STA模式</h3><p><a href=\"/modeConversion?nextServerState=1\">转换为AP模式</a></p><p><a href=\"/modeConversion?nextServerState=3\">转换为AP+STA模式</a></p><p><a href=\"/\">返回主页</a></p></div></body></html>";
+    message += "<h3>当前模式：STA模式</h3>IP地址：<br>";
+    message += WiFi.localIP().toString();
+    message += "<br>";
+    if (enableIpv6) {
+      String ipv6Local = WiFi.linkLocalIPv6().toString();
+      if (ipv6Local != "::") {
+        message += ipv6Local;
+        message += "<br>";
+      }
+      String ipv6Global = WiFi.globalIPv6().toString();
+      if (ipv6Global != "::") {
+        message += ipv6Global;
+        message += "<br>";
+      }
+    }
+    message += "<p><a href=\"/modeConversion?nextServerState=1\">转换为AP模式</a></p><p><a href=\"/modeConversion?nextServerState=3\">转换为AP+STA模式</a></p><p><a href=\"/\">返回主页</a></p></div></body></html>";
   } else if (currentServerState == MY_SERVER_STATE_AP_STA) {
-    message += "<h3>当前模式：AP+STA模式</h3><p><a href=\"/modeConversion?nextServerState=1\">转换为AP模式</a></p><p><a href=\"/modeConversion?nextServerState=2\">转换为STA模式</a></p><p><a href=\"/\">返回主页</a></p></div></body></html>";
+    message += "<h3>当前模式：AP+STA模式</h3>IP地址：<br>";
+    message += APIPAD;
+    message += "<br>";
+    message += WiFi.localIP().toString();
+    message += "<br>";
+    if (enableIpv6) {
+      String ipv6Local = WiFi.linkLocalIPv6().toString();
+      if (ipv6Local != "::") {
+        message += ipv6Local;
+        message += "<br>";
+      }
+      String ipv6Global = WiFi.globalIPv6().toString();
+      if (ipv6Global != "::") {
+        message += ipv6Global;
+        message += "<br>";
+      }
+    }
+    message += "<p><a href=\"/modeConversion?nextServerState=1\">转换为AP模式</a></p><p><a href=\"/modeConversion?nextServerState=2\">转换为STA模式</a></p><p><a href=\"/\">返回主页</a></p></div></body></html>";
   }
   request->send(200, "text/html", message);
 }
@@ -131,6 +166,9 @@ void WiFiconfigRead() {
   if (configRead(config_fs, "prepassword", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     prepassword = buff;
   }
+  if (configRead(config_fs, "enableIpv6", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
+    enableIpv6 = String2Char((char *)buff);
+  }
   if (configRead(config_fs, "webDavMode", "/config.txt", buff, CONFIG_MAX_LENGTH)) {
     webDavMode = String2Char((char *)buff);
   }
@@ -163,13 +201,14 @@ void server_ap() {
   WiFi.disconnect(false, true);
   // WiFi.softAPdisconnect(false);
   WiFi.mode(WIFI_AP);
+  WiFi.enableIPv6(false);
 
   // IPAddress local_IP(192, 168, 1, 1);  // 配置ESP32的IP地址
   // IPAddress gateway(192, 168, 1, 1);   // 配置ESP32的网关
   // IPAddress subnet(255, 255, 255, 0);  // 配置ESP32的子网
   // WiFi.softAPConfig(local_IP, gateway, subnet);
 
-  // WiFi.softAP(ssid, passphrase, channel, ssid_hidden, max_connection)
+  //WiFi.softAP(ssid, passphrase, channel, ssid_hidden, max_connection)
   WiFi.softAP((char *)ssid.c_str(), (char *)password.c_str(), channel, ssid_hidden, 4);  // 启动AP模式
   // Serial.println(ssid);
   // Serial.println(password);
@@ -197,7 +236,6 @@ void server_ap() {
   esp32_server.onNotFound(handleUserRequest);                                  // fallback函数
   esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      // 列出文件
   esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        // 下载文件（断点续传）
-  esp32_server.on("/download", HTTP_GET, downloadFile);                        // 下载文件（带中文）
   esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            // 删除文件
   esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  // 上传文件
   esp32_server.on("/uploadStatus", HTTP_GET, handleUploadStatus);              // 查询上传状态（断点续传）
@@ -236,6 +274,11 @@ void server_sta() {
   nextServerState = MY_SERVER_STATE_AP;
   WiFi.softAPdisconnect(false);
   WiFi.mode(WIFI_STA);
+  if (enableIpv6) {
+    WiFi.enableIPv6(true);
+  } else {
+    WiFi.enableIPv6(false);
+  }
 
   // 尝试连接上次成功连接WIFI
   WiFi.begin((char *)pressid.c_str(), (char *)prepassword.c_str());
@@ -267,7 +310,6 @@ void server_sta() {
     esp32_server.onNotFound(handleUserRequest);                                  // fallback函数
     esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      // 列出文件
     esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        // 下载文件（断点续传）
-    esp32_server.on("/download", HTTP_GET, downloadFile);                        // 下载文件（带中文）
     esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            // 删除文件
     esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  // 上传文件
     esp32_server.on("/uploadStatus", HTTP_GET, handleUploadStatus);              // 查询上传状态（断点续传）
@@ -310,6 +352,11 @@ void server_ap_sta() {
   currentServerState = MY_SERVER_STATE_AP_STA;
   nextServerState = MY_SERVER_STATE_AP;
   WiFi.mode(WIFI_AP_STA);
+  if (enableIpv6) {
+    WiFi.enableIPv6(true);
+  } else {
+    WiFi.enableIPv6(false);
+  }
 
   // 尝试连接上次成功连接WIFI
   WiFi.begin((char *)pressid.c_str(), (char *)prepassword.c_str());
@@ -350,7 +397,6 @@ void server_ap_sta() {
     esp32_server.onNotFound(handleUserRequest);                                  // fallback函数
     esp32_server.on("/filelist", HTTP_GET, listUploadFile);                      // 列出文件
     esp32_server.on("/downloadUploadFile", HTTP_GET, downloadUploadFile);        // 下载文件（断点续传）
-    esp32_server.on("/download", HTTP_GET, downloadFile);                        // 下载文件（带中文）
     esp32_server.on("/deleteUploadFile", HTTP_GET, deleteUploadFile);            // 删除文件
     esp32_server.on("/upload", HTTP_POST, uploadFileRespond, handleFileUpload);  // 上传文件
     esp32_server.on("/uploadStatus", HTTP_GET, handleUploadStatus);              // 查询上传状态（断点续传）
@@ -431,7 +477,7 @@ void server_config() {
   esp32_server.reset();
 }
 
-
+// 服务器回调函数
 void handleUserRequest(AsyncWebServerRequest *request) {
   String path = request->url();
   if (path.endsWith("/")) {

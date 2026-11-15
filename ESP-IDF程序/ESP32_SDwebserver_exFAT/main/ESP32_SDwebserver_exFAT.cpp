@@ -76,6 +76,7 @@ char ssid_hidden = 0;                 // 热点WiFi隐身
 char startupMode = 0;                 // 开机默认模式
 String pressid = "yourwifi";          // 上次成功连接wifi名称
 String prepassword = "yourpassword";  // 上次成功连接wifi密码（注意WiFi密码位数不要小于8位）
+char enableIpv6 = 0;                  // 开启IPv6
 char webDavState = 0;                 // WebDAV当前状态
 char webDavMode = 0;                  // WebDAV模式
 int webDavPort = 8080;                // WebDAV端口
@@ -160,7 +161,7 @@ extern "C" void app_main()
       // Serial.println("failed to open file for writing");
       return;
     }
-    configFile.print("ssid=" + ssid + "\r\npassword=" + password + "\r\nchannel=1\r\nstartupMode=1\r\npressid=" + pressid + "\r\nprepassword=" + prepassword + "\r\nstaticIP=192.168.1.80\r\ngateway=192.168.1.1\r\nsubnet=255.255.255.0\r\ndns=223.5.5.5\r\nwebDavMode=0\r\nwebDavPort=8080\r\n\0");
+    configFile.print("ssid=" + ssid + "\r\npassword=" + password + "\r\nchannel=1\r\nstartupMode=1\r\npressid=" + pressid + "\r\nprepassword=" + prepassword + "\r\nenableIpv6=0\r\nstaticIP=192.168.1.80\r\ngateway=192.168.1.1\r\nsubnet=255.255.255.0\r\ndns=223.5.5.5\r\nwebDavMode=0\r\nwebDavPort=8080\r\n\0");
     configFile.close();
   }
 

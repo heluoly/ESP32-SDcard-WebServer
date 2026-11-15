@@ -7,6 +7,7 @@ extern char ssid_hidden;
 extern char startupMode;
 extern String pressid;
 extern String prepassword;
+extern char enableIpv6;
 extern char webDavMode;
 extern int webDavPort;
 
@@ -23,6 +24,9 @@ const String htmlAutoConnect3 = "WiFi名称： <input name=\"pressid\" type=\"te
 const String htmlAutoConnect4 = "\" required=\"required\" maxlength=\"63\" placeholder=\"请输入WiFi名称\" /><br>WiFi密码： <input name=\"prepassword\" type=\"text\" value=\"";
 const String htmlAutoConnect5 = "\" required=\"required\" maxlength=\"63\" placeholder=\"密码请不要少于8位\" />";
 const String htmlAutoConnect6 = "<br><br><input type=\"submit\" value=\"提交\" /></form><p><a href=\"/\">返回服务器</a> <a href=\"/pageConfigAP\">配置热点</a> <a href=\"/pageConfigWebDav\">配置WebDAV</a></p></div></body></html>";
+
+const String htmlIpv6State1 = "<br>IPv6功能： <input name=\"enableIpv6\" type=\"radio\" value=\"0\" checked>关闭<input name=\"enableIpv6\" type=\"radio\" value=\"1\">开启";
+const String htmlIpv6State2 = "<br>IPv6功能： <input name=\"enableIpv6\" type=\"radio\" value=\"0\">关闭<input name=\"enableIpv6\" type=\"radio\" value=\"1\" checked>开启";
 
 const String htmlStartupMode1 = "<br>上电默认模式： <input name=\"startupMode\" type=\"radio\" value=\"1\" checked>AP<input name=\"startupMode\" type=\"radio\" value=\"2\">STA<input name=\"startupMode\" type=\"radio\" value=\"3\">AP+STA";
 const String htmlStartupMode2 = "<br>上电默认模式： <input name=\"startupMode\" type=\"radio\" value=\"1\">AP<input name=\"startupMode\" type=\"radio\" value=\"2\" checked>STA<input name=\"startupMode\" type=\"radio\" value=\"3\">AP+STA";
@@ -82,10 +86,6 @@ void configAP(AsyncWebServerRequest *request) {
   String message = "";
   char filetxt[CONFIG_FILE_MAX_LENGTH] = { 0 };
   char flag = 0;
-  // flag = flag + configWrite(config_fs, "ssid", (char*)ssid2.c_str(), "/config.txt");
-  // flag = flag + configWrite(config_fs, "password", (char*)password2.c_str(), "/config.txt");
-  // flag = flag + configWrite(config_fs, "channel", (char*)channel2.c_str(), "/config.txt");
-  // flag = flag + configWrite(config_fs, "startupMode", (char*)startupMode2.c_str(), "/config.txt");
   flag = flag + configWriteOpen(config_fs, "/config.txt", filetxt);
   flag = flag + configRewrite("ssid", (char *)ssid2.c_str(), (char *)filetxt);
   flag = flag + configRewrite("password", (char *)password2.c_str(), (char *)filetxt);
@@ -107,13 +107,18 @@ void configAP(AsyncWebServerRequest *request) {
   }
 }
 
-// 发送配置WiFi自动连接网页
+//  发送配置WiFi自动连接网页
 void pageConfigAutoConnect(AsyncWebServerRequest *request) {
   String message = htmlAutoConnect1 + htmlAutoConnect2 + htmlAutoConnect3;
   message += pressid;
   message += htmlAutoConnect4;
   message += prepassword;
   message += htmlAutoConnect5;
+  if (enableIpv6 == 0) {
+    message += htmlIpv6State1;
+  } else if (enableIpv6 == 1){
+    message += htmlIpv6State2;
+  }
   if (startupMode == 1) {
     message += htmlStartupMode1;
   } else if (startupMode == 2) {
@@ -131,23 +136,23 @@ void pageConfigAutoConnect(AsyncWebServerRequest *request) {
 void configAutoConnect(AsyncWebServerRequest *request) {
   String pressid2 = request->getParam("pressid")->value();          // 获取WiFi名称
   String prepassword2 = request->getParam("prepassword")->value();  // 获取WiFi密码
+  String enableIpv62 = request->getParam("enableIpv6")->value();    // 获取IPv6状态
   String startupMode2 = request->getParam("startupMode")->value();  // 获取上电默认模式
   String message = "";
   char filetxt[CONFIG_FILE_MAX_LENGTH] = { 0 };
   char flag = 0;
-  // flag = flag + configWrite(config_fs, "startupMode", (char*)startupMode2.c_str(), "/config.txt");
-  // flag = flag + configWrite(config_fs, "pressid", (char*)pressid2.c_str(), "/config.txt");
-  // flag = flag + configWrite(config_fs, "prepassword", (char*)prepassword2.c_str(), "/config.txt");
   flag = flag + configWriteOpen(config_fs, "/config.txt", filetxt);
   flag = flag + configRewrite("startupMode", (char *)startupMode2.c_str(), (char *)filetxt);
   flag = flag + configRewrite("pressid", (char *)pressid2.c_str(), (char *)filetxt);
   flag = flag + configRewrite("prepassword", (char *)prepassword2.c_str(), (char *)filetxt);
+  flag = flag + configRewrite("enableIpv6", (char *)enableIpv62.c_str(), (char *)filetxt);
   flag = flag + configWriteClose(config_fs, "/config.txt", (char *)filetxt);
 
-  if (flag == 5) {
-    startupMode = String2Char((char *)startupMode2.c_str());
+  if (flag == 6) {
     pressid = pressid2;
     prepassword = prepassword2;
+    enableIpv6 = String2Char((char *)enableIpv62.c_str());
+    startupMode = String2Char((char *)startupMode2.c_str());
     message += htmlAutoConnect1 + "<h2>配置成功</h2>" + htmlfoot;
     request->send(200, "text/html", message);
   } else {
